@@ -1,0 +1,6 @@
+[licenses]
+copyleft = "deny"
+allow = [
+    "MIT",
+    "Unicode-DFS-2016",
+]

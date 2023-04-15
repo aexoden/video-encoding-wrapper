@@ -1,7 +1,9 @@
+use std::path::PathBuf;
+
 use clap::{Parser, ValueEnum};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum Encoder {
+pub enum Encoder {
     Aomenc,
     X264,
     X265,
@@ -12,11 +14,11 @@ enum Encoder {
 pub struct Config {
     /// Video encoder to use
     #[arg(short, long, value_enum, default_value_t = Encoder::X264)]
-    encoder: Encoder,
+    pub encoder: Encoder,
 
     /// Source video file to encode
-    source: String,
+    pub source: String,
 
     /// Output directory
-    output_directory: String,
+    pub output_directory: PathBuf,
 }

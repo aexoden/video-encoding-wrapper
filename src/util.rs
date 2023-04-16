@@ -1,4 +1,6 @@
 use std::fmt::Write;
+use std::fs::File;
+use std::io::BufReader;
 use std::path::Path;
 use std::time::Duration;
 
@@ -14,34 +16,60 @@ use tracing_subscriber::EnvFilter;
 
 extern crate ffmpeg_the_third as ffmpeg;
 
+use crate::config::Config;
+
 #[cached(
-    type = "SizedCache<String, Result<usize, ffmpeg::Error>>",
+    result = true,
+    type = "SizedCache<String, usize>",
     create = "{ SizedCache::with_size(100) }",
-    convert = r#"{ format!("{}", source.to_string_lossy()) }"#
+    convert = r#"{ format!("{}", config.source.to_string_lossy()) }"#
 )]
-pub fn get_frame_count(source: &Path) -> Result<usize, ffmpeg::Error> {
-    let mut context = ffmpeg::format::input(&source)?;
+pub fn get_frame_count(config: &Config) -> anyhow::Result<usize> {
+    let json_path = config
+        .output_directory
+        .join("config")
+        .join("frame_count.json");
+
+    verify_filename(&json_path)?;
 
     let progress_bar = ProgressBar::new_spinner().with_finish(ProgressFinish::AndLeave);
 
     progress_bar.set_style(
         ProgressStyle::with_template(
-            "{spinner:.green} [{elapsed_precise}] Determining frame count... {human_pos}",
+            "{spinner:.green} [{elapsed_precise}] Determining frame count... {human_pos} {msg}",
         )
         .unwrap(),
     );
 
-    let video_stream_index = context
-        .streams()
-        .best(ffmpeg::media::Type::Video)
-        .ok_or(ffmpeg::Error::StreamNotFound)?
-        .index();
+    let frame_count = if json_path.exists() {
+        let file = File::open(json_path)?;
+        let reader = BufReader::new(file);
 
-    let frame_count = context
-        .packets()
-        .filter(|(stream, _)| stream.index() == video_stream_index)
-        .progress_with(progress_bar)
-        .count();
+        let frame_count = serde_json::from_reader(reader)?;
+
+        progress_bar.set_position(frame_count);
+        progress_bar.finish_with_message("(cached)");
+
+        frame_count as usize
+    } else {
+        let mut context = ffmpeg::format::input(&config.source)?;
+
+        let video_stream_index = context
+            .streams()
+            .best(ffmpeg::media::Type::Video)
+            .ok_or(ffmpeg::Error::StreamNotFound)?
+            .index();
+
+        let frame_count = context
+            .packets()
+            .filter(|(stream, _)| stream.index() == video_stream_index)
+            .progress_with(progress_bar)
+            .count();
+
+        serde_json::to_writer_pretty(&File::create(json_path)?, &frame_count)?;
+
+        frame_count
+    };
 
     Ok(frame_count)
 }
@@ -90,6 +118,14 @@ pub fn install_tracing() -> anyhow::Result<()> {
         .with(ErrorLayer::default())
         .with(fmt_layer.with_filter(env_filter))
         .try_init()?;
+
+    Ok(())
+}
+
+pub fn verify_filename(path: &Path) -> anyhow::Result<()> {
+    if !path.parent().unwrap().exists() {
+        std::fs::create_dir_all(path.parent().unwrap())?;
+    }
 
     Ok(())
 }

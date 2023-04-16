@@ -96,7 +96,7 @@ pub fn create_progress_style(template: &str) -> anyhow::Result<ProgressStyle> {
             "smooth_per_sec",
             |s: &ProgressState, w: &mut dyn Write| match (s.pos(), s.elapsed().as_millis()) {
                 (pos, elapsed_ms) if elapsed_ms > 0 => {
-                    write!(w, "{:.2}/s", pos as f64 * 1000.0 / elapsed_ms as f64).unwrap()
+                    write!(w, "{:.2}", pos as f64 * 1000.0 / elapsed_ms as f64).unwrap()
                 }
                 _ => write!(w, "-").unwrap(),
             },

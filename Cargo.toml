@@ -7,8 +7,15 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.70"
+av-scenechange = { version = "0.8.1", default-features = false }
+cached = "0.43.0"
 clap = { version = "4.2.2", features = ["derive"] }
-thiserror = "1.0.40"
+ffmpeg-the-third = { version = "1.2.2", features = ["serialize"] }
+indicatif = "0.17.3"
 tracing = "0.1.37"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+y4m = "0.7.0"
+
+[profile.dev.package.av-scenechange]
+opt-level = 3

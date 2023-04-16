@@ -17,7 +17,7 @@ pub struct Config {
     pub encoder: Encoder,
 
     /// Source video file to encode
-    pub source: String,
+    pub source: PathBuf,
 
     /// Output directory
     pub output_directory: PathBuf,

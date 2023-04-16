@@ -1,19 +1,85 @@
+use std::fmt::Write;
 use std::path::Path;
+use std::time::Duration;
 
 use anyhow::anyhow;
-use thiserror::Error;
+use cached::{proc_macro::cached, SizedCache};
+use indicatif::{
+    HumanDuration, ProgressBar, ProgressFinish, ProgressIterator, ProgressState, ProgressStyle,
+};
 use tracing::level_filters::LevelFilter;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
-#[derive(Error, Debug)]
-pub enum DirectoryError {
-    #[error("{0} exists but is not a directory")]
-    ExistsNotDirectory(String),
+extern crate ffmpeg_the_third as ffmpeg;
+
+#[cached(
+    type = "SizedCache<String, Result<usize, ffmpeg::Error>>",
+    create = "{ SizedCache::with_size(100) }",
+    convert = r#"{ format!("{}", source.to_string_lossy()) }"#
+)]
+pub fn get_frame_count(source: &Path) -> Result<usize, ffmpeg::Error> {
+    let mut context = ffmpeg::format::input(&source)?;
+
+    let progress_bar = ProgressBar::new_spinner().with_finish(ProgressFinish::AndLeave);
+
+    progress_bar.set_style(
+        ProgressStyle::with_template(
+            "{spinner:.green} [{elapsed_precise}] Determining frame count... {human_pos}",
+        )
+        .unwrap(),
+    );
+
+    let video_stream_index = context
+        .streams()
+        .best(ffmpeg::media::Type::Video)
+        .ok_or(ffmpeg::Error::StreamNotFound)?
+        .index();
+
+    let frame_count = context
+        .packets()
+        .filter(|(stream, _)| stream.index() == video_stream_index)
+        .progress_with(progress_bar)
+        .count();
+
+    Ok(frame_count)
+}
+
+pub fn create_progress_style(template: &str) -> anyhow::Result<ProgressStyle> {
+    let progress_style = ProgressStyle::with_template(template)?
+        .with_key(
+            "smooth_eta",
+            |s: &ProgressState, w: &mut dyn Write| match (s.pos(), s.len()) {
+                (0, _) => write!(w, "-").unwrap(),
+                (pos, Some(len)) => write!(
+                    w,
+                    "{:#}",
+                    HumanDuration(Duration::from_millis(
+                        (s.elapsed().as_millis() * (len as u128 - pos as u128) / (pos as u128))
+                            as u64
+                    ))
+                )
+                .unwrap(),
+                _ => write!(w, "-").unwrap(),
+            },
+        )
+        .with_key(
+            "smooth_per_sec",
+            |s: &ProgressState, w: &mut dyn Write| match (s.pos(), s.elapsed().as_millis()) {
+                (pos, elapsed_ms) if elapsed_ms > 0 => {
+                    write!(w, "{:.2}/s", pos as f64 * 1000.0 / elapsed_ms as f64).unwrap()
+                }
+                _ => write!(w, "-").unwrap(),
+            },
+        );
+
+    Ok(progress_style)
 }
 
 pub fn install_tracing() -> anyhow::Result<()> {
+    ffmpeg::util::log::set_level(ffmpeg::util::log::level::Level::Fatal);
+
     let env_filter = EnvFilter::builder()
         .with_default_directive(LevelFilter::WARN.into())
         .from_env_lossy();

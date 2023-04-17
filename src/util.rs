@@ -1,81 +1,17 @@
 use std::fmt::Write;
-use std::fs::File;
-use std::io::BufReader;
 use std::path::Path;
 use std::time::Duration;
 
-use anyhow::anyhow;
-use cached::{proc_macro::cached, SizedCache};
-use indicatif::{
-    HumanDuration, ProgressBar, ProgressFinish, ProgressIterator, ProgressState, ProgressStyle,
-};
+use anyhow::{anyhow, Context};
+use indicatif::{HumanDuration, ProgressState, ProgressStyle};
 use tracing::level_filters::LevelFilter;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
-extern crate ffmpeg_the_third as ffmpeg;
-
-use crate::config::Config;
-
-#[cached(
-    result = true,
-    type = "SizedCache<String, usize>",
-    create = "{ SizedCache::with_size(100) }",
-    convert = r#"{ format!("{}", config.source.to_string_lossy()) }"#
-)]
-pub fn get_frame_count(config: &Config) -> anyhow::Result<usize> {
-    let json_path = config
-        .output_directory
-        .join("config")
-        .join("frame_count.json");
-
-    verify_filename(&json_path)?;
-
-    let progress_bar = ProgressBar::new_spinner().with_finish(ProgressFinish::AndLeave);
-
-    progress_bar.set_style(
-        ProgressStyle::with_template(
-            "{spinner:.green} [{elapsed_precise}] Determining frame count... {human_pos} {msg}",
-        )
-        .unwrap(),
-    );
-
-    let frame_count = if json_path.exists() {
-        let file = File::open(json_path)?;
-        let reader = BufReader::new(file);
-
-        let frame_count = serde_json::from_reader(reader)?;
-
-        progress_bar.set_position(frame_count);
-        progress_bar.finish_with_message("(cached)");
-
-        frame_count as usize
-    } else {
-        let mut context = ffmpeg::format::input(&config.source)?;
-
-        let video_stream_index = context
-            .streams()
-            .best(ffmpeg::media::Type::Video)
-            .ok_or(ffmpeg::Error::StreamNotFound)?
-            .index();
-
-        let frame_count = context
-            .packets()
-            .filter(|(stream, _)| stream.index() == video_stream_index)
-            .progress_with(progress_bar)
-            .count();
-
-        serde_json::to_writer_pretty(&File::create(json_path)?, &frame_count)?;
-
-        frame_count
-    };
-
-    Ok(frame_count)
-}
-
 pub fn create_progress_style(template: &str) -> anyhow::Result<ProgressStyle> {
-    let progress_style = ProgressStyle::with_template(template)?
+    let progress_style = ProgressStyle::with_template(template)
+        .context("Failed to create progress style with template")?
         .with_key(
             "smooth_eta",
             |s: &ProgressState, w: &mut dyn Write| match (s.pos(), s.len()) {
@@ -124,7 +60,8 @@ pub fn install_tracing() -> anyhow::Result<()> {
 
 pub fn verify_filename(path: &Path) -> anyhow::Result<()> {
     if !path.parent().unwrap().exists() {
-        std::fs::create_dir_all(path.parent().unwrap())?;
+        std::fs::create_dir_all(path.parent().unwrap())
+            .with_context(|| format!("Failed to create path {}", path.display()))?;
     }
 
     Ok(())
@@ -139,7 +76,8 @@ pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
             ));
         }
     } else {
-        std::fs::create_dir_all(path)?;
+        std::fs::create_dir_all(path)
+            .with_context(|| format!("Failed to create path {}", path.display()))?;
     }
 
     Ok(())

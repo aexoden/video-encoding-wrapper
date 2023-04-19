@@ -20,28 +20,39 @@ pub struct Scene {
 
 fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
     let json_path = config.output_directory.join("config").join("scenes.json");
-    verify_filename(&json_path).context("Could not verify scene JSON cache file")?;
+    verify_filename(&json_path)
+        .with_context(|| format!("Unable to verify scene cache path {json_path:?}"))?;
 
-    let metadata = get_metadata(config).context("Could not get video metadata")?;
+    let metadata = get_metadata(config).context("Unable to fetch video metadata")?;
 
-    let progress_bar = ProgressBar::new(metadata.frame_count as u64);
+    let progress_bar = ProgressBar::new(
+        metadata
+            .frame_count
+            .try_into()
+            .context("Unable to convert video frame count to u64")?,
+    );
 
     progress_bar.set_style(
         create_progress_style(
             "{spinner:.green} [{elapsed_precise}] Detecting scene changes... [{wide_bar:.cyan/blue}] {percent:>3}% {human_pos:>8}/{human_len:>8} ({smooth_per_sec:>6} FPS, ETA: {smooth_eta:>3})"
-        ).context("Could not create progress style")?
+        ).context("Unable to create scene change detection progress bar style")?
     );
 
     let scenes = if json_path.exists() {
-        let file =
-            File::open(&json_path).with_context(|| format!("Could not open {json_path:?}"))?;
+        let file = File::open(&json_path)
+            .with_context(|| format!("Unable to open scene cache {json_path:?}"))?;
         let reader = BufReader::new(file);
 
-        progress_bar.set_position(metadata.frame_count as u64);
+        progress_bar.set_position(
+            metadata
+                .frame_count
+                .try_into()
+                .context("Unable to convert video frame count to u64")?,
+        );
         progress_bar.reset_eta();
         progress_bar.finish();
 
-        serde_json::from_reader(reader).context("Could not read scene JSON cache")?
+        serde_json::from_reader(reader).context("Unable to deserialize scene cache")?
     } else {
         let mut decoder = y4m::Decoder::new(
             create_child_read(
@@ -51,12 +62,11 @@ fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
                 Stdio::piped(),
                 Stdio::null(),
             )
-            .context("Could not spawn FFmpeg decoder subprocess")?
+            .context("Unable to spawn video decoder subprocess")?
             .stdout
-            .ok_or(anyhow!("FFmpeg decoder process unexpectedly had no stdout"))
-            .context("Could not access FFmpeg decoder process stdout")?,
+            .ok_or_else(|| anyhow!("Unable to access stdout of video decoder subprocess"))?,
         )
-        .context("Could not create YUV4MPEG decoder")?;
+        .context("Unable to create scene change detection YUV4MPEG decoder")?;
 
         let opts = DetectionOptions {
             analysis_speed: SceneDetectionSpeed::Standard,
@@ -67,7 +77,7 @@ fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
         };
 
         let progress_callback = |frames: usize, _keyframes: usize| {
-            progress_bar.set_position(frames as u64);
+            progress_bar.set_position(frames.try_into().unwrap_or(u64::MAX));
         };
 
         let results =
@@ -82,24 +92,24 @@ fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
             );
         }
 
-        let mut scenes = vec![];
+        let mut scene_changes = results.scene_changes;
+        scene_changes.push(metadata.frame_count);
 
-        (0..results.scene_changes.len()).for_each(|i| {
-            scenes.push(Scene {
-                start_frame: results.scene_changes[i],
-                end_frame: if i == results.scene_changes.len() - 1 {
-                    metadata.frame_count - 1
-                } else {
-                    results.scene_changes[i + 1] - 1
-                },
-            });
-        });
+        let scenes: Vec<Scene> = scene_changes
+            .iter()
+            .zip(scene_changes.iter().skip(1))
+            .map(|(start_frame, next_start_frame)| Scene {
+                start_frame: *start_frame,
+                end_frame: next_start_frame - 1,
+            })
+            .collect();
 
         serde_json::to_writer_pretty(
-            &File::create(&json_path).with_context(|| format!("Could not create {json_path:?}"))?,
+            &File::create(&json_path)
+                .with_context(|| format!("Unable to create scene cache file {json_path:?}"))?,
             &scenes,
         )
-        .context("Could not write scene JSON cache")?;
+        .with_context(|| format!("Unable to serialize scene cache to {json_path:?}"))?;
 
         scenes
     };
@@ -109,19 +119,20 @@ fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
 
 pub fn split(config: &Config) -> anyhow::Result<()> {
     let output_path = config.output_directory.join("source");
-    verify_directory(&output_path)
-        .with_context(|| format!("Could not verify or create output path {output_path:?}"))?;
+    verify_directory(&output_path).with_context(|| {
+        format!("Unable to verify split scene output directory {output_path:?}")
+    })?;
 
-    let scenes = get_scenes(config).context("Could not get scene information")?;
+    let scenes = get_scenes(config).context("Unable to fetch scene data")?;
+    let metadata = get_metadata(config)
+        .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
 
-    let metadata = get_metadata(config).context("Could not get video metadata")?;
-
-    let progress_bar = ProgressBar::new(metadata.frame_count as u64);
+    let progress_bar = ProgressBar::new(metadata.frame_count.try_into().unwrap_or(u64::MAX));
 
     progress_bar.set_style(
         create_progress_style(
             "{spinner:.green} [{elapsed_precise}] Splitting scenes...        [{wide_bar:.cyan/blue}] {percent:>3}% {human_pos:>8}/{human_len:>8} ({smooth_per_sec:>6} FPS, ETA: {smooth_eta:>3})"
-        ).context("Could not create progress bar style")?
+        ).context("Unable to create scene splitting progress bar style")?
     );
 
     let mut decoder = y4m::Decoder::new(
@@ -132,12 +143,13 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
             Stdio::piped(),
             Stdio::null(),
         )
-        .context("Could not spawn FFmpeg decoder process")?
+        .context("Unable to spawn scene splitting video decoder subprocess")?
         .stdout
-        .ok_or(anyhow!("FFmpeg decoder process unexpectedly had no stdout"))
-        .context("Could not access FFmpeg decoder process stdout")?,
+        .ok_or_else(|| {
+            anyhow!("Unable to access stdout for scene splitting video decoder subprocess")
+        })?,
     )
-    .context("Failed to create YUV4MPEG decoder")?;
+    .context("Unable to create scene splitting YUV4MPEG decoder")?;
 
     for (scene_index, scene) in scenes.iter().enumerate() {
         let final_output_filename = output_path.join(format!("scene-{scene_index:05}.mkv"));
@@ -145,9 +157,9 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
 
         if final_output_filename.exists() {
             for _ in scene.start_frame..=scene.end_frame {
-                decoder
-                    .read_frame()
-                    .context("Could not read frame from FFmpeg decoder process")?;
+                decoder.read_frame().context(
+                    "Unable to read frame from scene splitting video decoder subprocess",
+                )?;
                 progress_bar.inc(1);
                 progress_bar.reset_eta();
             }
@@ -155,7 +167,7 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
             if temporary_output_filename.exists() {
                 std::fs::remove_file(&temporary_output_filename).with_context(|| {
                     format!(
-                        "Could not remove preexisting temporary file {temporary_output_filename:?}"
+                        "Unable to remove preexisting temporary file {temporary_output_filename:?}"
                     )
                 })?;
             }
@@ -167,30 +179,29 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn()
-                .context("Could not spawn FFmpeg FFV1 encoder process")?;
+                .context("Unable to spawn scene splitting video encoding subprocess")?;
 
-            let mut encoder = y4m::EncoderBuilder::new(
-                decoder.get_width(),
-                decoder.get_height(),
-                decoder.get_framerate(),
-            )
-            .with_colorspace(decoder.get_colorspace())
-            .with_pixel_aspect(decoder.get_pixel_aspect())
-            .write_header(
-                ffmpeg_pipe
-                    .stdin
-                    .ok_or(anyhow!("FFmpeg encoder process unexpectedly has no stdin"))
-                    .context("Could not access FFmpeg encoder process stdin")?,
-            )?;
+            let mut encoder =
+                y4m::EncoderBuilder::new(
+                    decoder.get_width(),
+                    decoder.get_height(),
+                    decoder.get_framerate(),
+                )
+                .with_colorspace(decoder.get_colorspace())
+                .with_pixel_aspect(decoder.get_pixel_aspect())
+                .write_header(ffmpeg_pipe.stdin.ok_or_else(|| {
+                    anyhow!("Unable to access stdin for video encoder subprocess")
+                })?)
+                .context("Unable to write YUV4MPEG header to video encoder subprocess and create YUV4MPEG encoder")?;
 
             for _ in scene.start_frame..=scene.end_frame {
                 encoder
                     .write_frame(
                         &decoder
                             .read_frame()
-                            .context("Could not read frame from FFmpeg decoder process")?,
+                            .context("Unable to read frame from video decoder subprocess")?,
                     )
-                    .context("Could not write frame to FFmpeg FFV1 encoder process")?;
+                    .context("Unable to write frame to video encoder subprocess")?;
                 progress_bar.inc(1);
             }
         }
@@ -199,7 +210,7 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
             std::fs::rename(&temporary_output_filename, &final_output_filename).with_context(
                 || {
                     format!(
-                        "Could not rename {temporary_output_filename:?} to {final_output_filename:?}"
+                        "Unable to rename {temporary_output_filename:?} to {final_output_filename:?}"
                     )
                 },
             )?;

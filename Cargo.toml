@@ -24,5 +24,9 @@ tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 y4m = "0.7.0"
 
+[profile.release]
+debug = true
+lto = "fat"
+
 [profile.dev.package.av-scenechange]
 opt-level = 3

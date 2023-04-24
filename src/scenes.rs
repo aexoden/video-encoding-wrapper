@@ -117,6 +117,8 @@ fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
     Ok(scenes)
 }
 
+#[allow(clippy::print_stdout)]
+#[allow(clippy::too_many_lines)]
 pub fn split(config: &Config) -> anyhow::Result<()> {
     let output_path = config.output_directory.join("source");
     verify_directory(&output_path).with_context(|| {
@@ -127,6 +129,11 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
     let metadata = get_metadata(config)
         .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
 
+    let complete = scenes.iter().enumerate().all(|(index, _scene)| {
+        let output_filename = output_path.join(format!("scene-{index:05}.mkv"));
+        output_filename.exists()
+    });
+
     let progress_bar = ProgressBar::new(metadata.frame_count.try_into().unwrap_or(u64::MAX));
 
     progress_bar.set_style(
@@ -135,53 +142,63 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
         ).context("Unable to create scene splitting progress bar style")?
     );
 
-    let mut decoder = y4m::Decoder::new(
-        create_child_read(
-            &config.source,
-            metadata.crop_filter.as_deref(),
-            Stdio::null(),
-            Stdio::piped(),
-            Stdio::null(),
+    if complete {
+        for scene in scenes {
+            progress_bar.inc(
+                (scene.end_frame - scene.start_frame + 1)
+                    .try_into()
+                    .unwrap_or(u64::MAX),
+            );
+        }
+    } else {
+        let mut decoder = y4m::Decoder::new(
+            create_child_read(
+                &config.source,
+                metadata.crop_filter.as_deref(),
+                Stdio::null(),
+                Stdio::piped(),
+                Stdio::null(),
+            )
+            .context("Unable to spawn scene splitting video decoder subprocess")?
+            .stdout
+            .ok_or_else(|| {
+                anyhow!("Unable to access stdout for scene splitting video decoder subprocess")
+            })?,
         )
-        .context("Unable to spawn scene splitting video decoder subprocess")?
-        .stdout
-        .ok_or_else(|| {
-            anyhow!("Unable to access stdout for scene splitting video decoder subprocess")
-        })?,
-    )
-    .context("Unable to create scene splitting YUV4MPEG decoder")?;
+        .context("Unable to create scene splitting YUV4MPEG decoder")?;
 
-    for (scene_index, scene) in scenes.iter().enumerate() {
-        let final_output_filename = output_path.join(format!("scene-{scene_index:05}.mkv"));
-        let temporary_output_filename = output_path.join(format!("scene-{scene_index:05}.tmp.mkv"));
+        for (scene_index, scene) in scenes.iter().enumerate() {
+            let final_output_filename = output_path.join(format!("scene-{scene_index:05}.mkv"));
+            let temporary_output_filename =
+                output_path.join(format!("scene-{scene_index:05}.tmp.mkv"));
 
-        if final_output_filename.exists() {
-            for _ in scene.start_frame..=scene.end_frame {
-                decoder.read_frame().context(
-                    "Unable to read frame from scene splitting video decoder subprocess",
-                )?;
-                progress_bar.inc(1);
-                progress_bar.reset_eta();
-            }
-        } else {
-            if temporary_output_filename.exists() {
-                std::fs::remove_file(&temporary_output_filename).with_context(|| {
-                    format!(
+            if final_output_filename.exists() {
+                for _ in scene.start_frame..=scene.end_frame {
+                    decoder.read_frame().context(
+                        "Unable to read frame from scene splitting video decoder subprocess",
+                    )?;
+                    progress_bar.inc(1);
+                    progress_bar.reset_eta();
+                }
+            } else {
+                if temporary_output_filename.exists() {
+                    std::fs::remove_file(&temporary_output_filename).with_context(|| {
+                        format!(
                         "Unable to remove preexisting temporary file {temporary_output_filename:?}"
                     )
-                })?;
-            }
+                    })?;
+                }
 
-            let ffmpeg_pipe = Command::new("ffmpeg")
-                .args(["-i", "-", "-c:v", "ffv1", "-level", "3"])
-                .arg(&temporary_output_filename)
-                .stdin(Stdio::piped())
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .spawn()
-                .context("Unable to spawn scene splitting video encoding subprocess")?;
+                let ffmpeg_pipe = Command::new("ffmpeg")
+                    .args(["-i", "-", "-c:v", "ffv1", "-level", "3"])
+                    .arg(&temporary_output_filename)
+                    .stdin(Stdio::piped())
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .spawn()
+                    .context("Unable to spawn scene splitting video encoding subprocess")?;
 
-            let mut encoder =
+                let mut encoder =
                 y4m::EncoderBuilder::new(
                     decoder.get_width(),
                     decoder.get_height(),
@@ -194,26 +211,27 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
                 })?)
                 .context("Unable to write YUV4MPEG header to video encoder subprocess and create YUV4MPEG encoder")?;
 
-            for _ in scene.start_frame..=scene.end_frame {
-                encoder
-                    .write_frame(
-                        &decoder
-                            .read_frame()
-                            .context("Unable to read frame from video decoder subprocess")?,
-                    )
-                    .context("Unable to write frame to video encoder subprocess")?;
-                progress_bar.inc(1);
+                for _ in scene.start_frame..=scene.end_frame {
+                    encoder
+                        .write_frame(
+                            &decoder
+                                .read_frame()
+                                .context("Unable to read frame from video decoder subprocess")?,
+                        )
+                        .context("Unable to write frame to video encoder subprocess")?;
+                    progress_bar.inc(1);
+                }
             }
-        }
 
-        if temporary_output_filename.exists() {
-            std::fs::rename(&temporary_output_filename, &final_output_filename).with_context(
+            if temporary_output_filename.exists() {
+                std::fs::rename(&temporary_output_filename, &final_output_filename).with_context(
                 || {
                     format!(
                         "Unable to rename {temporary_output_filename:?} to {final_output_filename:?}"
                     )
                 },
             )?;
+            }
         }
     }
 

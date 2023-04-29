@@ -12,7 +12,7 @@ use crate::config::Config;
 use crate::ffmpeg::{create_child_read, get_metadata};
 use crate::util::{create_progress_style, verify_directory, verify_filename};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Scene {
     index: usize,
     start_frame: usize,

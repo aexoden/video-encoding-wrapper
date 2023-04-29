@@ -3,36 +3,27 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 use anyhow::{anyhow, Context};
+use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use rayon::prelude::*;
 
 use crate::config::Config;
 use crate::ffmpeg::{create_child_read, Metadata};
 use crate::scenes::Scene;
 use crate::util::{create_progress_style, verify_directory};
 
+fn update_worker_message(progress_bar: &ProgressBar, scene_index: usize, message: &str) {
+    progress_bar.set_message(format!("[Scene {scene_index:05}] {message}"));
+}
+
 pub struct Encoder {
     config: Config,
     scenes: Vec<Scene>,
     metadata: Metadata,
-    multi_progress: MultiProgress,
-    worker_progress_bars: Vec<ProgressBar>,
     encode_directory: PathBuf,
 }
 
 impl Encoder {
     pub fn new(config: &Config) -> anyhow::Result<Self> {
-        let multi_progress = MultiProgress::new();
-
-        let worker_progress_style = ProgressStyle::with_template("{msg}")
-            .context("Unable to create worker progress style")?;
-
-        let worker_progress_bars = (0..rayon::current_num_threads())
-            .map(|_thread_index| {
-                multi_progress.add(ProgressBar::new(1).with_style(worker_progress_style.clone()))
-            })
-            .collect::<Vec<_>>();
-
         let mut scenes = crate::scenes::get(config).context("Unable to fetch scene data")?;
         scenes.sort_by_key(|a| std::cmp::Reverse(a.length()));
 
@@ -47,14 +38,32 @@ impl Encoder {
             metadata: crate::ffmpeg::get_metadata(config).with_context(|| {
                 format!("Unable to fetch video metadata for {:?}", &config.source)
             })?,
-            multi_progress,
-            worker_progress_bars,
             encode_directory,
         })
     }
 
     #[allow(clippy::print_stdout)]
     pub fn encode(&self) -> anyhow::Result<()> {
+        let scene_queue: ArrayQueue<Scene> = ArrayQueue::new(self.scenes.len());
+        let result_queue: ArrayQueue<PathBuf> = ArrayQueue::new(self.scenes.len());
+
+        for scene in &self.scenes {
+            if scene_queue.push(*scene).is_err() {
+                return Err(anyhow!("Encoding worker queue was unexpectedly full"));
+            }
+        }
+
+        let multi_progress = MultiProgress::new();
+
+        let worker_progress_style = ProgressStyle::with_template("{msg}")
+            .context("Unable to create worker progress style")?;
+
+        let worker_progress_bars = (0..rayon::current_num_threads())
+            .map(|_thread_index| {
+                multi_progress.add(ProgressBar::new(1).with_style(worker_progress_style.clone()))
+            })
+            .collect::<Vec<_>>();
+
         let progress_bar =
             ProgressBar::new(self.metadata.frame_count.try_into().unwrap_or(u64::MAX));
 
@@ -64,28 +73,60 @@ impl Encoder {
             ).context("Unable to create encoding progress bar style")?
         );
 
-        let progress_bar = self.multi_progress.add(progress_bar);
+        let progress_bar = multi_progress.add(progress_bar);
         progress_bar.reset();
         progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
 
-        let mut files = self
-            .scenes
-            .par_iter()
-            .map(|scene| -> anyhow::Result<PathBuf> {
-                let result = self.encode_scene(scene)?;
-                progress_bar.inc((scene.length()).try_into().unwrap_or(u64::MAX));
+        std::thread::scope(|scope| -> anyhow::Result<()> {
+            let threads = (0..self.config.workers)
+                .map(|thread_index| -> anyhow::Result<_> {
+                    let worker_progress_bar = worker_progress_bars
+                        .get(thread_index)
+                        .ok_or_else(|| anyhow!("Unable to access encoding worker progress bar"))?;
 
-                Ok(result)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+                    Ok(scope.spawn(|| -> anyhow::Result<()> {
+                        while let Some(scene) = &scene_queue.pop() {
+                            let result =
+                                self.encode_scene(scene, worker_progress_bar).with_context(
+                                    || format!("Unable to encode scene {}", scene.index()),
+                                )?;
 
+                            if result_queue.push(result).is_err() {
+                                return Err(anyhow!("Encoding result queue was unexpectedly full"));
+                            }
+
+                            progress_bar.inc((scene.length()).try_into().unwrap_or(u64::MAX));
+                        }
+
+                        worker_progress_bar.finish();
+
+                        Ok(())
+                    }))
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .context("Unable to spawn encoding workers")?;
+
+            for thread in threads {
+                let result = thread.join();
+
+                match result {
+                    Ok(result) => {
+                        result.context("Unable to encode scene")?;
+                    }
+                    Err(error) => {
+                        return Err(anyhow!("Encoding worker panicked: {:?}", error));
+                    }
+                }
+            }
+
+            progress_bar.finish();
+
+            Ok(())
+        })
+        .context("Unable to execute encoding workers")?;
+
+        let mut files = result_queue.into_iter().collect::<Vec<_>>();
         files.sort();
-
-        for worker_progress_bar in &self.worker_progress_bars {
-            worker_progress_bar.finish();
-        }
-
-        progress_bar.finish();
 
         self.merge_scenes(&files)
             .context("Unable to merge scenes")?;
@@ -167,11 +208,16 @@ impl Encoder {
         Ok(())
     }
 
-    fn encode_scene(&self, scene: &Scene) -> anyhow::Result<PathBuf> {
-        self.encode_scene_single(scene, self.config.quality)
+    fn encode_scene(&self, scene: &Scene, progress_bar: &ProgressBar) -> anyhow::Result<PathBuf> {
+        self.encode_scene_single(scene, progress_bar, self.config.quality)
     }
 
-    fn encode_scene_single(&self, scene: &Scene, qp: i64) -> anyhow::Result<PathBuf> {
+    fn encode_scene_single(
+        &self,
+        scene: &Scene,
+        progress_bar: &ProgressBar,
+        qp: i64,
+    ) -> anyhow::Result<PathBuf> {
         let output_path = self
             .encode_directory
             .join(format!("scene-{:05}", scene.index()));
@@ -243,7 +289,7 @@ impl Encoder {
 
                 if let Ok(line) = std::str::from_utf8(&buffer) {
                     if !line.contains('\n') {
-                        self.update_worker_message(scene.index(), line)?;
+                        update_worker_message(progress_bar, scene.index(), line);
                     }
                 }
 
@@ -272,19 +318,5 @@ impl Encoder {
         }
 
         Ok(output_filename)
-    }
-
-    fn update_worker_message(&self, scene_index: usize, message: &str) -> anyhow::Result<()> {
-        let progress_bar = self
-            .worker_progress_bars
-            .get(
-                rayon::current_thread_index()
-                    .ok_or_else(|| anyhow!("Unable to get current thread index"))?,
-            )
-            .ok_or_else(|| anyhow!("Unable to access worker progress bar"))?;
-
-        progress_bar.set_message(format!("[Scene {scene_index:05}] {message}"));
-
-        Ok(())
     }
 }

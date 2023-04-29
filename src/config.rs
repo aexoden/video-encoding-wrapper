@@ -35,12 +35,10 @@ impl Encoder {
     pub fn base_arguments(&self, preset: &str) -> Vec<String> {
         match self {
             Self::Aomenc => vec![
-                "--cpu-used".to_owned(),
-                preset.to_owned(),
-                "--bit-depth".to_owned(),
-                "10".to_owned(),
-                "--threads".to_owned(),
-                "1".to_owned(),
+                format!("--cpu-used={preset}"),
+                "--bit-depth=10".to_owned(),
+                "--threads=1".to_owned(),
+                "--kf-max-dist=120".to_owned(),
             ],
             Self::X264 => vec![
                 "--stitchable".to_owned(),
@@ -52,6 +50,8 @@ impl Encoder {
                 "10".to_owned(),
                 "--threads".to_owned(),
                 "1".to_owned(),
+                "--keyint".to_owned(),
+                "120".to_owned(),
             ],
             Self::X265 => vec![
                 "--y4m".to_owned(),
@@ -63,6 +63,8 @@ impl Encoder {
                 "1".to_owned(),
                 "-F".to_owned(),
                 "1".to_owned(),
+                "--keyint".to_owned(),
+                "120".to_owned(),
             ],
         }
     }
@@ -74,7 +76,6 @@ impl Encoder {
                 vec![
                     "--tune=ssim".to_owned(),
                     "--enable-qm=1".to_owned(),
-                    "--disable-kf".to_owned(),
                     "--lag-in-frames=48".to_owned(),
                     "--quant-b-adapt=1".to_owned(),
                     "--arnr-strength=1".to_owned(),
@@ -89,7 +90,13 @@ impl Encoder {
     }
 
     #[must_use]
-    pub fn arguments(&self, preset: &str, qp: i64) -> Vec<String> {
+    pub fn arguments(
+        &self,
+        preset: &str,
+        pass: Option<usize>,
+        stats_file: Option<&PathBuf>,
+        qp: i64,
+    ) -> Vec<String> {
         // Base Arguments
         let mut arguments = self.base_arguments(preset);
 
@@ -103,7 +110,7 @@ impl Encoder {
                 arguments.push(format!("--cq-level={qp}"));
                 arguments.push(format!("--min-q={qp}"));
                 arguments.push(format!("--max-q={qp}"));
-                arguments.push("--disable-warnings".to_owned());
+                arguments.push("-y".to_owned());
             }
             Self::X264 | Self::X265 => {
                 let qp = format!("{qp:.1}");
@@ -112,6 +119,25 @@ impl Encoder {
                 arguments.push(qp);
             }
         };
+
+        // Pass Arguments
+        if let Some(pass) = pass {
+            if let Some(stats_file) = stats_file {
+                match self {
+                    Self::Aomenc => {
+                        arguments.push("--passes=2".to_owned());
+                        arguments.push(format!("--pass={pass}"));
+                        arguments.push(format!("--fpf={}", stats_file.to_string_lossy()));
+                    }
+                    Self::X264 | Self::X265 => {
+                        arguments.push("--pass".to_owned());
+                        arguments.push(format!("{pass}"));
+                        arguments.push("--stats".to_owned());
+                        arguments.push(stats_file.to_string_lossy().to_string());
+                    }
+                }
+            }
+        }
 
         arguments
     }

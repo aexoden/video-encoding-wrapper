@@ -5,6 +5,7 @@ use std::process::{Command, Stdio};
 use anyhow::{anyhow, Context};
 use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use tracing::error;
 
 use crate::config::Config;
 use crate::ffmpeg::{create_child_read, Metadata};
@@ -40,6 +41,14 @@ impl Encoder {
             })?,
             encode_directory,
         })
+    }
+
+    #[must_use]
+    pub const fn passes(&self) -> usize {
+        match self.config.encoder {
+            crate::config::Encoder::Aomenc => 2,
+            crate::config::Encoder::X264 | crate::config::Encoder::X265 => 1,
+        }
     }
 
     #[allow(clippy::print_stdout)]
@@ -209,15 +218,28 @@ impl Encoder {
     }
 
     fn encode_scene(&self, scene: &Scene, progress_bar: &ProgressBar) -> anyhow::Result<PathBuf> {
-        self.encode_scene_single(scene, progress_bar, self.config.quality)
+        self.encode_scene_single(scene, progress_bar, self.passes(), self.config.quality)
     }
 
+    #[allow(clippy::too_many_lines)]
     fn encode_scene_single(
         &self,
         scene: &Scene,
         progress_bar: &ProgressBar,
+        passes: usize,
         qp: i64,
     ) -> anyhow::Result<PathBuf> {
+        if passes > 1 {
+            self.encode_scene_single(scene, progress_bar, passes - 1, qp)
+                .with_context(|| {
+                    format!(
+                        "Unable to encode pass {} of scene {}",
+                        passes - 1,
+                        scene.index()
+                    )
+                })?;
+        }
+
         let output_path = self
             .encode_directory
             .join(format!("scene-{:05}", scene.index()));
@@ -237,6 +259,8 @@ impl Encoder {
             "{base_output_filename}.{}",
             self.config.encoder.extension()
         ));
+
+        let stats_filename = output_path.join(format!("{base_output_filename}.stats.log"));
 
         if temporary_output_filename.exists() {
             std::fs::remove_file(&temporary_output_filename).with_context(|| {
@@ -265,7 +289,12 @@ impl Encoder {
             })?;
 
             let mut encoder_pipe = Command::new(self.config.encoder.to_string())
-                .args(self.config.encoder.arguments(&self.config.preset, qp))
+                .args(self.config.encoder.arguments(
+                    &self.config.preset,
+                    (self.passes() > 1).then_some(passes),
+                    Some(&stats_filename),
+                    qp,
+                ))
                 .arg("-o")
                 .arg(&temporary_output_filename)
                 .arg("-")
@@ -300,6 +329,10 @@ impl Encoder {
                 .wait()
                 .context("Unable to wait for video encoder subprocess")?;
 
+            if !child_error_code.success() {
+                error!("encoder exited with status {child_error_code}");
+            }
+
             if temporary_output_filename.exists() {
                 if child_error_code.success() {
                     std::fs::rename(&temporary_output_filename, &output_filename).with_context(
@@ -315,6 +348,10 @@ impl Encoder {
                     })?;
                 }
             }
+        }
+
+        if stats_filename.exists() && passes == self.passes() {
+            std::fs::remove_file(stats_filename).context("Unable to remove encoding stats file")?;
         }
 
         Ok(output_filename)

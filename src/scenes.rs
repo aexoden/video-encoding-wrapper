@@ -14,11 +14,24 @@ use crate::util::{create_progress_style, verify_directory, verify_filename};
 
 #[derive(Serialize, Deserialize)]
 pub struct Scene {
+    index: usize,
     start_frame: usize,
     end_frame: usize,
 }
 
-fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
+impl Scene {
+    #[must_use]
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    #[must_use]
+    pub const fn length(&self) -> usize {
+        self.end_frame - self.start_frame + 1
+    }
+}
+
+pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
     let json_path = config.output_directory.join("config").join("scenes.json");
     verify_filename(&json_path)
         .with_context(|| format!("Unable to verify scene cache path {json_path:?}"))?;
@@ -87,7 +100,7 @@ fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
 
         if results.frame_count != metadata.frame_count {
             warn!(
-                "Source video had {} frames but only {} were processed by the scene detector.",
+                "Source video had {} frames but {} were processed by the scene detector.",
                 metadata.frame_count, results.frame_count
             );
         }
@@ -98,7 +111,9 @@ fn get_scenes(config: &Config) -> anyhow::Result<Vec<Scene>> {
         let scenes: Vec<Scene> = scene_changes
             .iter()
             .zip(scene_changes.iter().skip(1))
-            .map(|(start_frame, next_start_frame)| Scene {
+            .enumerate()
+            .map(|(index, (start_frame, next_start_frame))| Scene {
+                index,
                 start_frame: *start_frame,
                 end_frame: next_start_frame - 1,
             })
@@ -125,12 +140,12 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
         format!("Unable to verify split scene output directory {output_path:?}")
     })?;
 
-    let scenes = get_scenes(config).context("Unable to fetch scene data")?;
+    let scenes = get(config).context("Unable to fetch scene data")?;
     let metadata = get_metadata(config)
         .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
 
-    let complete = scenes.iter().enumerate().all(|(index, _scene)| {
-        let output_filename = output_path.join(format!("scene-{index:05}.mkv"));
+    let complete = scenes.iter().all(|scene| {
+        let output_filename = output_path.join(format!("scene-{:05}.mkv", scene.index));
         output_filename.exists()
     });
 
@@ -167,10 +182,10 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
         )
         .context("Unable to create scene splitting YUV4MPEG decoder")?;
 
-        for (scene_index, scene) in scenes.iter().enumerate() {
-            let final_output_filename = output_path.join(format!("scene-{scene_index:05}.mkv"));
+        for scene in scenes {
+            let final_output_filename = output_path.join(format!("scene-{:05}.mkv", scene.index));
             let temporary_output_filename =
-                output_path.join(format!("scene-{scene_index:05}.tmp.mkv"));
+                output_path.join(format!("scene-{:05}.tmp.mkv", scene.index));
 
             if final_output_filename.exists() {
                 for _ in scene.start_frame..=scene.end_frame {

@@ -1,0 +1,290 @@
+use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
+use std::process::{Command, Stdio};
+
+use anyhow::{anyhow, Context};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use rayon::prelude::*;
+
+use crate::config::Config;
+use crate::ffmpeg::{create_child_read, Metadata};
+use crate::scenes::Scene;
+use crate::util::{create_progress_style, verify_directory};
+
+pub struct Encoder {
+    config: Config,
+    scenes: Vec<Scene>,
+    metadata: Metadata,
+    multi_progress: MultiProgress,
+    worker_progress_bars: Vec<ProgressBar>,
+    encode_directory: PathBuf,
+}
+
+impl Encoder {
+    pub fn new(config: &Config) -> anyhow::Result<Self> {
+        let multi_progress = MultiProgress::new();
+
+        let worker_progress_style = ProgressStyle::with_template("{msg}")
+            .context("Unable to create worker progress style")?;
+
+        let worker_progress_bars = (0..rayon::current_num_threads())
+            .map(|_thread_index| {
+                multi_progress.add(ProgressBar::new(1).with_style(worker_progress_style.clone()))
+            })
+            .collect::<Vec<_>>();
+
+        let mut scenes = crate::scenes::get(config).context("Unable to fetch scene data")?;
+        scenes.sort_by_key(|a| std::cmp::Reverse(a.length()));
+
+        let encode_directory = config
+            .output_directory
+            .join("encode")
+            .join(config.encode_identifier());
+
+        Ok(Self {
+            config: config.clone(),
+            scenes,
+            metadata: crate::ffmpeg::get_metadata(config).with_context(|| {
+                format!("Unable to fetch video metadata for {:?}", &config.source)
+            })?,
+            multi_progress,
+            worker_progress_bars,
+            encode_directory,
+        })
+    }
+
+    #[allow(clippy::print_stdout)]
+    pub fn encode(&self) -> anyhow::Result<()> {
+        let progress_bar =
+            ProgressBar::new(self.metadata.frame_count.try_into().unwrap_or(u64::MAX));
+
+        progress_bar.set_style(
+            create_progress_style(
+                "{spinner:.green} [{elapsed_precise}] Encoding scenes...         [{wide_bar:.cyan/blue}] {percent:>3}% {human_pos:>8}/{human_len:>8} ({smooth_per_sec:>6} FPS, ETA: {smooth_eta:>3})"
+            ).context("Unable to create encoding progress bar style")?
+        );
+
+        let progress_bar = self.multi_progress.add(progress_bar);
+        progress_bar.reset();
+        progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
+
+        let mut files = self
+            .scenes
+            .par_iter()
+            .map(|scene| -> anyhow::Result<PathBuf> {
+                let result = self.encode_scene(scene)?;
+                progress_bar.inc((scene.length()).try_into().unwrap_or(u64::MAX));
+
+                Ok(result)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        files.sort();
+
+        for worker_progress_bar in &self.worker_progress_bars {
+            worker_progress_bar.finish();
+        }
+
+        progress_bar.finish();
+
+        self.merge_scenes(&files)
+            .context("Unable to merge scenes")?;
+
+        Ok(())
+    }
+
+    fn merge_scenes(&self, files: &[PathBuf]) -> anyhow::Result<()> {
+        let output_path = self.config.output_directory.join("output");
+
+        verify_directory(&output_path).with_context(|| {
+            format!("Unable to verify merging output directory {output_path:?}")
+        })?;
+
+        let temporary_output_path =
+            output_path.join(format!("{}.tmp.mkv", self.config.encode_identifier()));
+
+        let output_path = output_path.join(format!("{}.mkv", self.config.encode_identifier()));
+
+        let progress_bar = ProgressBar::new_spinner();
+        progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
+        progress_bar.set_style(
+            create_progress_style("{spinner:.green} [{elapsed_precise}] {msg}")
+                .context("Unable to create scene merging progress bar style")?,
+        );
+        progress_bar.set_message("Merging scenes...");
+
+        if !output_path.exists() {
+            let file_args = files
+                .iter()
+                .enumerate()
+                .map(|(index, path)| {
+                    if index > 0 {
+                        format!("+{}", path.to_string_lossy())
+                    } else {
+                        path.to_string_lossy().to_string()
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            let merge_pipe = Command::new("mkvmerge")
+                .arg("-o")
+                .arg(&temporary_output_path)
+                .args(file_args)
+                .stdin(Stdio::null())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .context("Unable to spawn mkvmerge")?;
+
+            let result = merge_pipe
+                .wait_with_output()
+                .context("Unable to wait for mkvmerge to finish")?;
+
+            if !result.status.success() {
+                progress_bar.set_message("Merging scenes...failed!");
+                progress_bar.finish();
+
+                return Err(anyhow!(
+                    "mkvmerge returned error code {} and the following output:\n{}\n{}",
+                    result.status,
+                    std::str::from_utf8(&result.stdout)
+                        .context("Unable to parse mkvmerge output as UTF-8")?,
+                    std::str::from_utf8(&result.stderr)
+                        .context("Unable to parse mkvmerge output as UTF-8")?
+                ));
+            }
+        }
+
+        if temporary_output_path.exists() {
+            std::fs::rename(&temporary_output_path, &output_path).with_context(|| {
+                format!("Unable to rename {temporary_output_path:?} to {output_path:?}")
+            })?;
+        }
+
+        progress_bar.set_message("Merging scenes...done!");
+        progress_bar.finish();
+
+        Ok(())
+    }
+
+    fn encode_scene(&self, scene: &Scene) -> anyhow::Result<PathBuf> {
+        self.encode_scene_single(scene, self.config.quality)
+    }
+
+    fn encode_scene_single(&self, scene: &Scene, qp: i64) -> anyhow::Result<PathBuf> {
+        let output_path = self
+            .encode_directory
+            .join(format!("scene-{:05}", scene.index()));
+
+        verify_directory(&output_path).with_context(|| {
+            format!("Unable to verify encoding output directory {output_path:?}")
+        })?;
+
+        let base_output_filename = format!("qp-{qp:03}");
+
+        let temporary_output_filename = output_path.join(format!(
+            "{base_output_filename}.tmp.{}",
+            self.config.encoder.extension()
+        ));
+
+        let output_filename = output_path.join(format!(
+            "{base_output_filename}.{}",
+            self.config.encoder.extension()
+        ));
+
+        if temporary_output_filename.exists() {
+            std::fs::remove_file(&temporary_output_filename).with_context(|| {
+                format!("Unable to remove temporary encoding file {temporary_output_filename:?}")
+            })?;
+        }
+
+        if !output_filename.exists() {
+            let input_filename = self
+                .config
+                .output_directory
+                .join("source")
+                .join(format!("scene-{:05}.mkv", scene.index()));
+
+            let mut decoder_pipe = create_child_read(
+                &input_filename,
+                None,
+                Stdio::null(),
+                Stdio::piped(),
+                Stdio::null(),
+            )
+            .context("Unable to spawn encoding video decoder subprocess")?;
+
+            let decoder_stdout = decoder_pipe.stdout.take().ok_or_else(|| {
+                anyhow!("Unable to access stdout for encoding video decoder subprocess")
+            })?;
+
+            let mut encoder_pipe = Command::new(self.config.encoder.to_string())
+                .args(self.config.encoder.arguments(&self.config.preset, qp))
+                .arg("-o")
+                .arg(&temporary_output_filename)
+                .arg("-")
+                .stdin(decoder_stdout)
+                .stdout(Stdio::null())
+                .stderr(Stdio::piped())
+                .spawn()
+                .context("Unable to spawn video encoding subprocess")?;
+
+            let mut encoder_stderr =
+                BufReader::new(encoder_pipe.stderr.take().ok_or_else(|| {
+                    anyhow!("Unable to access stderr for video encoder subprocess")
+                })?);
+
+            let mut buffer = Vec::with_capacity(256);
+
+            while let Ok(bytes) = encoder_stderr.read_until(b'\r', &mut buffer) {
+                if bytes == 0 {
+                    break;
+                }
+
+                if let Ok(line) = std::str::from_utf8(&buffer) {
+                    if !line.contains('\n') {
+                        self.update_worker_message(scene.index(), line)?;
+                    }
+                }
+
+                buffer.clear();
+            }
+
+            let child_error_code = encoder_pipe
+                .wait()
+                .context("Unable to wait for video encoder subprocess")?;
+
+            if temporary_output_filename.exists() {
+                if child_error_code.success() {
+                    std::fs::rename(&temporary_output_filename, &output_filename).with_context(
+                        || {
+                            format!(
+                            "Unable to rename {temporary_output_filename:?} to {output_filename:?}"
+                        )
+                        },
+                    )?;
+                } else {
+                    std::fs::remove_file(&temporary_output_filename).with_context(|| {
+                        format!("Unable to remove temporary file {temporary_output_filename:?}")
+                    })?;
+                }
+            }
+        }
+
+        Ok(output_filename)
+    }
+
+    fn update_worker_message(&self, scene_index: usize, message: &str) -> anyhow::Result<()> {
+        let progress_bar = self
+            .worker_progress_bars
+            .get(
+                rayon::current_thread_index()
+                    .ok_or_else(|| anyhow!("Unable to get current thread index"))?,
+            )
+            .ok_or_else(|| anyhow!("Unable to access worker progress bar"))?;
+
+        progress_bar.set_message(format!("[Scene {scene_index:05}] {message}"));
+
+        Ok(())
+    }
+}

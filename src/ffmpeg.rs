@@ -51,6 +51,7 @@ pub fn create_child_read(
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Metadata {
     pub frame_count: usize,
+    pub duration: f64,
     pub crop_filter: Option<String>,
 }
 
@@ -167,7 +168,7 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
     let mut input_context = ffmpeg::format::input(&config.source)
         .with_context(|| format!("Unable to open {:?} with FFmpeg", &config.source))?;
 
-    let (stream_index, mut decoder, time_base) = {
+    let (stream_index, mut decoder, time_base, duration) = {
         let input = input_context
             .streams()
             .best(ffmpeg::media::Type::Video)
@@ -180,7 +181,7 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
             .video()
             .context("Unable to access FFmpeg decoder video")?;
 
-        (input.index(), decoder, input.time_base())
+        (input.index(), decoder, input.time_base(), input.duration())
     };
 
     let mut filter = create_cropdetect_filter_graph(&decoder, time_base)
@@ -250,8 +251,11 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
 
     progress_bar.finish();
 
+    #[allow(clippy::as_conversions)]
+    #[allow(clippy::cast_precision_loss)]
     Ok(Metadata {
         frame_count,
+        duration: duration as f64 * f64::from(time_base),
         crop_filter,
     })
 }

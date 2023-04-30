@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use indicatif::{HumanDuration, ProgressState, ProgressStyle};
+use number_prefix::NumberPrefix;
 use tracing::{error, level_filters::LevelFilter};
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
@@ -85,4 +86,15 @@ pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+pub struct HumanBitrate(pub f64);
+
+impl std::fmt::Display for HumanBitrate {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match NumberPrefix::decimal(self.0) {
+            NumberPrefix::Standalone(number) => write!(f, "{number:.0} bps"),
+            NumberPrefix::Prefixed(prefix, number) => write!(f, "{number:.3} {prefix}bps"),
+        }
+    }
 }

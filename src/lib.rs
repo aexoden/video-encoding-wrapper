@@ -24,6 +24,7 @@ use anyhow::Context;
 pub mod config;
 pub mod encoder;
 pub mod ffmpeg;
+pub mod metrics;
 pub mod scenes;
 pub mod util;
 
@@ -47,7 +48,9 @@ pub fn run(config: &config::Config) -> anyhow::Result<()> {
         .with_context(|| format!("Unable to split scenes for file {:?}", &config.source))?;
 
     let encoder = encoder::Encoder::new(config).context("Unable to create scene encoder")?;
-    encoder.encode().context("Unable to encode video")?;
+    let mut clips = encoder.encode().context("Unable to encode video")?;
+
+    metrics::print(config, &mut clips).context("Unable to print metrics")?;
 
     Ok(())
 }

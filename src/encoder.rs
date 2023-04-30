@@ -9,8 +9,9 @@ use tracing::error;
 
 use crate::config::Config;
 use crate::ffmpeg::{create_child_read, Metadata};
+use crate::metrics::ClipMetrics;
 use crate::scenes::Scene;
-use crate::util::{create_progress_style, verify_directory};
+use crate::util::{create_progress_style, verify_directory, HumanBitrate};
 
 fn update_worker_message(progress_bar: &ProgressBar, scene_index: usize, message: &str) {
     progress_bar.set_message(format!("[Scene {scene_index:05}] {message}"));
@@ -52,9 +53,10 @@ impl Encoder {
     }
 
     #[allow(clippy::print_stdout)]
-    pub fn encode(&self) -> anyhow::Result<()> {
+    #[allow(clippy::too_many_lines)]
+    pub fn encode(&self) -> anyhow::Result<Vec<ClipMetrics>> {
         let scene_queue: ArrayQueue<Scene> = ArrayQueue::new(self.scenes.len());
-        let result_queue: ArrayQueue<PathBuf> = ArrayQueue::new(self.scenes.len());
+        let result_queue: ArrayQueue<ClipMetrics> = ArrayQueue::new(self.scenes.len());
 
         for scene in &self.scenes {
             if scene_queue.push(*scene).is_err() {
@@ -78,13 +80,15 @@ impl Encoder {
 
         progress_bar.set_style(
             create_progress_style(
-                "{spinner:.green} [{elapsed_precise}] Encoding scenes...         [{wide_bar:.cyan/blue}] {percent:>3}% {human_pos:>8}/{human_len:>8} ({smooth_per_sec:>6} FPS, ETA: {smooth_eta:>3})"
+                "{spinner:.green} [{elapsed_precise}] Encoding scenes...         [{wide_bar:.cyan/blue}] {percent:>3}% {human_pos:>8}/{human_len:>8} ({smooth_per_sec:>6} FPS, {msg:>12}, ETA: {smooth_eta:>3})"
             ).context("Unable to create encoding progress bar style")?
         );
 
         let progress_bar = multi_progress.add(progress_bar);
         progress_bar.reset();
         progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
+
+        let mut clips: Vec<ClipMetrics> = vec![];
 
         std::thread::scope(|scope| -> anyhow::Result<()> {
             let threads = (0..self.config.workers)
@@ -100,11 +104,13 @@ impl Encoder {
                                     || format!("Unable to encode scene {}", scene.index()),
                                 )?;
 
-                            if result_queue.push(result).is_err() {
+                            let metrics = ClipMetrics::new(&result).with_context(|| {
+                                format!("Unable to calculate metrics for scene {}", scene.index())
+                            })?;
+
+                            if result_queue.push(metrics).is_err() {
                                 return Err(anyhow!("Encoding result queue was unexpectedly full"));
                             }
-
-                            progress_bar.inc((scene.length()).try_into().unwrap_or(u64::MAX));
                         }
 
                         worker_progress_bar.finish();
@@ -114,6 +120,40 @@ impl Encoder {
                 })
                 .collect::<Result<Vec<_>, _>>()
                 .context("Unable to spawn encoding workers")?;
+
+            let mut current_bytes = 0;
+            let mut current_duration = 0.0_f64;
+
+            while threads
+                .iter()
+                .any(|thread| -> bool { !thread.is_finished() })
+                || !result_queue.is_empty()
+            {
+                while let Some(mut clip) = result_queue.pop() {
+                    current_bytes += clip
+                        .sizes()
+                        .context("Unable to read clip size")?
+                        .iter()
+                        .sum::<usize>();
+
+                    current_duration += clip.duration().context("Unable to read clip duration")?;
+
+                    #[allow(clippy::as_conversions)]
+                    #[allow(clippy::cast_precision_loss)]
+                    progress_bar.set_message(format!(
+                        "{}",
+                        HumanBitrate(current_bytes as f64 * 8.0 / current_duration)
+                    ));
+
+                    progress_bar.inc(
+                        (clip.frames().context("Unable to read clip frame count")?)
+                            .try_into()
+                            .unwrap_or(u64::MAX),
+                    );
+
+                    clips.push(clip);
+                }
+            }
 
             for thread in threads {
                 let result = thread.join();
@@ -130,20 +170,25 @@ impl Encoder {
 
             progress_bar.finish();
 
+            if !result_queue.is_empty() {
+                return Err(anyhow!(
+                    "BUG: Result queue was not empty after joining encoding threads"
+                ));
+            }
+
             Ok(())
         })
         .context("Unable to execute encoding workers")?;
 
-        let mut files = result_queue.into_iter().collect::<Vec<_>>();
-        files.sort();
+        clips.sort_by(|a, b| a.path().cmp(b.path()));
 
-        self.merge_scenes(&files)
+        self.merge_scenes(&clips)
             .context("Unable to merge scenes")?;
 
-        Ok(())
+        Ok(clips)
     }
 
-    fn merge_scenes(&self, files: &[PathBuf]) -> anyhow::Result<()> {
+    fn merge_scenes(&self, files: &[ClipMetrics]) -> anyhow::Result<()> {
         let output_path = self.config.output_directory.join("output");
 
         verify_directory(&output_path).with_context(|| {
@@ -167,11 +212,11 @@ impl Encoder {
             let file_args = files
                 .iter()
                 .enumerate()
-                .map(|(index, path)| {
+                .map(|(index, metrics)| {
                     if index > 0 {
-                        format!("+{}", path.to_string_lossy())
+                        format!("+{}", metrics.path().to_string_lossy())
                     } else {
-                        path.to_string_lossy().to_string()
+                        metrics.path().to_string_lossy().to_string()
                     }
                 })
                 .collect::<Vec<_>>();

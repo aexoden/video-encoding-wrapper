@@ -1734,6 +1734,7 @@ dependencies = [
  "crossbeam-queue",
  "ffmpeg-the-third",
  "indicatif",
+ "number_prefix",
  "rayon",
  "serde",
  "serde_json",

@@ -181,13 +181,18 @@ impl Config {
     }
 
     #[must_use]
-    pub fn encode_identifier(&self) -> String {
+    pub fn encode_identifier(&self, include_quality: bool) -> String {
         let encoder = self.encoder.to_string();
         let preset = self.preset.clone();
         let mode = "qp";
+        let quality = self.quality;
         let constraint = "unconstrained";
         let hash = self.encode_arguments_hash();
 
-        format!("{encoder}-{preset}-{mode}-{constraint}-{hash}")
+        if include_quality {
+            format!("{encoder}-{preset}-{mode}-{quality}-{constraint}-{hash}")
+        } else {
+            format!("{encoder}-{preset}-{mode}-{constraint}-{hash}")
+        }
     }
 }

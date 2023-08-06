@@ -32,7 +32,7 @@ impl Encoder {
         let encode_directory = config
             .output_directory
             .join("encode")
-            .join(config.encode_identifier());
+            .join(config.encode_identifier(false));
 
         Ok(Self {
             config: config.clone(),
@@ -207,9 +207,9 @@ impl Encoder {
         })?;
 
         let temporary_output_path =
-            output_path.join(format!("{}.tmp.mkv", self.config.encode_identifier()));
+            output_path.join(format!("{}.tmp.mkv", self.config.encode_identifier(true)));
 
-        let output_path = output_path.join(format!("{}.mkv", self.config.encode_identifier()));
+        let output_path = output_path.join(format!("{}.mkv", self.config.encode_identifier(true)));
 
         let progress_bar = ProgressBar::new_spinner();
         progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));

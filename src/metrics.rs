@@ -108,6 +108,28 @@ impl ClipMetrics {
             .ok_or_else(|| anyhow!("Unreachable code reached"))
     }
 
+    pub fn psnr(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
+        if self.psnr.is_none() {
+            self.calculate_ffmpeg_metrics(threads)
+                .with_context(|| format!("Unable to calculate PSNR for {:?}", &self.path))?;
+        }
+
+        self.psnr
+            .as_ref()
+            .ok_or_else(|| anyhow!("Unreachable code reached"))
+    }
+
+    pub fn ssim(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
+        if self.ssim.is_none() {
+            self.calculate_ffmpeg_metrics(threads)
+                .with_context(|| format!("Unable to calculate SSIM for {:?}", &self.path))?;
+        }
+
+        self.ssim
+            .as_ref()
+            .ok_or_else(|| anyhow!("Unreachable code reached"))
+    }
+
     pub fn vmaf(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.vmaf.is_none() {
             self.calculate_ffmpeg_metrics(threads)
@@ -283,6 +305,32 @@ impl ClipMetrics {
     }
 }
 
+#[allow(clippy::print_stdout)]
+fn print_metric(name: &str, stats: &mut Data<Vec<f64>>) {
+    println!("{name} (mean): {:.3}", stats.mean().unwrap_or_default());
+    println!("{name} (median): {:.3}", stats.median());
+    println!(
+        "{name} (one-sigma): {:.3} - {:.3}",
+        stats.quantile(0.158_655_254),
+        stats.quantile(0.841_344_746)
+    );
+    println!(
+        "{name} (two-sigma): {:.3} - {:.3}",
+        stats.quantile(0.022_750_132),
+        stats.quantile(0.977_249_868)
+    );
+    println!(
+        "{name} (three-sigma): {:.3} - {:.3}",
+        stats.quantile(0.001_349_898),
+        stats.quantile(0.998_650_102)
+    );
+    println!(
+        "{name} (full range): {:.3} - {:.3}",
+        stats.min(),
+        stats.max()
+    );
+}
+
 #[allow(clippy::as_conversions)]
 #[allow(clippy::cast_precision_loss)]
 #[allow(clippy::integer_division)]
@@ -303,6 +351,8 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
 
     let mut sizes: Vec<usize> = vec![];
     let mut duration = 0.0_f64;
+    let mut psnr: Vec<f64> = vec![];
+    let mut ssim: Vec<f64> = vec![];
     let mut vmaf: Vec<f64> = vec![];
 
     for metrics in clips.iter_mut() {
@@ -314,6 +364,18 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
         sizes.extend(clip_sizes);
 
         progress_bar.inc(clip_sizes.len().try_into().unwrap_or(u64::MAX));
+
+        psnr.extend(
+            metrics
+                .psnr(config.workers)
+                .context("Unable to access clip PSNR")?,
+        );
+
+        ssim.extend(
+            metrics
+                .ssim(config.workers)
+                .context("Unable to access clip SSIM")?,
+        );
 
         vmaf.extend(
             metrics
@@ -346,31 +408,11 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     );
 
     println!();
-
-    let mut vmaf_stats = Data::new(vmaf);
-
-    println!("VMAF (mean): {:.3}", vmaf_stats.mean().unwrap_or_default());
-    println!("VMAF (median): {:.3}", vmaf_stats.median());
-    println!(
-        "VMAF (one-sigma): {:.3} - {:.3}",
-        vmaf_stats.quantile(0.158_655_254),
-        vmaf_stats.quantile(0.841_344_746)
-    );
-    println!(
-        "VMAF (two-sigma): {:.3} - {:.3}",
-        vmaf_stats.quantile(0.022_750_132),
-        vmaf_stats.quantile(0.977_249_868)
-    );
-    println!(
-        "VMAF (three-sigma): {:.3} - {:.3}",
-        vmaf_stats.quantile(0.001_349_898),
-        vmaf_stats.quantile(0.998_650_102)
-    );
-    println!(
-        "VMAF (full range): {:.3} - {:.3}",
-        vmaf_stats.min(),
-        vmaf_stats.max()
-    );
+    print_metric("PSNR", &mut Data::new(psnr));
+    println!();
+    print_metric("SSIM", &mut Data::new(ssim));
+    println!();
+    print_metric("VMAF", &mut Data::new(vmaf));
 
     Ok(())
 }

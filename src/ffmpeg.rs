@@ -219,7 +219,7 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
                     .context("Unable to find FFmpeg filter graph output filter")?
                     .sink()
                     .frame(&mut frame)
-                    .context("Unable to to retrieve video frame from filter graph")?;
+                    .context("Unable to retrieve video frame from filter graph")?;
 
                 let metadata = frame.metadata();
 

@@ -1,10 +1,12 @@
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 
 use anyhow::{anyhow, Context};
 use indicatif::{HumanCount, ProgressBar};
 use serde::{Deserialize, Serialize};
+use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
 
 use crate::config::Config;
 use crate::util::{create_progress_style, verify_filename, HumanBitrate};
@@ -16,17 +18,47 @@ pub struct ClipMetrics {
     path: PathBuf,
 
     #[serde(skip)]
+    original_path: PathBuf,
+
+    #[serde(skip)]
     json_path: PathBuf,
+
+    #[serde(skip)]
+    original_filter: Option<String>,
 
     // Single Values
     duration: Option<f64>,
 
     // Frame Values
     sizes: Option<Vec<usize>>,
+    vmaf: Option<Vec<f64>>,
+    psnr: Option<Vec<f64>>,
+    ssim: Option<Vec<f64>>,
+}
+
+#[derive(Deserialize)]
+struct FFmpegLogMetrics {
+    psnr_y: f64,
+    float_ssim: f64,
+    vmaf: f64,
+}
+
+#[derive(Deserialize)]
+struct FFmpegLogFrame {
+    metrics: FFmpegLogMetrics,
+}
+
+#[derive(Deserialize)]
+struct FFmpegLog {
+    frames: Vec<FFmpegLogFrame>,
 }
 
 impl ClipMetrics {
-    pub fn new(path: &Path) -> anyhow::Result<Self> {
+    pub fn new(
+        path: &Path,
+        original_path: &Path,
+        original_filter: Option<&str>,
+    ) -> anyhow::Result<Self> {
         let json_path = path.with_extension("metrics.json");
         verify_filename(&json_path)
             .with_context(|| format!("Unable to verify clip metrics cache path {json_path:?}"))?;
@@ -39,15 +71,22 @@ impl ClipMetrics {
                 .context("Unable to deserialize clip metrics cache")?;
 
             metrics.path = path.to_path_buf();
+            metrics.original_path = original_path.to_path_buf();
             metrics.json_path = json_path;
+            metrics.original_filter = original_filter.map(std::borrow::ToOwned::to_owned);
 
             Ok(metrics)
         } else {
             Ok(Self {
                 path: path.to_path_buf(),
+                original_path: original_path.to_path_buf(),
                 json_path,
+                original_filter: original_filter.map(std::borrow::ToOwned::to_owned),
                 sizes: None,
                 duration: None,
+                vmaf: None,
+                psnr: None,
+                ssim: None,
             })
         }
     }
@@ -65,6 +104,17 @@ impl ClipMetrics {
         }
 
         self.sizes
+            .as_ref()
+            .ok_or_else(|| anyhow!("Unreachable code reached"))
+    }
+
+    pub fn vmaf(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
+        if self.vmaf.is_none() {
+            self.calculate_ffmpeg_metrics(threads)
+                .with_context(|| format!("Unable to calculate VMAF for {:?}", &self.path))?;
+        }
+
+        self.vmaf
             .as_ref()
             .ok_or_else(|| anyhow!("Unreachable code reached"))
     }
@@ -128,6 +178,81 @@ impl ClipMetrics {
         Ok(())
     }
 
+    fn calculate_ffmpeg_metrics(&mut self, threads: usize) -> anyhow::Result<()> {
+        let log_path = self.path.with_extension("ffmpeg.metrics.json");
+
+        let filters = vec![
+            self.original_filter.as_ref().map_or_else(
+                || "[0:v]setpts=PTS-STARTPTS[reference]".to_owned(),
+                |filter| format!("[0:v]{filter},setpts=PTS-STARTPTS[reference]")
+            ),
+            "[1:v]setpts=PTS-STARTPTS[distorted]".to_owned(),
+            format!("[distorted][reference]libvmaf=log_fmt=json:log_path={}:n_threads={threads}:feature=name=psnr|name=float_ssim", log_path.to_string_lossy())
+        ];
+
+        let child = Command::new("ffmpeg")
+            .arg("-r")
+            .arg("60")
+            .arg("-i")
+            .arg(&self.original_path)
+            .arg("-r")
+            .arg("60")
+            .arg("-i")
+            .arg(&self.path)
+            .arg("-lavfi")
+            .arg(filters.join(";"))
+            .arg("-f")
+            .arg("null")
+            .arg("-")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::piped())
+            .spawn()
+            .context("Unable to spawn FFmpeg subprocess")?;
+
+        let result = child
+            .wait_with_output()
+            .context("Unable to wait for FFmpeg subprocess")?;
+
+        if !result.status.success() || !log_path.exists() {
+            return Err(anyhow!(
+                "FFmpeg metric subprocess did not complete successfully: {}",
+                std::str::from_utf8(&result.stderr)
+                    .context("Could not decode FFmpeg error output as UTF-8")?
+            ));
+        }
+
+        let log_file = File::open(&log_path)
+            .with_context(|| format!("Unable to open FFmpeg metrics file {log_path:?}"))?;
+
+        let log_reader = BufReader::new(log_file);
+
+        let log: FFmpegLog = serde_json::from_reader(log_reader)
+            .context("Unable to parse FFmpeg metrics JSON log file")?;
+
+        let mut vmaf = vec![];
+        let mut psnr = vec![];
+        let mut ssim = vec![];
+
+        for frame in log.frames {
+            vmaf.push(frame.metrics.vmaf);
+            psnr.push(frame.metrics.psnr_y);
+            ssim.push(frame.metrics.float_ssim);
+        }
+
+        self.vmaf = Some(vmaf);
+        self.psnr = Some(psnr);
+        self.ssim = Some(ssim);
+
+        std::fs::remove_file(&log_path)
+            .with_context(|| format!("Unable to remove {log_path:?}"))?;
+
+        self.update_cache()
+            .with_context(|| format!("Unable to update metrics cache for {:?}", &self.path))?;
+
+        Ok(())
+    }
+
     fn update_cache(&self) -> anyhow::Result<()> {
         let temporary_path = self.json_path.with_extension(".tmp.json");
 
@@ -174,8 +299,11 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
         ).context("Unable to create metrics progress bar style")?
     );
 
+    progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
+
     let mut sizes: Vec<usize> = vec![];
     let mut duration = 0.0_f64;
+    let mut vmaf: Vec<f64> = vec![];
 
     for metrics in clips.iter_mut() {
         duration += metrics
@@ -186,6 +314,12 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
         sizes.extend(clip_sizes);
 
         progress_bar.inc(clip_sizes.len().try_into().unwrap_or(u64::MAX));
+
+        vmaf.extend(
+            metrics
+                .vmaf(config.workers)
+                .context("Unable to access clip VMAF")?,
+        );
     }
 
     progress_bar.finish();
@@ -209,6 +343,33 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     println!(
         "Bitrate: {}",
         HumanBitrate((sizes.iter().sum::<usize>() * 8) as f64 / duration),
+    );
+
+    println!();
+
+    let mut vmaf_stats = Data::new(vmaf);
+
+    println!("VMAF (mean): {:.3}", vmaf_stats.mean().unwrap_or_default());
+    println!("VMAF (median): {:.3}", vmaf_stats.median());
+    println!(
+        "VMAF (one-sigma): {:.3} - {:.3}",
+        vmaf_stats.quantile(0.158_655_254),
+        vmaf_stats.quantile(0.841_344_746)
+    );
+    println!(
+        "VMAF (two-sigma): {:.3} - {:.3}",
+        vmaf_stats.quantile(0.022_750_132),
+        vmaf_stats.quantile(0.977_249_868)
+    );
+    println!(
+        "VMAF (three-sigma): {:.3} - {:.3}",
+        vmaf_stats.quantile(0.001_349_898),
+        vmaf_stats.quantile(0.998_650_102)
+    );
+    println!(
+        "VMAF (full range): {:.3} - {:.3}",
+        vmaf_stats.min(),
+        vmaf_stats.max()
     );
 
     Ok(())

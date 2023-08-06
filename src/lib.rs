@@ -17,6 +17,7 @@
 #![allow(clippy::pattern_type_mismatch)]
 #![allow(clippy::separated_literal_suffix)]
 #![allow(clippy::shadow_reuse)]
+#![allow(clippy::std_instead_of_alloc)]
 #![allow(clippy::std_instead_of_core)]
 
 use anyhow::Context;
@@ -48,7 +49,7 @@ pub fn run(config: &config::Config) -> anyhow::Result<()> {
         .with_context(|| format!("Unable to split scenes for file {:?}", &config.source))?;
 
     let encoder = encoder::Encoder::new(config).context("Unable to create scene encoder")?;
-    let mut clips = encoder.encode().context("Unable to encode video")?;
+    let (_output_path, mut clips) = encoder.encode().context("Unable to encode video")?;
 
     metrics::print(config, &mut clips).context("Unable to print metrics")?;
 

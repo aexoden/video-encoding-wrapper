@@ -54,7 +54,7 @@ impl Encoder {
 
     #[allow(clippy::print_stdout)]
     #[allow(clippy::too_many_lines)]
-    pub fn encode(&self) -> anyhow::Result<Vec<ClipMetrics>> {
+    pub fn encode(&self) -> anyhow::Result<(PathBuf, Vec<ClipMetrics>)> {
         let scene_queue: ArrayQueue<Scene> = ArrayQueue::new(self.scenes.len());
         let result_queue: ArrayQueue<ClipMetrics> = ArrayQueue::new(self.scenes.len());
 
@@ -104,9 +104,19 @@ impl Encoder {
                                     || format!("Unable to encode scene {}", scene.index()),
                                 )?;
 
-                            let metrics = ClipMetrics::new(&result).with_context(|| {
-                                format!("Unable to calculate metrics for scene {}", scene.index())
-                            })?;
+                            let input_filename = self
+                                .config
+                                .output_directory
+                                .join("source")
+                                .join(format!("scene-{:05}.mkv", scene.index()));
+
+                            let metrics = ClipMetrics::new(&result, &input_filename, None)
+                                .with_context(|| {
+                                    format!(
+                                        "Unable to calculate metrics for scene {}",
+                                        scene.index()
+                                    )
+                                })?;
 
                             if result_queue.push(metrics).is_err() {
                                 return Err(anyhow!("Encoding result queue was unexpectedly full"));
@@ -182,13 +192,14 @@ impl Encoder {
 
         clips.sort_by(|a, b| a.path().cmp(b.path()));
 
-        self.merge_scenes(&clips)
+        let output_path = self
+            .merge_scenes(&clips)
             .context("Unable to merge scenes")?;
 
-        Ok(clips)
+        Ok((output_path, clips))
     }
 
-    fn merge_scenes(&self, files: &[ClipMetrics]) -> anyhow::Result<()> {
+    fn merge_scenes(&self, files: &[ClipMetrics]) -> anyhow::Result<PathBuf> {
         let output_path = self.config.output_directory.join("output");
 
         verify_directory(&output_path).with_context(|| {
@@ -259,7 +270,7 @@ impl Encoder {
         progress_bar.set_message("Merging scenes...done!");
         progress_bar.finish();
 
-        Ok(())
+        Ok(output_path)
     }
 
     fn encode_scene(&self, scene: &Scene, progress_bar: &ProgressBar) -> anyhow::Result<PathBuf> {

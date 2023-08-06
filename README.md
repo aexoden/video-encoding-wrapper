@@ -35,3 +35,15 @@ calculated twice, even in repeated runs.
 
 More detailed instructions may appear here at a later date when the tool is more
 mature, but then again, they may not.
+
+## Notes
+
+VMAF is currently calculated independently for each scene. Because VMAF does
+take into account changes between frames, this means the VMAF values at the
+beginning and end of each scene are potentially different from what they would
+be if VMAF were calculated on the final encode in its entirety. Testing has
+indicated that these differences are not extensive, but the user should be
+aware, especially if they compare with VMAF values calculated by an external
+tool. It was determined calculating VMAF on the entire clip was not worth the
+extra required time, especially as the author considers VMAF a secondary metric
+at best.

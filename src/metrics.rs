@@ -390,7 +390,7 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
         let clip_sizes = metrics.sizes().context("Unable to access clip size")?;
         sizes.extend(clip_sizes);
 
-        progress_bar.inc(clip_sizes.len().try_into().unwrap_or(u64::MAX));
+        let frame_count = clip_sizes.len().try_into().unwrap_or(u64::MAX);
 
         psnr.extend(
             metrics
@@ -415,6 +415,8 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
                 .ssimulacra2(config.workers)
                 .context("Unable to access clip SSIMULACRA2")?,
         );
+
+        progress_bar.inc(frame_count);
     }
 
     progress_bar.finish();

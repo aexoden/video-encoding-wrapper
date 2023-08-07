@@ -27,7 +27,9 @@ pub mod encoder;
 pub mod ffmpeg;
 pub mod metrics;
 pub mod scenes;
+pub mod ssimulacra2;
 pub mod util;
+pub mod y4mpipedecoder;
 
 pub fn run(config: &config::Config) -> anyhow::Result<()> {
     // Prevent dependent libraries from modifying the rayon global pool with arbitrary thread counts.

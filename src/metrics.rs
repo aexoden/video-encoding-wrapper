@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
 
 use crate::config::Config;
+use crate::ssimulacra2;
 use crate::util::{create_progress_style, verify_filename, HumanBitrate};
 
 #[allow(clippy::module_name_repetitions)]
@@ -34,6 +35,7 @@ pub struct ClipMetrics {
     vmaf: Option<Vec<f64>>,
     psnr: Option<Vec<f64>>,
     ssim: Option<Vec<f64>>,
+    ssimulacra2: Option<Vec<f64>>,
 }
 
 #[derive(Deserialize)]
@@ -87,6 +89,7 @@ impl ClipMetrics {
                 vmaf: None,
                 psnr: None,
                 ssim: None,
+                ssimulacra2: None,
             })
         }
     }
@@ -137,6 +140,17 @@ impl ClipMetrics {
         }
 
         self.vmaf
+            .as_ref()
+            .ok_or_else(|| anyhow!("Unreachable code reached"))
+    }
+
+    pub fn ssimulacra2(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
+        if self.ssimulacra2.is_none() {
+            self.calculate_ssimulacra2(threads)
+                .with_context(|| format!("Unable to calculate SSIMULACRA2 for {:?}", &self.path))?;
+        }
+
+        self.ssimulacra2
             .as_ref()
             .ok_or_else(|| anyhow!("Unreachable code reached"))
     }
@@ -200,6 +214,18 @@ impl ClipMetrics {
         Ok(())
     }
 
+    fn calculate_ssimulacra2(&mut self, threads: usize) -> anyhow::Result<()> {
+        self.ssimulacra2 = Some(
+            ssimulacra2::calculate(&self.original_path, &self.path, threads)
+                .context("Unable to calculate SSIMULACRA2 for clip")?,
+        );
+
+        self.update_cache()
+            .with_context(|| format!("Unable to update metrics cache for {:?}", &self.path))?;
+
+        Ok(())
+    }
+
     fn calculate_ffmpeg_metrics(&mut self, threads: usize) -> anyhow::Result<()> {
         let log_path = self.path.with_extension("ffmpeg.metrics.json");
 
@@ -240,7 +266,7 @@ impl ClipMetrics {
             return Err(anyhow!(
                 "FFmpeg metric subprocess did not complete successfully: {}",
                 std::str::from_utf8(&result.stderr)
-                    .context("Could not decode FFmpeg error output as UTF-8")?
+                    .context("Unable to decode FFmpeg error output as UTF-8")?
             ));
         }
 
@@ -354,6 +380,7 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     let mut psnr: Vec<f64> = vec![];
     let mut ssim: Vec<f64> = vec![];
     let mut vmaf: Vec<f64> = vec![];
+    let mut ssimulacra2: Vec<f64> = vec![];
 
     for metrics in clips.iter_mut() {
         duration += metrics
@@ -381,6 +408,12 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
             metrics
                 .vmaf(config.workers)
                 .context("Unable to access clip VMAF")?,
+        );
+
+        ssimulacra2.extend(
+            metrics
+                .ssimulacra2(config.workers)
+                .context("Unable to access clip SSIMULACRA2")?,
         );
     }
 
@@ -413,6 +446,8 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     print_metric("SSIM", &mut Data::new(ssim));
     println!();
     print_metric("VMAF", &mut Data::new(vmaf));
+    println!();
+    print_metric("SSIMULACRA2", &mut Data::new(ssimulacra2));
 
     Ok(())
 }

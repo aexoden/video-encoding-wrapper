@@ -350,9 +350,17 @@ impl Encoder {
                 anyhow!("Unable to access stdout for encoding video decoder subprocess")
             })?;
 
+            #[allow(clippy::as_conversions)]
+            #[allow(clippy::cast_possible_truncation)]
+            #[allow(clippy::cast_precision_loss)]
+            #[allow(clippy::cast_sign_loss)]
+            let key_frame_interval =
+                (self.metadata.frame_count as f64 * 5.0 / self.metadata.duration).round() as usize;
+
             let mut encoder_pipe = Command::new(self.config.encoder.to_string())
                 .args(self.config.encoder.arguments(
                     &self.config.preset,
+                    key_frame_interval,
                     (self.passes() > 1).then_some(passes),
                     Some(&stats_filename),
                     qp,

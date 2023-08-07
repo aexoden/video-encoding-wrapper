@@ -32,13 +32,13 @@ impl Encoder {
     }
 
     #[must_use]
-    pub fn base_arguments(&self, preset: &str) -> Vec<String> {
+    pub fn base_arguments(&self, preset: &str, key_frame_interval: usize) -> Vec<String> {
         match self {
             Self::Aomenc => vec![
                 format!("--cpu-used={preset}"),
                 "--bit-depth=10".to_owned(),
                 "--threads=1".to_owned(),
-                "--kf-max-dist=120".to_owned(),
+                format!("--kf-max-dist={key_frame_interval}"),
             ],
             Self::X264 => vec![
                 "--stitchable".to_owned(),
@@ -51,7 +51,7 @@ impl Encoder {
                 "--threads".to_owned(),
                 "1".to_owned(),
                 "--keyint".to_owned(),
-                "120".to_owned(),
+                format!("{key_frame_interval}"),
             ],
             Self::X265 => vec![
                 "--y4m".to_owned(),
@@ -64,7 +64,7 @@ impl Encoder {
                 "-F".to_owned(),
                 "1".to_owned(),
                 "--keyint".to_owned(),
-                "120".to_owned(),
+                format!("{key_frame_interval}"),
             ],
         }
     }
@@ -93,12 +93,13 @@ impl Encoder {
     pub fn arguments(
         &self,
         preset: &str,
+        key_frame_interval: usize,
         pass: Option<usize>,
         stats_file: Option<&PathBuf>,
         qp: i64,
     ) -> Vec<String> {
         // Base Arguments
-        let mut arguments = self.base_arguments(preset);
+        let mut arguments = self.base_arguments(preset, key_frame_interval);
 
         // Tune Arguments
         arguments.extend(self.tune_arguments());

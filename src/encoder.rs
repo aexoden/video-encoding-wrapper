@@ -17,6 +17,10 @@ fn update_worker_message(progress_bar: &ProgressBar, scene_index: usize, message
     progress_bar.set_message(format!("[Scene {scene_index:05}] {message}"));
 }
 
+fn clear_worker_message(progress_bar: &ProgressBar) {
+    progress_bar.set_message("[Idle       ]");
+}
+
 pub struct Encoder {
     config: Config,
     scenes: Vec<Scene>,
@@ -121,6 +125,8 @@ impl Encoder {
                             if result_queue.push(metrics).is_err() {
                                 return Err(anyhow!("Encoding result queue was unexpectedly full"));
                             }
+
+                            clear_worker_message(worker_progress_bar);
                         }
 
                         worker_progress_bar.finish();

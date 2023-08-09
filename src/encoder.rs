@@ -363,6 +363,7 @@ impl Encoder {
                     key_frame_interval,
                     (self.passes() > 1).then_some(passes),
                     Some(&stats_filename),
+                    self.config.mode,
                     qp,
                 ))
                 .arg("-o")

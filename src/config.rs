@@ -4,6 +4,21 @@ use clap::{Parser, ValueEnum};
 use sha2::{Digest, Sha256};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum Mode {
+    QP,
+    CRF,
+}
+
+impl std::fmt::Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::QP => write!(f, "qp"),
+            Self::CRF => write!(f, "crf"),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Encoder {
     Aomenc,
     X264,
@@ -96,6 +111,7 @@ impl Encoder {
         key_frame_interval: usize,
         pass: Option<usize>,
         stats_file: Option<&PathBuf>,
+        mode: Mode,
         qp: i64,
     ) -> Vec<String> {
         // Base Arguments
@@ -109,14 +125,26 @@ impl Encoder {
             Self::Aomenc => {
                 arguments.push("--end-usage=q".to_owned());
                 arguments.push(format!("--cq-level={qp}"));
-                arguments.push(format!("--min-q={qp}"));
-                arguments.push(format!("--max-q={qp}"));
+
+                if mode == Mode::QP {
+                    arguments.push(format!("--min-q={qp}"));
+                    arguments.push(format!("--max-q={qp}"));
+                }
+
                 arguments.push("-y".to_owned());
             }
             Self::X264 | Self::X265 => {
                 let qp = format!("{qp:.1}");
 
-                arguments.push("--qp".to_owned());
+                match mode {
+                    Mode::CRF => {
+                        arguments.push("--crf".to_owned());
+                    }
+                    Mode::QP => {
+                        arguments.push("--qp".to_owned());
+                    }
+                }
+
                 arguments.push(qp);
             }
         };
@@ -159,7 +187,11 @@ pub struct Config {
     #[arg(short, long, value_parser = clap::value_parser!(usize), default_value_t = 0)]
     pub workers: usize,
 
-    /// Quality (QP) value to pass to the encoder
+    /// Quality parameter in the encoder to adjust
+    #[arg(short, long, value_enum, default_value_t = Mode::QP)]
+    pub mode: Mode,
+
+    /// Quality (QP or CRF) value to pass to the encoder
     #[arg(short, long, value_parser = clap::value_parser!(i64), default_value_t = 24)]
     pub quality: i64,
 
@@ -185,7 +217,7 @@ impl Config {
     pub fn encode_identifier(&self, include_quality: bool) -> String {
         let encoder = self.encoder.to_string();
         let preset = self.preset.clone();
-        let mode = "qp";
+        let mode = self.mode.to_string();
         let quality = self.quality;
         let constraint = "unconstrained";
         let hash = self.encode_arguments_hash();

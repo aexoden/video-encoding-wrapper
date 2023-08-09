@@ -183,7 +183,7 @@ impl ClipMetrics {
     #[allow(clippy::as_conversions)]
     #[allow(clippy::cast_precision_loss)]
     fn calculate_duration_and_size(&mut self) -> anyhow::Result<()> {
-        let (stream_index, avg_frame_rate, mut input_context) = {
+        let (stream_index, duration, avg_frame_rate, mut input_context) = {
             let input_context = ffmpeg::format::input(&self.path)
                 .with_context(|| format!("Unable to open {:?} with FFmpeg", &self.path))?;
 
@@ -193,7 +193,12 @@ impl ClipMetrics {
                 .ok_or(ffmpeg::Error::StreamNotFound)
                 .with_context(|| format!("Unable to find video stream in {:?}", self.path))?;
 
-            (input.index(), input.avg_frame_rate(), input_context)
+            (
+                input.index(),
+                input_context.duration(),
+                input.avg_frame_rate(),
+                input_context,
+            )
         };
 
         let mut packet_sizes = vec![];
@@ -205,7 +210,12 @@ impl ClipMetrics {
             packet_sizes.push(packet.size());
         }
 
-        self.duration = Some(packet_sizes.len() as f64 / f64::from(avg_frame_rate));
+        if duration >= 0 {
+            self.duration = Some(duration as f64 / f64::from(ffmpeg::ffi::AV_TIME_BASE));
+        } else {
+            self.duration = Some(packet_sizes.len() as f64 / f64::from(avg_frame_rate));
+        }
+
         self.sizes = Some(packet_sizes);
 
         self.update_cache()

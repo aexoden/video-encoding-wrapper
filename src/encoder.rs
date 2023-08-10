@@ -8,7 +8,7 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use statrs::statistics::{Data, Distribution};
 use tracing::error;
 
-use crate::config::{Config, Metric};
+use crate::config::{Config, Metric, QualityRule};
 use crate::ffmpeg::{create_child_read, Metadata};
 use crate::metrics::ClipMetrics;
 use crate::scenes::Scene;
@@ -280,12 +280,20 @@ impl Encoder {
         Ok(output_path)
     }
 
+    #[allow(clippy::too_many_lines)]
     fn encode_scene(&self, scene: &Scene, progress_bar: &ProgressBar) -> anyhow::Result<PathBuf> {
         let quality = if self.config.metric == Metric::Direct {
             self.config.quality
         } else {
             let mut quality_range = self.config.encoder.quality_range(&self.config.mode);
-            let mut best_quality = quality_range.minimum();
+
+            let mut best_quality = if self.config.rule == QualityRule::Maximum {
+                quality_range.maximum()
+            } else {
+                quality_range.minimum()
+            };
+
+            let mut best_score = f64::MIN;
 
             while !quality_range.complete() {
                 let true_minimum = quality_range.minimum().min(best_quality);
@@ -347,14 +355,46 @@ impl Encoder {
                     )
                 })?;
 
-                if metric_value >= self.config.quality {
-                    if current_quality > best_quality {
-                        best_quality = current_quality;
-                    }
+                match self.config.rule {
+                    QualityRule::Maximum => {
+                        if metric_value <= self.config.quality {
+                            if current_quality < best_quality {
+                                best_quality = current_quality;
+                                best_score = metric_value;
+                            }
 
-                    quality_range.higher();
-                } else {
-                    quality_range.lower();
+                            quality_range.lower();
+                        } else {
+                            quality_range.higher();
+                        }
+                    }
+                    QualityRule::Minimum => {
+                        if metric_value >= self.config.quality {
+                            if current_quality > best_quality {
+                                best_quality = current_quality;
+                                best_score = metric_value;
+                            }
+
+                            quality_range.higher();
+                        } else {
+                            quality_range.lower();
+                        }
+                    }
+                    QualityRule::Target => {
+                        let current_delta = (self.config.quality - best_score).abs();
+                        let new_delta = (self.config.quality - metric_value).abs();
+
+                        if new_delta < current_delta {
+                            best_quality = current_quality;
+                            best_score = metric_value;
+                        }
+
+                        if metric_value >= self.config.quality {
+                            quality_range.higher();
+                        } else {
+                            quality_range.lower();
+                        }
+                    }
                 }
             }
 

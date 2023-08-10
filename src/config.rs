@@ -65,6 +65,23 @@ impl QualityRange {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum QualityRule {
+    Maximum,
+    Minimum,
+    Target,
+}
+
+impl std::fmt::Display for QualityRule {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Maximum => write!(f, "maximum"),
+            Self::Minimum => write!(f, "minimum"),
+            Self::Target => write!(f, "target"),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Mode {
     QP,
     CRF,
@@ -290,6 +307,10 @@ pub struct Config {
     #[arg(long = "quality-metric", value_enum, default_value_t = Metric::Direct)]
     pub metric: Metric,
 
+    /// Quality targeting rule
+    #[arg(short, long = "quality-rule", value_enum, default_value_t = QualityRule::Minimum)]
+    pub rule: QualityRule,
+
     /// Quality (QP or CRF) value to pass to the encoder
     #[arg(short, long, value_parser = clap::value_parser!(f64), default_value_t = 24.0)]
     pub quality: f64,
@@ -319,6 +340,7 @@ impl Config {
         let mode = self.mode.to_string();
         let metric = self.metric.to_string();
         let quality = self.quality;
+        let rule = self.rule.to_string();
         let constraint = "unconstrained";
         let hash = self.encode_arguments_hash();
 
@@ -326,7 +348,7 @@ impl Config {
             if self.metric == Metric::Direct {
                 format!("{encoder}-{preset}-{mode}-{quality}-{constraint}-{hash}")
             } else {
-                format!("{encoder}-{preset}-{mode}-{metric}-{quality}-{constraint}-{hash}")
+                format!("{encoder}-{preset}-{mode}-{metric}-{quality}-{rule}-{constraint}-{hash}")
             }
         } else {
             format!("{encoder}-{preset}-{mode}-{constraint}-{hash}")

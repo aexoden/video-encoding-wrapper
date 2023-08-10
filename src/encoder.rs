@@ -5,9 +5,10 @@ use std::process::{Command, Stdio};
 use anyhow::{anyhow, Context};
 use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use statrs::statistics::{Data, Distribution};
 use tracing::error;
 
-use crate::config::Config;
+use crate::config::{Config, Metric};
 use crate::ffmpeg::{create_child_read, Metadata};
 use crate::metrics::ClipMetrics;
 use crate::scenes::Scene;
@@ -280,7 +281,87 @@ impl Encoder {
     }
 
     fn encode_scene(&self, scene: &Scene, progress_bar: &ProgressBar) -> anyhow::Result<PathBuf> {
-        self.encode_scene_single(scene, progress_bar, self.passes(), self.config.quality)
+        let quality = if self.config.metric == Metric::Direct {
+            self.config.quality
+        } else {
+            let mut quality_range = self.config.encoder.quality_range(&self.config.mode);
+            let mut best_quality = quality_range.minimum();
+
+            while !quality_range.complete() {
+                let true_minimum = quality_range.minimum().min(best_quality);
+                let true_maximum = quality_range.maximum().max(best_quality);
+
+                let search_description = if quality_range.divisor() == 1_i32 {
+                    format!(
+                        "Quality Search {true_minimum:4} - {true_maximum:4} ({:4}): ",
+                        quality_range.current()
+                    )
+                } else {
+                    format!(
+                        "Quality Search {true_minimum:7.2} - {true_maximum:0.2} ({:7.2}): ",
+                        quality_range.current()
+                    )
+                };
+
+                let input_filename = self
+                    .config
+                    .output_directory
+                    .join("source")
+                    .join(format!("scene-{:05}.mkv", scene.index()));
+
+                let current_quality = quality_range.current();
+
+                let output_filename = self
+                    .encode_scene_single(
+                        scene,
+                        progress_bar,
+                        &search_description,
+                        self.passes(),
+                        current_quality,
+                    )
+                    .context("Unable to encode scene")?;
+
+                update_worker_message(
+                    progress_bar,
+                    scene.index(),
+                    &format!("{search_description}Calculating metric..."),
+                );
+
+                let mut metrics = ClipMetrics::new(&output_filename, &input_filename, None)
+                    .with_context(|| {
+                        format!("Unable to calculate metrics for scene {:05}", scene.index())
+                    })?;
+
+                let metric_values = match self.config.metric {
+                    Metric::Direct => vec![0.0_f64],
+                    Metric::PSNR => metrics
+                        .psnr(1)
+                        .context("Unable to calculate PSNR values")?
+                        .clone(),
+                };
+
+                let metric_value = Data::new(metric_values).mean().with_context(|| {
+                    format!(
+                        "Unable to calculate mean value of metric for scene {:05}",
+                        scene.index()
+                    )
+                })?;
+
+                if metric_value >= self.config.quality {
+                    if current_quality > best_quality {
+                        best_quality = current_quality;
+                    }
+
+                    quality_range.higher();
+                } else {
+                    quality_range.lower();
+                }
+            }
+
+            best_quality
+        };
+
+        self.encode_scene_single(scene, progress_bar, "", self.passes(), quality)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -288,11 +369,12 @@ impl Encoder {
         &self,
         scene: &Scene,
         progress_bar: &ProgressBar,
+        progress_prefix: &str,
         passes: usize,
-        qp: i64,
+        qp: f64,
     ) -> anyhow::Result<PathBuf> {
         if passes > 1 {
-            self.encode_scene_single(scene, progress_bar, passes - 1, qp)
+            self.encode_scene_single(scene, progress_bar, progress_prefix, passes - 1, qp)
                 .with_context(|| {
                     format!(
                         "Unable to encode pass {} of scene {}",
@@ -310,7 +392,17 @@ impl Encoder {
             format!("Unable to verify encoding output directory {output_path:?}")
         })?;
 
-        let base_output_filename = format!("qp-{qp:03}");
+        let base_output_filename = if self
+            .config
+            .encoder
+            .quality_range(&self.config.mode)
+            .divisor()
+            == 1_i32
+        {
+            format!("{}-{qp:03}", self.config.mode)
+        } else {
+            format!("{}-{qp:05.2}", self.config.mode)
+        };
 
         let temporary_output_filename = output_path.join(format!(
             "{base_output_filename}.tmp.{}",
@@ -389,7 +481,11 @@ impl Encoder {
 
                 if let Ok(line) = std::str::from_utf8(&buffer) {
                     if !line.contains('\n') {
-                        update_worker_message(progress_bar, scene.index(), line);
+                        update_worker_message(
+                            progress_bar,
+                            scene.index(),
+                            &format!("{progress_prefix}{line}"),
+                        );
                     }
                 }
 

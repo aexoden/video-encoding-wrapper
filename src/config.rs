@@ -3,6 +3,67 @@ use std::path::PathBuf;
 use clap::{Parser, ValueEnum};
 use sha2::{Digest, Sha256};
 
+pub struct QualityRange {
+    minimum: i32,
+    maximum: i32,
+    divisor: i32,
+}
+
+impl QualityRange {
+    #[must_use]
+    pub const fn new(minimum: i32, maximum: i32, divisor: i32) -> Self {
+        Self {
+            minimum: minimum * divisor,
+            maximum: maximum * divisor,
+            divisor,
+        }
+    }
+
+    #[allow(clippy::integer_division)]
+    const fn midpoint(&self) -> i32 {
+        (self.minimum + self.maximum) / 2_i32
+    }
+
+    #[must_use]
+    pub const fn divisor(&self) -> i32 {
+        self.divisor
+    }
+
+    #[must_use]
+    #[allow(clippy::as_conversions)]
+    #[allow(clippy::cast_lossless)]
+    pub fn current(&self) -> f64 {
+        self.midpoint() as f64 / self.divisor as f64
+    }
+
+    pub fn lower(&mut self) {
+        self.maximum = self.midpoint() - 1_i32;
+    }
+
+    pub fn higher(&mut self) {
+        self.minimum = self.midpoint() + 1_i32;
+    }
+
+    #[must_use]
+    #[allow(clippy::as_conversions)]
+    #[allow(clippy::cast_lossless)]
+    pub fn minimum(&self) -> f64 {
+        self.minimum as f64 / self.divisor as f64
+    }
+
+    #[must_use]
+    #[allow(clippy::as_conversions)]
+    #[allow(clippy::cast_lossless)]
+    pub fn maximum(&self) -> f64 {
+        self.maximum as f64 / self.divisor as f64
+    }
+
+    #[must_use]
+    pub const fn complete(&self) -> bool {
+        self.minimum > self.maximum
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Mode {
     QP,
@@ -14,6 +75,21 @@ impl std::fmt::Display for Mode {
         match self {
             Self::QP => write!(f, "qp"),
             Self::CRF => write!(f, "crf"),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum Metric {
+    Direct,
+    PSNR,
+}
+
+impl std::fmt::Display for Metric {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Direct => write!(f, "direct"),
+            Self::PSNR => write!(f, "psnr"),
         }
     }
 }
@@ -44,6 +120,21 @@ impl Encoder {
             Self::X265 => "hevc",
         }
         .to_owned()
+    }
+
+    #[must_use]
+    pub const fn quality_range(&self, mode: &Mode) -> QualityRange {
+        match self {
+            Self::Aomenc => QualityRange::new(0, 63, 1),
+            Self::X264 => match mode {
+                Mode::CRF => QualityRange::new(-12, 51, 4),
+                Mode::QP => QualityRange::new(0, 81, 1),
+            },
+            Self::X265 => match mode {
+                Mode::CRF => QualityRange::new(0, 51, 4),
+                Mode::QP => QualityRange::new(0, 69, 1),
+            },
+        }
     }
 
     #[must_use]
@@ -112,7 +203,7 @@ impl Encoder {
         pass: Option<usize>,
         stats_file: Option<&PathBuf>,
         mode: Mode,
-        qp: i64,
+        qp: f64,
     ) -> Vec<String> {
         // Base Arguments
         let mut arguments = self.base_arguments(preset, key_frame_interval);
@@ -121,6 +212,12 @@ impl Encoder {
         arguments.extend(self.tune_arguments());
 
         // Quality Arguments
+        let qp = if self.quality_range(&mode).divisor() == 1_i32 {
+            format!("{qp:0}")
+        } else {
+            format!("{qp:0.2}")
+        };
+
         match self {
             Self::Aomenc => {
                 arguments.push("--end-usage=q".to_owned());
@@ -134,8 +231,6 @@ impl Encoder {
                 arguments.push("-y".to_owned());
             }
             Self::X264 | Self::X265 => {
-                let qp = format!("{qp:.1}");
-
                 match mode {
                     Mode::CRF => {
                         arguments.push("--crf".to_owned());
@@ -191,9 +286,13 @@ pub struct Config {
     #[arg(short, long, value_enum, default_value_t = Mode::QP)]
     pub mode: Mode,
 
+    /// Quality metric to target
+    #[arg(long = "quality-metric", value_enum, default_value_t = Metric::Direct)]
+    pub metric: Metric,
+
     /// Quality (QP or CRF) value to pass to the encoder
-    #[arg(short, long, value_parser = clap::value_parser!(i64), default_value_t = 24)]
-    pub quality: i64,
+    #[arg(short, long, value_parser = clap::value_parser!(f64), default_value_t = 24.0)]
+    pub quality: f64,
 
     /// Source video file to encode
     pub source: PathBuf,
@@ -218,12 +317,17 @@ impl Config {
         let encoder = self.encoder.to_string();
         let preset = self.preset.clone();
         let mode = self.mode.to_string();
+        let metric = self.metric.to_string();
         let quality = self.quality;
         let constraint = "unconstrained";
         let hash = self.encode_arguments_hash();
 
         if include_quality {
-            format!("{encoder}-{preset}-{mode}-{quality}-{constraint}-{hash}")
+            if self.metric == Metric::Direct {
+                format!("{encoder}-{preset}-{mode}-{quality}-{constraint}-{hash}")
+            } else {
+                format!("{encoder}-{preset}-{mode}-{metric}-{quality}-{constraint}-{hash}")
+            }
         } else {
             format!("{encoder}-{preset}-{mode}-{constraint}-{hash}")
         }

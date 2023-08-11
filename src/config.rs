@@ -100,6 +100,10 @@ impl std::fmt::Display for Mode {
 pub enum Metric {
     Direct,
     PSNR,
+    SSIM,
+    VMAF,
+    SSIMULACRA2,
+    Bitrate,
 }
 
 impl std::fmt::Display for Metric {
@@ -107,6 +111,10 @@ impl std::fmt::Display for Metric {
         match self {
             Self::Direct => write!(f, "direct"),
             Self::PSNR => write!(f, "psnr"),
+            Self::SSIM => write!(f, "ssim"),
+            Self::VMAF => write!(f, "vmaf"),
+            Self::SSIMULACRA2 => write!(f, "ssimulacra2"),
+            Self::Bitrate => write!(f, "bitrate"),
         }
     }
 }
@@ -145,7 +153,7 @@ impl Encoder {
             Self::Aomenc => QualityRange::new(0, 63, 1),
             Self::X264 => match mode {
                 Mode::CRF => QualityRange::new(-12, 51, 4),
-                Mode::QP => QualityRange::new(0, 81, 1),
+                Mode::QP => QualityRange::new(1, 81, 1),
             },
             Self::X265 => match mode {
                 Mode::CRF => QualityRange::new(0, 51, 4),

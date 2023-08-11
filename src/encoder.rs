@@ -280,6 +280,8 @@ impl Encoder {
         Ok(output_path)
     }
 
+    #[allow(clippy::as_conversions)]
+    #[allow(clippy::cast_precision_loss)]
     #[allow(clippy::too_many_lines)]
     fn encode_scene(&self, scene: &Scene, progress_bar: &ProgressBar) -> anyhow::Result<PathBuf> {
         let quality = if self.config.metric == Metric::Direct {
@@ -346,6 +348,35 @@ impl Encoder {
                         .psnr(1)
                         .context("Unable to calculate PSNR values")?
                         .clone(),
+                    Metric::SSIM => metrics
+                        .ssim(1)
+                        .context("Unable to calculate SSIM values")?
+                        .clone(),
+                    Metric::VMAF => metrics
+                        .vmaf(1)
+                        .context("Unable to calculate VMAF values")?
+                        .clone(),
+                    Metric::SSIMULACRA2 => metrics
+                        .ssimulacra2(1)
+                        .context("Unable to calculate SSIMULACRA2 values")?
+                        .clone(),
+                    Metric::Bitrate => {
+                        let duration =
+                            metrics.duration().context("Unable to calculate duration")?;
+
+                        let frames = metrics
+                            .frames()
+                            .context("Unable to determine frame count")?;
+
+                        let frame_duration = duration / frames as f64;
+
+                        metrics
+                            .sizes()
+                            .context("Unable to calculate frame sizes")?
+                            .iter()
+                            .map(|x| *x as f64 * 8.0_f64 / frame_duration)
+                            .collect()
+                    }
                 };
 
                 let metric_value = Data::new(metric_values).mean().with_context(|| {

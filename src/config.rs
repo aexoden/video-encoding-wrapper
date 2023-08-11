@@ -319,6 +319,10 @@ pub struct Config {
     #[arg(short, long = "quality-rule", value_enum, default_value_t = QualityRule::Minimum)]
     pub rule: QualityRule,
 
+    /// Percentile to measure for target quality
+    #[arg(long = "quality-percentile", value_parser = clap::value_parser!(f64), default_value_t = 0.05)]
+    pub percentile: f64,
+
     /// Quality (QP or CRF) value to pass to the encoder
     #[arg(short, long, value_parser = clap::value_parser!(f64), default_value_t = 24.0)]
     pub quality: f64,

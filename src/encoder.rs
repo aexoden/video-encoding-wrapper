@@ -5,7 +5,7 @@ use std::process::{Command, Stdio};
 use anyhow::{anyhow, Context};
 use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use statrs::statistics::{Data, Distribution};
+use statrs::statistics::{Data, OrderStatistics};
 use tracing::error;
 
 use crate::config::{Config, Metric, QualityRule};
@@ -379,12 +379,7 @@ impl Encoder {
                     }
                 };
 
-                let metric_value = Data::new(metric_values).mean().with_context(|| {
-                    format!(
-                        "Unable to calculate mean value of metric for scene {:05}",
-                        scene.index()
-                    )
-                })?;
+                let metric_value = Data::new(metric_values).quantile(self.config.percentile);
 
                 match self.config.rule {
                     QualityRule::Maximum => {

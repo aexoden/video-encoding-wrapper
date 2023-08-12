@@ -1,6 +1,7 @@
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use anyhow::{anyhow, Context};
 use crossbeam_queue::ArrayQueue;
@@ -27,6 +28,7 @@ pub struct Encoder {
     scenes: Vec<Scene>,
     metadata: Metadata,
     encode_directory: PathBuf,
+    active_workers: AtomicUsize,
 }
 
 impl Encoder {
@@ -46,6 +48,7 @@ impl Encoder {
                 format!("Unable to fetch video metadata for {:?}", &config.source)
             })?,
             encode_directory,
+            active_workers: config.workers.into(),
         })
     }
 
@@ -131,6 +134,7 @@ impl Encoder {
                         }
 
                         worker_progress_bar.finish();
+                        self.active_workers.fetch_sub(1, Ordering::Relaxed);
 
                         Ok(())
                     }))
@@ -342,22 +346,25 @@ impl Encoder {
                         format!("Unable to calculate metrics for scene {:05}", scene.index())
                     })?;
 
+                #[allow(clippy::integer_division)]
+                let threads = self.config.workers / self.active_workers.load(Ordering::Relaxed);
+
                 let metric_values = match self.config.metric {
                     Metric::Direct => vec![0.0_f64],
                     Metric::PSNR => metrics
-                        .psnr(1)
+                        .psnr(threads)
                         .context("Unable to calculate PSNR values")?
                         .clone(),
                     Metric::SSIM => metrics
-                        .ssim(1)
+                        .ssim(threads)
                         .context("Unable to calculate SSIM values")?
                         .clone(),
                     Metric::VMAF => metrics
-                        .vmaf(1)
+                        .vmaf(threads)
                         .context("Unable to calculate VMAF values")?
                         .clone(),
                     Metric::SSIMULACRA2 => metrics
-                        .ssimulacra2(1)
+                        .ssimulacra2(threads)
                         .context("Unable to calculate SSIMULACRA2 values")?
                         .clone(),
                     Metric::Bitrate => {

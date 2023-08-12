@@ -352,6 +352,7 @@ impl Config {
         let mode = self.mode.to_string();
         let metric = self.metric.to_string();
         let quality = self.quality;
+        let percentile = self.percentile;
         let rule = self.rule.to_string();
         let constraint = "unconstrained";
         let hash = self.encode_arguments_hash();
@@ -360,7 +361,7 @@ impl Config {
             if self.metric == Metric::Direct {
                 format!("{encoder}-{preset}-{mode}-{quality}-{constraint}-{hash}")
             } else {
-                format!("{encoder}-{preset}-{mode}-{metric}-{quality}-{rule}-{constraint}-{hash}")
+                format!("{encoder}-{preset}-{mode}-{metric}-{quality}-{percentile}-{rule}-{constraint}-{hash}")
             }
         } else {
             format!("{encoder}-{preset}-{mode}-{constraint}-{hash}")

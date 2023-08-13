@@ -13,7 +13,9 @@ use crate::config::{Config, Metric, QualityRule};
 use crate::ffmpeg::{create_child_read, Metadata};
 use crate::metrics::ClipMetrics;
 use crate::scenes::Scene;
-use crate::util::{create_progress_style, verify_directory, HumanBitrate};
+use crate::util::{
+    create_progress_style, print_histogram, print_stats, verify_directory, HumanBitrate,
+};
 
 fn update_worker_message(progress_bar: &ProgressBar, scene_index: usize, message: &str) {
     progress_bar.set_message(format!("[Scene {scene_index:05}] {message}"));
@@ -21,6 +23,35 @@ fn update_worker_message(progress_bar: &ProgressBar, scene_index: usize, message
 
 fn clear_worker_message(progress_bar: &ProgressBar) {
     progress_bar.set_message("[Idle       ]");
+}
+
+pub struct EncodeStatistics {
+    config: Config,
+    qualities: Vec<f64>,
+}
+
+impl EncodeStatistics {
+    #[must_use]
+    pub fn new(config: &Config) -> Self {
+        Self {
+            config: config.clone(),
+            qualities: vec![],
+        }
+    }
+
+    #[allow(clippy::print_stdout)]
+    pub fn print_quality_stats(&self) -> anyhow::Result<()> {
+        println!("{} Statistics", self.config.mode_description());
+        println!();
+        print_histogram(&self.qualities).context("Unable to print quality histogram")?;
+        println!();
+        print_stats(
+            &self.config.mode_description(),
+            &mut Data::new(self.qualities.clone()),
+        );
+
+        Ok(())
+    }
 }
 
 pub struct Encoder {
@@ -62,9 +93,10 @@ impl Encoder {
 
     #[allow(clippy::print_stdout)]
     #[allow(clippy::too_many_lines)]
-    pub fn encode(&self) -> anyhow::Result<(PathBuf, Vec<ClipMetrics>)> {
+    pub fn encode(&self) -> anyhow::Result<(PathBuf, Vec<ClipMetrics>, EncodeStatistics)> {
         let scene_queue: ArrayQueue<Scene> = ArrayQueue::new(self.scenes.len());
         let result_queue: ArrayQueue<ClipMetrics> = ArrayQueue::new(self.scenes.len());
+        let quality_queue: ArrayQueue<f64> = ArrayQueue::new(self.scenes.len());
 
         for scene in &self.scenes {
             if scene_queue.push(*scene).is_err() {
@@ -97,6 +129,7 @@ impl Encoder {
         progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
 
         let mut clips: Vec<ClipMetrics> = vec![];
+        let mut statistics = EncodeStatistics::new(&self.config);
 
         std::thread::scope(|scope| -> anyhow::Result<()> {
             let threads = (0..self.config.workers)
@@ -107,7 +140,7 @@ impl Encoder {
 
                     Ok(scope.spawn(|| -> anyhow::Result<()> {
                         while let Some(scene) = &scene_queue.pop() {
-                            let result =
+                            let (result, quality) =
                                 self.encode_scene(scene, worker_progress_bar).with_context(
                                     || format!("Unable to encode scene {}", scene.index()),
                                 )?;
@@ -128,6 +161,12 @@ impl Encoder {
 
                             if result_queue.push(metrics).is_err() {
                                 return Err(anyhow!("Encoding result queue was unexpectedly full"));
+                            }
+
+                            if quality_queue.push(quality).is_err() {
+                                return Err(anyhow!(
+                                    "Encoding quality result queue was unexpectedly full"
+                                ));
                             }
 
                             clear_worker_message(worker_progress_bar);
@@ -174,6 +213,10 @@ impl Encoder {
 
                     clips.push(clip);
                 }
+
+                while let Some(quality) = quality_queue.pop() {
+                    statistics.qualities.push(quality);
+                }
             }
 
             for thread in threads {
@@ -207,7 +250,7 @@ impl Encoder {
             .merge_scenes(&clips)
             .context("Unable to merge scenes")?;
 
-        Ok((output_path, clips))
+        Ok((output_path, clips, statistics))
     }
 
     fn merge_scenes(&self, files: &[ClipMetrics]) -> anyhow::Result<PathBuf> {
@@ -287,7 +330,11 @@ impl Encoder {
     #[allow(clippy::as_conversions)]
     #[allow(clippy::cast_precision_loss)]
     #[allow(clippy::too_many_lines)]
-    fn encode_scene(&self, scene: &Scene, progress_bar: &ProgressBar) -> anyhow::Result<PathBuf> {
+    fn encode_scene(
+        &self,
+        scene: &Scene,
+        progress_bar: &ProgressBar,
+    ) -> anyhow::Result<(PathBuf, f64)> {
         let quality = if self.config.metric == Metric::Direct {
             self.config.quality
         } else {
@@ -301,19 +348,17 @@ impl Encoder {
 
             let mut best_score = f64::MIN;
 
-            while !quality_range.complete() {
+            while let Some(current_quality) = quality_range.current() {
                 let true_minimum = quality_range.minimum().min(best_quality);
                 let true_maximum = quality_range.maximum().max(best_quality);
 
-                let search_description = if quality_range.divisor() == 1_i32 {
+                let search_description = if quality_range.divisor() == 1 {
                     format!(
-                        "Quality Search {true_minimum:4} - {true_maximum:4} ({:4}): ",
-                        quality_range.current()
+                        "Quality Search {true_minimum:4} - {true_maximum:4} ({current_quality:4}): ",
                     )
                 } else {
                     format!(
-                        "Quality Search {true_minimum:7.2} - {true_maximum:0.2} ({:7.2}): ",
-                        quality_range.current()
+                        "Quality Search {true_minimum:7.2} - {true_maximum:0.2} ({current_quality:7.2}): ",
                     )
                 };
 
@@ -322,8 +367,6 @@ impl Encoder {
                     .output_directory
                     .join("source")
                     .join(format!("scene-{:05}.mkv", scene.index()));
-
-                let current_quality = quality_range.current();
 
                 let output_filename = self
                     .encode_scene_single(
@@ -434,7 +477,16 @@ impl Encoder {
             best_quality
         };
 
-        self.encode_scene_single(scene, progress_bar, "", self.passes(), quality)
+        Ok((
+            self.encode_scene_single(scene, progress_bar, "", self.passes(), quality)
+                .with_context(|| {
+                    format!(
+                        "Unable to encode scene {:05} at quality {quality}",
+                        scene.index()
+                    )
+                })?,
+            quality,
+        ))
     }
 
     #[allow(clippy::too_many_lines)]
@@ -470,7 +522,7 @@ impl Encoder {
             .encoder
             .quality_range(&self.config.mode)
             .divisor()
-            == 1_i32
+            == 1
         {
             format!("{}-{qp:03}", self.config.mode)
         } else {

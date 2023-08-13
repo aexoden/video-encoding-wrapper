@@ -31,6 +31,7 @@ pub mod ssimulacra2;
 pub mod util;
 pub mod y4mpipedecoder;
 
+#[allow(clippy::print_stdout)]
 pub fn run(config: &config::Config) -> anyhow::Result<()> {
     // Prevent dependent libraries from modifying the rayon global pool with arbitrary thread counts.
     rayon::ThreadPoolBuilder::new()
@@ -51,9 +52,16 @@ pub fn run(config: &config::Config) -> anyhow::Result<()> {
         .with_context(|| format!("Unable to split scenes for file {:?}", &config.source))?;
 
     let encoder = encoder::Encoder::new(config).context("Unable to create scene encoder")?;
-    let (_output_path, mut clips) = encoder.encode().context("Unable to encode video")?;
+    let (_output_path, mut clips, statistics) =
+        encoder.encode().context("Unable to encode video")?;
 
     metrics::print(config, &mut clips).context("Unable to print metrics")?;
+
+    println!();
+
+    statistics
+        .print_quality_stats()
+        .context("Unable to print encode quality statistics")?;
 
     Ok(())
 }

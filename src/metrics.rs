@@ -6,11 +6,11 @@ use std::process::{Command, Stdio};
 use anyhow::{anyhow, Context};
 use indicatif::{HumanCount, ProgressBar};
 use serde::{Deserialize, Serialize};
-use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
+use statrs::statistics::Data;
 
 use crate::config::Config;
 use crate::ssimulacra2;
-use crate::util::{create_progress_style, verify_filename, HumanBitrate};
+use crate::util::{create_progress_style, print_stats, verify_filename, HumanBitrate};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Serialize, Deserialize)]
@@ -341,32 +341,6 @@ impl ClipMetrics {
     }
 }
 
-#[allow(clippy::print_stdout)]
-fn print_metric(name: &str, stats: &mut Data<Vec<f64>>) {
-    println!("{name} (mean): {:.3}", stats.mean().unwrap_or_default());
-    println!("{name} (median): {:.3}", stats.median());
-    println!(
-        "{name} (one-sigma): {:.3} - {:.3}",
-        stats.quantile(0.158_655_254),
-        stats.quantile(0.841_344_746)
-    );
-    println!(
-        "{name} (two-sigma): {:.3} - {:.3}",
-        stats.quantile(0.022_750_132),
-        stats.quantile(0.977_249_868)
-    );
-    println!(
-        "{name} (three-sigma): {:.3} - {:.3}",
-        stats.quantile(0.001_349_898),
-        stats.quantile(0.998_650_102)
-    );
-    println!(
-        "{name} (full range): {:.3} - {:.3}",
-        stats.min(),
-        stats.max()
-    );
-}
-
 #[allow(clippy::as_conversions)]
 #[allow(clippy::cast_precision_loss)]
 #[allow(clippy::integer_division)]
@@ -453,13 +427,13 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     );
 
     println!();
-    print_metric("PSNR", &mut Data::new(psnr));
+    print_stats("PSNR", &mut Data::new(psnr));
     println!();
-    print_metric("SSIM", &mut Data::new(ssim));
+    print_stats("SSIM", &mut Data::new(ssim));
     println!();
-    print_metric("VMAF", &mut Data::new(vmaf));
+    print_stats("VMAF", &mut Data::new(vmaf));
     println!();
-    print_metric("SSIMULACRA2", &mut Data::new(ssimulacra2));
+    print_stats("SSIMULACRA2", &mut Data::new(ssimulacra2));
 
     Ok(())
 }

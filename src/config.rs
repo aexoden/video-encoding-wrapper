@@ -4,14 +4,14 @@ use clap::{Parser, ValueEnum};
 use sha2::{Digest, Sha256};
 
 pub struct QualityRange {
-    minimum: i32,
-    maximum: i32,
-    divisor: i32,
+    minimum: i64,
+    maximum: i64,
+    divisor: i64,
 }
 
 impl QualityRange {
     #[must_use]
-    pub const fn new(minimum: i32, maximum: i32, divisor: i32) -> Self {
+    pub const fn new(minimum: i64, maximum: i64, divisor: i64) -> Self {
         Self {
             minimum: minimum * divisor,
             maximum: maximum * divisor,
@@ -19,48 +19,48 @@ impl QualityRange {
         }
     }
 
+    #[must_use]
     #[allow(clippy::integer_division)]
-    const fn midpoint(&self) -> i32 {
-        (self.minimum + self.maximum) / 2_i32
+    const fn midpoint(&self) -> i64 {
+        (self.minimum + self.maximum) / 2
     }
 
     #[must_use]
-    pub const fn divisor(&self) -> i32 {
+    #[allow(clippy::as_conversions)]
+    #[allow(clippy::cast_precision_loss)]
+    pub fn current(&self) -> Option<f64> {
+        if self.minimum > self.maximum {
+            None
+        } else {
+            Some(self.midpoint() as f64 / self.divisor as f64)
+        }
+    }
+
+    pub fn lower(&mut self) {
+        self.maximum = self.midpoint() - 1;
+    }
+
+    pub fn higher(&mut self) {
+        self.minimum = self.midpoint() + 1;
+    }
+
+    #[must_use]
+    pub const fn divisor(&self) -> i64 {
         self.divisor
     }
 
     #[must_use]
     #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_lossless)]
-    pub fn current(&self) -> f64 {
-        self.midpoint() as f64 / self.divisor as f64
-    }
-
-    pub fn lower(&mut self) {
-        self.maximum = self.midpoint() - 1_i32;
-    }
-
-    pub fn higher(&mut self) {
-        self.minimum = self.midpoint() + 1_i32;
-    }
-
-    #[must_use]
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_lossless)]
+    #[allow(clippy::cast_precision_loss)]
     pub fn minimum(&self) -> f64 {
         self.minimum as f64 / self.divisor as f64
     }
 
     #[must_use]
     #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_lossless)]
+    #[allow(clippy::cast_precision_loss)]
     pub fn maximum(&self) -> f64 {
         self.maximum as f64 / self.divisor as f64
-    }
-
-    #[must_use]
-    pub const fn complete(&self) -> bool {
-        self.minimum > self.maximum
     }
 }
 
@@ -237,7 +237,7 @@ impl Encoder {
         arguments.extend(self.tune_arguments());
 
         // Quality Arguments
-        let qp = if self.quality_range(&mode).divisor() == 1_i32 {
+        let qp_string = if self.quality_range(&mode).divisor == 1 {
             format!("{qp:0}")
         } else {
             format!("{qp:0.2}")
@@ -246,11 +246,11 @@ impl Encoder {
         match self {
             Self::Aomenc => {
                 arguments.push("--end-usage=q".to_owned());
-                arguments.push(format!("--cq-level={qp}"));
+                arguments.push(format!("--cq-level={qp_string}"));
 
                 if mode == Mode::QP {
-                    arguments.push(format!("--min-q={qp}"));
-                    arguments.push(format!("--max-q={qp}"));
+                    arguments.push(format!("--min-q={qp_string}"));
+                    arguments.push(format!("--max-q={qp_string}"));
                 }
 
                 arguments.push("-y".to_owned());
@@ -265,7 +265,7 @@ impl Encoder {
                     }
                 }
 
-                arguments.push(qp);
+                arguments.push(qp_string);
             }
         };
 
@@ -324,7 +324,7 @@ pub struct Config {
     pub percentile: f64,
 
     /// Quality (QP or CRF) value to pass to the encoder
-    #[arg(short, long, value_parser = clap::value_parser!(f64), default_value_t = 24.0)]
+    #[arg(short, long, value_parser = clap::value_parser!(f64), default_value_t = 23.0)]
     pub quality: f64,
 
     /// Source video file to encode
@@ -365,6 +365,14 @@ impl Config {
             }
         } else {
             format!("{encoder}-{preset}-{mode}-{constraint}-{hash}")
+        }
+    }
+
+    #[must_use]
+    pub fn mode_description(&self) -> String {
+        match self.mode {
+            Mode::CRF => "CRF".to_owned(),
+            Mode::QP => "QP".to_owned(),
         }
     }
 }

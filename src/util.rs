@@ -6,6 +6,7 @@ use std::time::Duration;
 use anyhow::{anyhow, Context};
 use indicatif::{HumanDuration, ProgressState, ProgressStyle};
 use number_prefix::NumberPrefix;
+use prettytable::{row, table};
 use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
 use tracing::{error, level_filters::LevelFilter};
 use tracing_error::ErrorLayer;
@@ -112,33 +113,57 @@ pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
 }
 
 #[allow(clippy::print_stdout)]
-pub fn print_stats(name: &str, stats: &mut Data<Vec<f64>>) {
-    println!("{name} (mean): {:.3}", stats.mean().unwrap_or_default());
-    println!(
-        "{name} (standard deviation): {:.3}",
-        stats.std_dev().unwrap_or_default()
-    );
-    println!("{name} (median): {:.3}", stats.median());
-    println!(
-        "{name} (one-sigma): {:.3} - {:.3}",
-        stats.quantile(0.158_655_254),
-        stats.quantile(0.841_344_746)
-    );
-    println!(
-        "{name} (two-sigma): {:.3} - {:.3}",
-        stats.quantile(0.022_750_132),
-        stats.quantile(0.977_249_868)
-    );
-    println!(
-        "{name} (three-sigma): {:.3} - {:.3}",
-        stats.quantile(0.001_349_898),
-        stats.quantile(0.998_650_102)
-    );
-    println!(
-        "{name} (full range): {:.3} - {:.3}",
-        stats.min(),
-        stats.max()
-    );
+pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
+    #[allow(clippy::str_to_string)]
+    let mut table = table!([
+        "",
+        "Minimum",
+        "-3\u{3c3}",
+        "-2\u{3c3}",
+        "-1\u{3c3}",
+        "Median",
+        "1\u{3c3}",
+        "2\u{3c3}",
+        "3\u{3c3}",
+        "Maximum",
+        "Mean",
+        "Std Dev"
+    ]);
+
+    table.set_format(*prettytable::format::consts::FORMAT_BOX_CHARS);
+
+    for (name, ref mut data) in stats {
+        let mut data = Data::new(data);
+
+        #[allow(clippy::string_to_string)]
+        table.add_row(row![
+            format!("{name:12}"),
+            format!("{:8.3}", data.min()),
+            format!("{:8.3}", data.quantile(0.001_349_898)),
+            format!("{:8.3}", data.quantile(0.022_750_132)),
+            format!("{:8.3}", data.quantile(0.158_655_254)),
+            format!("{:8.3}", data.median()),
+            format!("{:8.3}", data.quantile(0.841_344_746)),
+            format!("{:8.3}", data.quantile(0.977_249_868)),
+            format!("{:8.3}", data.quantile(0.998_650_102)),
+            format!("{:8.3}", data.max()),
+            format!(
+                "{:8.3}",
+                data.mean()
+                    .with_context(|| format!("Unable to calculate mean for {name}"))?
+            ),
+            format!(
+                "{:8.3}",
+                data.std_dev().with_context(|| format!(
+                    "Unable to calculate standard deviation for {name}"
+                ))?
+            ),
+        ]);
+    }
+
+    table.printstd();
+
+    Ok(())
 }
 
 pub fn verify_filename(path: &Path) -> anyhow::Result<()> {

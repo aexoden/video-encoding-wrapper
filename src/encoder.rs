@@ -43,12 +43,24 @@ impl EncodeStatistics {
     pub fn print_quality_stats(&self) -> anyhow::Result<()> {
         println!("{} Statistics", self.config.mode_description());
         println!();
-        print_histogram(&self.qualities).context("Unable to print quality histogram")?;
+        print_histogram(&self.qualities).with_context(|| {
+            format!(
+                "Unable to output {} histogram",
+                self.config.mode_description()
+            )
+        })?;
         println!();
-        print_stats(
-            &self.config.mode_description(),
-            &mut Data::new(self.qualities.clone()),
-        );
+
+        print_stats(&mut vec![(
+            self.config.mode_description(),
+            self.qualities.clone(),
+        )])
+        .with_context(|| {
+            format!(
+                "Unable to output {} statistics",
+                self.config.mode_description()
+            )
+        })?;
 
         Ok(())
     }

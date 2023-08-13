@@ -6,7 +6,6 @@ use std::process::{Command, Stdio};
 use anyhow::{anyhow, Context};
 use indicatif::{HumanCount, ProgressBar};
 use serde::{Deserialize, Serialize};
-use statrs::statistics::Data;
 
 use crate::config::Config;
 use crate::ssimulacra2;
@@ -361,41 +360,42 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
 
     let mut sizes: Vec<usize> = vec![];
     let mut duration = 0.0_f64;
-    let mut psnr: Vec<f64> = vec![];
-    let mut ssim: Vec<f64> = vec![];
-    let mut vmaf: Vec<f64> = vec![];
-    let mut ssimulacra2: Vec<f64> = vec![];
 
-    for metrics in clips.iter_mut() {
-        duration += metrics
+    let mut psnr = vec![];
+    let mut ssim = vec![];
+    let mut vmaf = vec![];
+    let mut ssimulacra2 = vec![];
+
+    for clip_metrics in clips.iter_mut() {
+        duration += clip_metrics
             .duration()
             .context("Unable to access clip duration")?;
 
-        let clip_sizes = metrics.sizes().context("Unable to access clip size")?;
+        let clip_sizes = clip_metrics.sizes().context("Unable to access clip size")?;
         sizes.extend(clip_sizes);
 
         let frame_count = clip_sizes.len().try_into().unwrap_or(u64::MAX);
 
         psnr.extend(
-            metrics
+            clip_metrics
                 .psnr(config.workers)
                 .context("Unable to access clip PSNR")?,
         );
 
         ssim.extend(
-            metrics
+            clip_metrics
                 .ssim(config.workers)
                 .context("Unable to access clip SSIM")?,
         );
 
         vmaf.extend(
-            metrics
+            clip_metrics
                 .vmaf(config.workers)
                 .context("Unable to access clip VMAF")?,
         );
 
         ssimulacra2.extend(
-            metrics
+            clip_metrics
                 .ssimulacra2(config.workers)
                 .context("Unable to access clip SSIMULACRA2")?,
         );
@@ -427,13 +427,15 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     );
 
     println!();
-    print_stats("PSNR", &mut Data::new(psnr));
-    println!();
-    print_stats("SSIM", &mut Data::new(ssim));
-    println!();
-    print_stats("VMAF", &mut Data::new(vmaf));
-    println!();
-    print_stats("SSIMULACRA2", &mut Data::new(ssimulacra2));
+
+    let mut metrics = vec![
+        ("PSNR".to_owned(), psnr),
+        ("SSIM".to_owned(), ssim),
+        ("VMAF".to_owned(), vmaf),
+        ("SSIMULACRA2".to_owned(), ssimulacra2),
+    ];
+
+    print_stats(&mut metrics).context("Unable to output metrics")?;
 
     Ok(())
 }

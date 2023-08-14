@@ -1,17 +1,25 @@
 use std::cmp::min;
 use std::fmt::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use indicatif::{HumanDuration, ProgressState, ProgressStyle};
 use number_prefix::NumberPrefix;
+use plotters::prelude::*;
 use prettytable::{row, table};
 use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
 use tracing::{error, level_filters::LevelFilter};
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
+
+pub const MINUS_THREE_SIGMA: f64 = 0.001_349_898;
+pub const MINUS_TWO_SIGMA: f64 = 0.022_750_132;
+pub const MINUS_ONE_SIGMA: f64 = 0.158_655_254;
+pub const PLUS_ONE_SIGMA: f64 = 0.841_344_746;
+pub const PLUS_TWO_SIGMA: f64 = 0.977_249_868;
+pub const PLUS_THREE_SIGMA: f64 = 0.998_650_102;
 
 #[allow(clippy::as_conversions)]
 #[allow(clippy::cast_possible_truncation)]
@@ -112,6 +120,100 @@ pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub fn generate_chart(
+    output_filename: &PathBuf,
+    title: &str,
+    data: &Vec<f64>,
+) -> anyhow::Result<()> {
+    let mut stats = Data::new(data.clone());
+
+    let y_range = stats.max() - stats.min();
+    let y_min = y_range.mul_add(-0.01, stats.min());
+    let y_max = y_range.mul_add(0.01, stats.max());
+
+    verify_filename(output_filename).with_context(|| {
+        format!("Unable to verify {title} chart output filename {output_filename:?}")
+    })?;
+
+    let root = SVGBackend::new(output_filename, (1600, 800)).into_drawing_area();
+
+    root.fill(&WHITE)
+        .with_context(|| format!("Unable to fill {title} chart background"))?;
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption(title, ("Arial", 32_i32).into_font())
+        .margin(5_i32)
+        .set_label_area_size(LabelAreaPosition::Top, 30_i32)
+        .set_label_area_size(LabelAreaPosition::Bottom, 30_i32)
+        .set_label_area_size(LabelAreaPosition::Left, 50_i32)
+        .set_label_area_size(LabelAreaPosition::Right, 50_i32)
+        .build_cartesian_2d(0..data.len(), y_min..y_max)
+        .with_context(|| format!("Unable to build {title} chart"))?;
+
+    chart
+        .configure_mesh()
+        .draw()
+        .with_context(|| format!("Unable to configure mesh for {title} chart"))?;
+
+    chart
+        .draw_series(LineSeries::new(
+            data.iter().copied().enumerate(),
+            Palette99::pick(0),
+        ))
+        .with_context(|| format!("Unable to draw data series for {title} chart"))?;
+
+    let mean = stats
+        .mean()
+        .with_context(|| format!("Unable to calculate mean for {title} chart"))?;
+
+    let minus_one_sigma = stats.quantile(MINUS_ONE_SIGMA);
+    let minus_two_sigma = stats.quantile(MINUS_TWO_SIGMA);
+    let minus_three_sigma = stats.quantile(MINUS_THREE_SIGMA);
+
+    chart
+        .draw_series(LineSeries::new(
+            (0..=data.len()).map(|x| (x, mean)),
+            Palette99::pick(1),
+        ))?
+        .label(format!("Mean: {mean:0.3}"))
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20_i32, y)], Palette99::pick(1)));
+
+    chart
+        .draw_series(LineSeries::new(
+            (0..=data.len()).map(|x| (x, minus_one_sigma)),
+            Palette99::pick(2),
+        ))?
+        .label(format!("-1\u{3c3}: {minus_one_sigma:0.3}"))
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20_i32, y)], Palette99::pick(2)));
+
+    chart
+        .draw_series(LineSeries::new(
+            (0..=data.len()).map(|x| (x, minus_two_sigma)),
+            Palette99::pick(3),
+        ))?
+        .label(format!("-2\u{3c3}: {minus_two_sigma:0.3}"))
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20_i32, y)], Palette99::pick(3)));
+
+    chart
+        .draw_series(LineSeries::new(
+            (0..=data.len()).map(|x| (x, minus_three_sigma)),
+            Palette99::pick(4),
+        ))?
+        .label(format!("-3\u{3c3}: {minus_three_sigma:0.3}"))
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20_i32, y)], Palette99::pick(4)));
+
+    chart
+        .configure_series_labels()
+        .background_style(WHITE.mix(0.8))
+        .border_style(BLACK)
+        .draw()?;
+
+    root.present()
+        .with_context(|| format!("Unable to finalize {title} chart"))?;
+
+    Ok(())
+}
+
 #[allow(clippy::print_stdout)]
 pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
     #[allow(clippy::str_to_string)]
@@ -139,13 +241,13 @@ pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
         table.add_row(row![
             format!("{name:12}"),
             format!("{:8.3}", data.min()),
-            format!("{:8.3}", data.quantile(0.001_349_898)),
-            format!("{:8.3}", data.quantile(0.022_750_132)),
-            format!("{:8.3}", data.quantile(0.158_655_254)),
+            format!("{:8.3}", data.quantile(MINUS_THREE_SIGMA)),
+            format!("{:8.3}", data.quantile(MINUS_TWO_SIGMA)),
+            format!("{:8.3}", data.quantile(MINUS_ONE_SIGMA)),
             format!("{:8.3}", data.median()),
-            format!("{:8.3}", data.quantile(0.841_344_746)),
-            format!("{:8.3}", data.quantile(0.977_249_868)),
-            format!("{:8.3}", data.quantile(0.998_650_102)),
+            format!("{:8.3}", data.quantile(PLUS_ONE_SIGMA)),
+            format!("{:8.3}", data.quantile(PLUS_TWO_SIGMA)),
+            format!("{:8.3}", data.quantile(PLUS_THREE_SIGMA)),
             format!("{:8.3}", data.max()),
             format!(
                 "{:8.3}",

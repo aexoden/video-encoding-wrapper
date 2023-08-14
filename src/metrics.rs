@@ -9,7 +9,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
 use crate::ssimulacra2;
-use crate::util::{create_progress_style, print_stats, verify_filename, HumanBitrate};
+use crate::util::{
+    create_progress_style, generate_chart, print_stats, verify_directory, verify_filename,
+    HumanBitrate,
+};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Serialize, Deserialize)]
@@ -344,6 +347,7 @@ impl ClipMetrics {
 #[allow(clippy::cast_precision_loss)]
 #[allow(clippy::integer_division)]
 #[allow(clippy::print_stdout)]
+#[allow(clippy::too_many_lines)]
 pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     let metadata = crate::ffmpeg::get_metadata(config)
         .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
@@ -425,6 +429,42 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
         "Bitrate: {}",
         HumanBitrate((sizes.iter().sum::<usize>() * 8) as f64 / duration),
     );
+
+    let output_path = config.output_directory.join("output");
+
+    verify_directory(&output_path)
+        .with_context(|| format!("Unable to verify merging output directory {output_path:?}"))?;
+
+    generate_chart(
+        &output_path.join(format!("{}-psnr.svg", config.encode_identifier(true))),
+        "PSNR",
+        &psnr,
+    )
+    .context("Unable to generate PSNR chart")?;
+
+    generate_chart(
+        &output_path.join(format!("{}-ssim.svg", config.encode_identifier(true))),
+        "SSIM",
+        &ssim,
+    )
+    .context("Unable to generate SSIM chart")?;
+
+    generate_chart(
+        &output_path.join(format!("{}-vmaf.svg", config.encode_identifier(true))),
+        "VMAF",
+        &vmaf,
+    )
+    .context("Unable to generate VMAF chart")?;
+
+    generate_chart(
+        &output_path.join(format!(
+            "{}-ssimulacra2.svg",
+            config.encode_identifier(true)
+        )),
+        "SSIMULACRA2",
+        &ssimulacra2,
+    )
+    .context("Unable to generate SSIMULACRA2 chart")?;
 
     println!();
 

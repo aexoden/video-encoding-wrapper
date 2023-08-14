@@ -120,7 +120,94 @@ pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn generate_chart(
+pub fn generate_bitrate_chart(
+    output_filename: &PathBuf,
+    title: &str,
+    offset: usize,
+    series: &Vec<(String, &Vec<f64>)>,
+) -> anyhow::Result<()> {
+    let mut y_min = f64::MAX;
+    let mut y_max = f64::MIN;
+    let mut length = 0;
+
+    for (_, data) in series {
+        let stats = Data::new((*data).clone());
+        let min = stats.min();
+        let max = stats.max();
+
+        if data.len() > length {
+            length = data.len();
+        }
+
+        if min < y_min {
+            y_min = min;
+        }
+
+        if max > y_max {
+            y_max = max;
+        }
+    }
+
+    length += offset;
+    let y_range = y_max - y_min;
+    let y_min = y_range.mul_add(-0.01, y_min);
+    let y_max = y_range.mul_add(0.01, y_max);
+
+    verify_filename(output_filename).with_context(|| {
+        format!("Unable to verify {title} chart output filename {output_filename:?}")
+    })?;
+
+    let root = SVGBackend::new(output_filename, (1600, 800)).into_drawing_area();
+
+    root.fill(&WHITE)
+        .with_context(|| format!("Unable to fill {title} chart background"))?;
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption(title, ("Arial", 32_i32).into_font())
+        .margin(5_i32)
+        .set_label_area_size(LabelAreaPosition::Top, 30_i32)
+        .set_label_area_size(LabelAreaPosition::Bottom, 30_i32)
+        .set_label_area_size(LabelAreaPosition::Left, 50_i32)
+        .set_label_area_size(LabelAreaPosition::Right, 50_i32)
+        .build_cartesian_2d(0..length, y_min..y_max)
+        .with_context(|| format!("Unable to build {title} chart"))?;
+
+    chart
+        .configure_mesh()
+        .draw()
+        .with_context(|| format!("Unable to configure mesh for {title} chart"))?;
+
+    for (i, (name, data)) in series.iter().enumerate() {
+        let series_offset = length - data.len();
+
+        chart
+            .draw_series(LineSeries::new(
+                data.iter()
+                    .copied()
+                    .enumerate()
+                    .map(|(j, value)| (j + series_offset, value)),
+                Palette99::pick(i),
+            ))
+            .with_context(|| format!("Unable to draw data series {name} for {title} chart"))?
+            .label(name)
+            .legend(move |(x, y)| {
+                PathElement::new(vec![(x, y), (x + 20_i32, y)], Palette99::pick(i))
+            });
+    }
+
+    chart
+        .configure_series_labels()
+        .background_style(WHITE.mix(0.8))
+        .border_style(BLACK)
+        .draw()?;
+
+    root.present()
+        .with_context(|| format!("Unable to finalize {title} chart"))?;
+
+    Ok(())
+}
+
+pub fn generate_stat_chart(
     output_filename: &PathBuf,
     title: &str,
     data: &Vec<f64>,

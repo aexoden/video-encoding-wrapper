@@ -63,5 +63,7 @@ pub fn run(config: &config::Config) -> anyhow::Result<()> {
         .print_quality_stats()
         .context("Unable to print encode quality statistics")?;
 
+    metrics::bitrate_analysis(config, &mut clips).context("Unable to complete bitrate analysis")?;
+
     Ok(())
 }

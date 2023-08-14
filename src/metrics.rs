@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::ssimulacra2;
 use crate::util::{
-    create_progress_style, generate_chart, print_stats, verify_directory, verify_filename,
-    HumanBitrate,
+    create_progress_style, generate_bitrate_chart, generate_stat_chart, print_stats,
+    verify_directory, verify_filename, HumanBitrate,
 };
 
 #[allow(clippy::module_name_repetitions)]
@@ -345,6 +345,78 @@ impl ClipMetrics {
 
 #[allow(clippy::as_conversions)]
 #[allow(clippy::cast_precision_loss)]
+fn moving_sum(data: &[f64], window_size: usize) -> Vec<f64> {
+    let mut result = Vec::new();
+
+    for i in window_size..=data.len() {
+        result.push(
+            data.get(i - window_size..i)
+                .unwrap_or_default()
+                .iter()
+                .sum::<f64>(),
+        );
+    }
+
+    result
+}
+
+#[allow(clippy::as_conversions)]
+#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_precision_loss)]
+#[allow(clippy::cast_sign_loss)]
+pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
+    let metadata = crate::ffmpeg::get_metadata(config)
+        .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
+
+    let mut sizes: Vec<f64> = vec![];
+
+    for clip_metrics in clips.iter_mut() {
+        sizes.extend(
+            clip_metrics
+                .sizes()
+                .context("Unable to access clip sizes")?
+                .iter()
+                .map(|x| *x as f64),
+        );
+    }
+
+    let avg_frame_rate = sizes.len() as f64 / metadata.duration;
+    let window_sizes = vec![1.0_f64, 5.0_f64, 15.0_f64, 30.0_f64, 60.0_f64];
+
+    let averages: Vec<Vec<f64>> = window_sizes
+        .iter()
+        .map(|&window_size| {
+            moving_sum(&sizes, (window_size * avg_frame_rate).round() as usize)
+                .iter()
+                .map(|x| x * 8.0_f64 / window_size / 1_000_000_f64)
+                .collect()
+        })
+        .collect();
+
+    let output_path = config.output_directory.join("output");
+
+    verify_directory(&output_path)
+        .with_context(|| format!("Unable to verify merging output directory {output_path:?}"))?;
+
+    let series = window_sizes
+        .iter()
+        .map(|x| format!("{x:.0}s"))
+        .zip(&averages)
+        .collect();
+
+    generate_bitrate_chart(
+        &output_path.join(format!("{}-bitrate.svg", config.encode_identifier(true))),
+        "Bitrate (Mbps)",
+        (1.0 * avg_frame_rate).round() as usize,
+        &series,
+    )
+    .context("Unable to generate bitrate chart")?;
+
+    Ok(())
+}
+
+#[allow(clippy::as_conversions)]
+#[allow(clippy::cast_precision_loss)]
 #[allow(clippy::integer_division)]
 #[allow(clippy::print_stdout)]
 #[allow(clippy::too_many_lines)]
@@ -435,28 +507,28 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     verify_directory(&output_path)
         .with_context(|| format!("Unable to verify merging output directory {output_path:?}"))?;
 
-    generate_chart(
+    generate_stat_chart(
         &output_path.join(format!("{}-psnr.svg", config.encode_identifier(true))),
         "PSNR",
         &psnr,
     )
     .context("Unable to generate PSNR chart")?;
 
-    generate_chart(
+    generate_stat_chart(
         &output_path.join(format!("{}-ssim.svg", config.encode_identifier(true))),
         "SSIM",
         &ssim,
     )
     .context("Unable to generate SSIM chart")?;
 
-    generate_chart(
+    generate_stat_chart(
         &output_path.join(format!("{}-vmaf.svg", config.encode_identifier(true))),
         "VMAF",
         &vmaf,
     )
     .context("Unable to generate VMAF chart")?;
 
-    generate_chart(
+    generate_stat_chart(
         &output_path.join(format!(
             "{}-ssimulacra2.svg",
             config.encode_identifier(true)

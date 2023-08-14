@@ -27,6 +27,7 @@ fn clear_worker_message(progress_bar: &ProgressBar) {
 
 pub struct EncodeStatistics {
     config: Config,
+    scene_lengths: Vec<f64>,
     qualities: Vec<f64>,
 }
 
@@ -35,6 +36,7 @@ impl EncodeStatistics {
     pub fn new(config: &Config) -> Self {
         Self {
             config: config.clone(),
+            scene_lengths: vec![],
             qualities: vec![],
         }
     }
@@ -51,10 +53,10 @@ impl EncodeStatistics {
         })?;
         println!();
 
-        print_stats(&mut vec![(
-            self.config.mode_description(),
-            self.qualities.clone(),
-        )])
+        print_stats(&mut vec![
+            ("Scene Length".to_owned(), self.scene_lengths.clone()),
+            (self.config.mode_description(), self.qualities.clone()),
+        ])
         .with_context(|| {
             format!(
                 "Unable to output {} statistics",
@@ -106,11 +108,17 @@ impl Encoder {
     #[allow(clippy::print_stdout)]
     #[allow(clippy::too_many_lines)]
     pub fn encode(&self) -> anyhow::Result<(PathBuf, Vec<ClipMetrics>, EncodeStatistics)> {
+        let mut statistics = EncodeStatistics::new(&self.config);
+
         let scene_queue: ArrayQueue<Scene> = ArrayQueue::new(self.scenes.len());
         let result_queue: ArrayQueue<ClipMetrics> = ArrayQueue::new(self.scenes.len());
         let quality_queue: ArrayQueue<f64> = ArrayQueue::new(self.scenes.len());
 
         for scene in &self.scenes {
+            #[allow(clippy::as_conversions)]
+            #[allow(clippy::cast_precision_loss)]
+            statistics.scene_lengths.push(scene.length() as f64);
+
             if scene_queue.push(*scene).is_err() {
                 return Err(anyhow!("Encoding worker queue was unexpectedly full"));
             }
@@ -141,7 +149,6 @@ impl Encoder {
         progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
 
         let mut clips: Vec<ClipMetrics> = vec![];
-        let mut statistics = EncodeStatistics::new(&self.config);
 
         std::thread::scope(|scope| -> anyhow::Result<()> {
             let threads = (0..self.config.workers)

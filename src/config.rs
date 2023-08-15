@@ -157,7 +157,7 @@ impl Encoder {
             },
             Self::X265 => match mode {
                 Mode::CRF => QualityRange::new(0, 51, 4),
-                Mode::QP => QualityRange::new(0, 69, 1),
+                Mode::QP => QualityRange::new(0, 51, 1),
             },
         }
     }

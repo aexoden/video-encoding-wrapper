@@ -590,6 +590,12 @@ impl Encoder {
                 anyhow!("Unable to access stdout for encoding video decoder subprocess")
             })?;
 
+            update_worker_message(
+                progress_bar,
+                scene.index(),
+                &format!("{progress_prefix}Beginning encode..."),
+            );
+
             #[allow(clippy::as_conversions)]
             #[allow(clippy::cast_possible_truncation)]
             #[allow(clippy::cast_precision_loss)]

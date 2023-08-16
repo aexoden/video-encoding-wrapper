@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::{Parser, ValueEnum};
 use sha2::{Digest, Sha256};
@@ -122,6 +122,7 @@ impl std::fmt::Display for Metric {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Encoder {
     Aomenc,
+    SvtAv1,
     Vpxenc,
     X264,
     X265,
@@ -131,6 +132,7 @@ impl std::fmt::Display for Encoder {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Aomenc => write!(f, "aomenc"),
+            Self::SvtAv1 => write!(f, "SvtAv1EncApp"),
             Self::Vpxenc => write!(f, "vpxenc"),
             Self::X264 => write!(f, "x264"),
             Self::X265 => write!(f, "x265"),
@@ -142,7 +144,7 @@ impl Encoder {
     #[must_use]
     pub fn extension(&self) -> String {
         match self {
-            Self::Aomenc | Self::Vpxenc => "ivf",
+            Self::Aomenc | Self::SvtAv1 | Self::Vpxenc => "ivf",
             Self::X264 => "mkv",
             Self::X265 => "hevc",
         }
@@ -153,6 +155,7 @@ impl Encoder {
     pub const fn quality_range(&self, mode: &Mode) -> QualityRange {
         match self {
             Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1),
+            Self::SvtAv1 => QualityRange::new(1, 63, 1),
             Self::X264 => match mode {
                 Mode::CRF => QualityRange::new(-12, 51, 4),
                 Mode::QP => QualityRange::new(1, 81, 1),
@@ -172,6 +175,16 @@ impl Encoder {
                 "--bit-depth=10".to_owned(),
                 "--threads=1".to_owned(),
                 format!("--kf-max-dist={key_frame_interval}"),
+            ],
+            Self::SvtAv1 => vec![
+                "--preset".to_owned(),
+                preset.to_owned(),
+                "--keyint".to_owned(),
+                format!("{key_frame_interval}"),
+                "--lp".to_owned(),
+                "1".to_owned(),
+                "--progress".to_owned(),
+                "2".to_owned(),
             ],
             Self::Vpxenc => vec![
                 format!("--cpu-used={preset}"),
@@ -224,6 +237,14 @@ impl Encoder {
                     "--dist-metric=qm-psnr".to_owned(),
                 ]
             }
+            Self::SvtAv1 => {
+                vec![
+                    "--tune".to_owned(),
+                    "0".to_owned(),
+                    "--enable-overlays".to_owned(),
+                    "1".to_owned(),
+                ]
+            }
             Self::Vpxenc => {
                 vec!["--tune=ssim".to_owned()]
             }
@@ -234,11 +255,13 @@ impl Encoder {
     }
 
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn arguments(
         &self,
         preset: &str,
         key_frame_interval: usize,
         pass: Option<usize>,
+        output_file: &Path,
         stats_file: Option<&PathBuf>,
         mode: Mode,
         qp: f64,
@@ -268,6 +291,22 @@ impl Encoder {
 
                 arguments.push("-y".to_owned());
             }
+            Self::SvtAv1 => {
+                match mode {
+                    Mode::CRF => {
+                        arguments.push("--crf".to_owned());
+                    }
+                    Mode::QP => {
+                        arguments.push("--rc".to_owned());
+                        arguments.push("0".to_owned());
+                        arguments.push("--aq-mode".to_owned());
+                        arguments.push("0".to_owned());
+                        arguments.push("--qp".to_owned());
+                    }
+                }
+
+                arguments.push(qp_string);
+            }
             Self::X264 | Self::X265 => {
                 match mode {
                     Mode::CRF => {
@@ -291,6 +330,14 @@ impl Encoder {
                         arguments.push(format!("--pass={pass}"));
                         arguments.push(format!("--fpf={}", stats_file.to_string_lossy()));
                     }
+                    Self::SvtAv1 => {
+                        arguments.push("--passes".to_owned());
+                        arguments.push("2".to_owned());
+                        arguments.push("--pass".to_owned());
+                        arguments.push(format!("{pass}"));
+                        arguments.push("--stats".to_owned());
+                        arguments.push(stats_file.to_string_lossy().to_string());
+                    }
                     Self::X264 | Self::X265 => {
                         arguments.push("--pass".to_owned());
                         arguments.push(format!("{pass}"));
@@ -298,6 +345,21 @@ impl Encoder {
                         arguments.push(stats_file.to_string_lossy().to_string());
                     }
                 }
+            }
+        }
+
+        // Filename Arguments
+        match self {
+            Self::Aomenc | Self::Vpxenc | Self::X264 | Self::X265 => {
+                arguments.push("-o".to_owned());
+                arguments.push(output_file.to_string_lossy().to_string());
+                arguments.push("-".to_owned());
+            }
+            Self::SvtAv1 => {
+                arguments.push("-b".to_owned());
+                arguments.push(output_file.to_string_lossy().to_string());
+                arguments.push("-i".to_owned());
+                arguments.push("-".to_owned());
             }
         }
 

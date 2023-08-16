@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
@@ -7,7 +8,6 @@ use anyhow::{anyhow, Context};
 use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use statrs::statistics::{Data, OrderStatistics};
-use tracing::error;
 
 use crate::config::{Config, Metric, QualityRule};
 use crate::ffmpeg::{create_child_read, Metadata};
@@ -101,7 +101,9 @@ impl Encoder {
     pub const fn passes(&self) -> usize {
         match self.config.encoder {
             crate::config::Encoder::Aomenc | crate::config::Encoder::Vpxenc => 2,
-            crate::config::Encoder::X264 | crate::config::Encoder::X265 => 1,
+            crate::config::Encoder::SvtAv1
+            | crate::config::Encoder::X264
+            | crate::config::Encoder::X265 => 1,
         }
     }
 
@@ -600,13 +602,11 @@ impl Encoder {
                     &self.config.preset,
                     key_frame_interval,
                     (self.passes() > 1).then_some(passes),
+                    &temporary_output_filename,
                     Some(&stats_filename),
                     self.config.mode,
                     qp,
                 ))
-                .arg("-o")
-                .arg(&temporary_output_filename)
-                .arg("-")
                 .stdin(decoder_stdout)
                 .stdout(Stdio::null())
                 .stderr(Stdio::piped())
@@ -619,6 +619,7 @@ impl Encoder {
                 })?);
 
             let mut buffer = Vec::with_capacity(256);
+            let mut old_buffer = VecDeque::with_capacity(32);
 
             while let Ok(bytes) = encoder_stderr.read_until(b'\r', &mut buffer) {
                 if bytes == 0 {
@@ -633,21 +634,31 @@ impl Encoder {
                             &format!("{progress_prefix}{line}"),
                         );
                     }
+
+                    old_buffer.push_back(line.to_owned());
+                }
+
+                while old_buffer.len() > 32 {
+                    old_buffer.pop_front();
                 }
 
                 buffer.clear();
             }
 
-            let child_error_code = encoder_pipe
+            let result = encoder_pipe
                 .wait()
                 .context("Unable to wait for video encoder subprocess")?;
 
-            if !child_error_code.success() {
-                error!("encoder exited with status {child_error_code}");
+            if !result.success() {
+                return Err(anyhow!(
+                    "Encoder process exited with status {} and output {:#?}",
+                    result,
+                    &old_buffer
+                ));
             }
 
             if temporary_output_filename.exists() {
-                if child_error_code.success() {
+                if result.success() {
                     std::fs::rename(&temporary_output_filename, &output_filename).with_context(
                         || {
                             format!(

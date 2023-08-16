@@ -157,6 +157,8 @@ impl Encoder {
                         .get(thread_index)
                         .ok_or_else(|| anyhow!("Unable to access encoding worker progress bar"))?;
 
+                    clear_worker_message(worker_progress_bar);
+
                     Ok(scope.spawn(|| -> anyhow::Result<()> {
                         while let Some(scene) = &scene_queue.pop() {
                             let (result, quality) =

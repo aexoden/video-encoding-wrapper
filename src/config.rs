@@ -122,6 +122,7 @@ impl std::fmt::Display for Metric {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Encoder {
     Aomenc,
+    Vpxenc,
     X264,
     X265,
 }
@@ -130,6 +131,7 @@ impl std::fmt::Display for Encoder {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Aomenc => write!(f, "aomenc"),
+            Self::Vpxenc => write!(f, "vpxenc"),
             Self::X264 => write!(f, "x264"),
             Self::X265 => write!(f, "x265"),
         }
@@ -140,7 +142,7 @@ impl Encoder {
     #[must_use]
     pub fn extension(&self) -> String {
         match self {
-            Self::Aomenc => "ivf",
+            Self::Aomenc | Self::Vpxenc => "ivf",
             Self::X264 => "mkv",
             Self::X265 => "hevc",
         }
@@ -150,7 +152,7 @@ impl Encoder {
     #[must_use]
     pub const fn quality_range(&self, mode: &Mode) -> QualityRange {
         match self {
-            Self::Aomenc => QualityRange::new(0, 63, 1),
+            Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1),
             Self::X264 => match mode {
                 Mode::CRF => QualityRange::new(-12, 51, 4),
                 Mode::QP => QualityRange::new(1, 81, 1),
@@ -168,6 +170,14 @@ impl Encoder {
             Self::Aomenc => vec![
                 format!("--cpu-used={preset}"),
                 "--bit-depth=10".to_owned(),
+                "--threads=1".to_owned(),
+                format!("--kf-max-dist={key_frame_interval}"),
+            ],
+            Self::Vpxenc => vec![
+                format!("--cpu-used={preset}"),
+                "--codec=vp9".to_owned(),
+                "--bit-depth=10".to_owned(),
+                "--profile=2".to_owned(),
                 "--threads=1".to_owned(),
                 format!("--kf-max-dist={key_frame_interval}"),
             ],
@@ -214,6 +224,9 @@ impl Encoder {
                     "--dist-metric=qm-psnr".to_owned(),
                 ]
             }
+            Self::Vpxenc => {
+                vec!["--tune=ssim".to_owned()]
+            }
             Self::X264 | Self::X265 => {
                 vec![]
             }
@@ -244,7 +257,7 @@ impl Encoder {
         };
 
         match self {
-            Self::Aomenc => {
+            Self::Aomenc | Self::Vpxenc => {
                 arguments.push("--end-usage=q".to_owned());
                 arguments.push(format!("--cq-level={qp_string}"));
 
@@ -273,7 +286,7 @@ impl Encoder {
         if let Some(pass) = pass {
             if let Some(stats_file) = stats_file {
                 match self {
-                    Self::Aomenc => {
+                    Self::Aomenc | Self::Vpxenc => {
                         arguments.push("--passes=2".to_owned());
                         arguments.push(format!("--pass={pass}"));
                         arguments.push(format!("--fpf={}", stats_file.to_string_lossy()));

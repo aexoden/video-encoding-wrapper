@@ -70,6 +70,7 @@ fn guess_color_primaries(
     }
 }
 
+#[allow(clippy::significant_drop_tightening)]
 fn calc_score<S: Pixel, D: Pixel, E: Decoder, F: Decoder>(
     mutex: &Mutex<(usize, (E, F))>,
     reference_yuv_config: YuvConfig,

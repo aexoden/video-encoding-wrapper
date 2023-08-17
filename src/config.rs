@@ -160,7 +160,7 @@ impl Encoder {
             Self::Rav1e => QualityRange::new(0, 255, 1),
             Self::SvtAv1 => QualityRange::new(1, 63, 1),
             Self::X264 => match mode {
-                Mode::CRF => QualityRange::new(-12, 51, 4),
+                Mode::CRF => QualityRange::new(-10, 51, 4),
                 Mode::QP => QualityRange::new(1, 81, 1),
             },
             Self::X265 => match mode {
@@ -267,6 +267,7 @@ impl Encoder {
 
     #[must_use]
     #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_lines)]
     pub fn arguments(
         &self,
         preset: &str,

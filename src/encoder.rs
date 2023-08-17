@@ -101,7 +101,8 @@ impl Encoder {
     pub const fn passes(&self) -> usize {
         match self.config.encoder {
             crate::config::Encoder::Aomenc | crate::config::Encoder::Vpxenc => 2,
-            crate::config::Encoder::SvtAv1
+            crate::config::Encoder::Rav1e
+            | crate::config::Encoder::SvtAv1
             | crate::config::Encoder::X264
             | crate::config::Encoder::X265 => 1,
         }

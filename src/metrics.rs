@@ -198,7 +198,11 @@ impl ClipMetrics {
             (
                 input.index(),
                 input_context.duration(),
-                input.avg_frame_rate(),
+                if input.avg_frame_rate() > ffmpeg::Rational(0, 1) {
+                    input.avg_frame_rate()
+                } else {
+                    input.rate()
+                },
                 input_context,
             )
         };

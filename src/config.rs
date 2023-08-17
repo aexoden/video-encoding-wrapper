@@ -122,6 +122,7 @@ impl std::fmt::Display for Metric {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Encoder {
     Aomenc,
+    Rav1e,
     SvtAv1,
     Vpxenc,
     X264,
@@ -132,6 +133,7 @@ impl std::fmt::Display for Encoder {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Aomenc => write!(f, "aomenc"),
+            Self::Rav1e => write!(f, "rav1e"),
             Self::SvtAv1 => write!(f, "SvtAv1EncApp"),
             Self::Vpxenc => write!(f, "vpxenc"),
             Self::X264 => write!(f, "x264"),
@@ -144,7 +146,7 @@ impl Encoder {
     #[must_use]
     pub fn extension(&self) -> String {
         match self {
-            Self::Aomenc | Self::SvtAv1 | Self::Vpxenc => "ivf",
+            Self::Aomenc | Self::Rav1e | Self::SvtAv1 | Self::Vpxenc => "ivf",
             Self::X264 => "mkv",
             Self::X265 => "hevc",
         }
@@ -155,6 +157,7 @@ impl Encoder {
     pub const fn quality_range(&self, mode: &Mode) -> QualityRange {
         match self {
             Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1),
+            Self::Rav1e => QualityRange::new(0, 255, 1),
             Self::SvtAv1 => QualityRange::new(1, 63, 1),
             Self::X264 => match mode {
                 Mode::CRF => QualityRange::new(-12, 51, 4),
@@ -175,6 +178,14 @@ impl Encoder {
                 "--bit-depth=10".to_owned(),
                 "--threads=1".to_owned(),
                 format!("--kf-max-dist={key_frame_interval}"),
+            ],
+            Self::Rav1e => vec![
+                "--speed".to_owned(),
+                preset.to_owned(),
+                "--threads".to_owned(),
+                "1".to_owned(),
+                "--keyint".to_owned(),
+                format!("{key_frame_interval}"),
             ],
             Self::SvtAv1 => vec![
                 "--preset".to_owned(),
@@ -248,7 +259,7 @@ impl Encoder {
             Self::Vpxenc => {
                 vec!["--tune=ssim".to_owned()]
             }
-            Self::X264 | Self::X265 => {
+            Self::Rav1e | Self::X264 | Self::X265 => {
                 vec![]
             }
         }
@@ -279,6 +290,7 @@ impl Encoder {
             format!("{qp:0.2}")
         };
 
+        #[allow(clippy::unreachable)]
         match self {
             Self::Aomenc | Self::Vpxenc => {
                 arguments.push("--end-usage=q".to_owned());
@@ -291,6 +303,15 @@ impl Encoder {
 
                 arguments.push("-y".to_owned());
             }
+            Self::Rav1e => match mode {
+                Mode::CRF => {
+                    unreachable!();
+                }
+                Mode::QP => {
+                    arguments.push("--quantizer".to_owned());
+                    arguments.push(qp_string);
+                }
+            },
             Self::SvtAv1 => {
                 match mode {
                     Mode::CRF => {
@@ -330,6 +351,14 @@ impl Encoder {
                         arguments.push(format!("--pass={pass}"));
                         arguments.push(format!("--fpf={}", stats_file.to_string_lossy()));
                     }
+                    Self::Rav1e => {
+                        arguments.push(match pass {
+                            1 => "--first-pass".to_owned(),
+                            _ => "--second-pass".to_owned(),
+                        });
+
+                        arguments.push(stats_file.to_string_lossy().to_string());
+                    }
                     Self::SvtAv1 => {
                         arguments.push("--passes".to_owned());
                         arguments.push("2".to_owned());
@@ -350,7 +379,7 @@ impl Encoder {
 
         // Filename Arguments
         match self {
-            Self::Aomenc | Self::Vpxenc | Self::X264 | Self::X265 => {
+            Self::Aomenc | Self::Rav1e | Self::Vpxenc | Self::X264 | Self::X265 => {
                 arguments.push("-o".to_owned());
                 arguments.push(output_file.to_string_lossy().to_string());
                 arguments.push("-".to_owned());

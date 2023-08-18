@@ -3,19 +3,32 @@ use std::path::{Path, PathBuf};
 use clap::{Parser, ValueEnum};
 use sha2::{Digest, Sha256};
 
+#[derive(Debug)]
 pub struct QualityRange {
     minimum: i64,
     maximum: i64,
     divisor: i64,
+    bitrate: bool,
 }
 
 impl QualityRange {
     #[must_use]
-    pub const fn new(minimum: i64, maximum: i64, divisor: i64) -> Self {
-        Self {
-            minimum: minimum * divisor,
-            maximum: maximum * divisor,
-            divisor,
+    #[allow(clippy::integer_division)]
+    pub const fn new(minimum: i64, maximum: i64, divisor: i64, bitrate: bool) -> Self {
+        if bitrate {
+            Self {
+                minimum: minimum / divisor,
+                maximum: maximum / divisor,
+                divisor,
+                bitrate,
+            }
+        } else {
+            Self {
+                minimum: minimum * divisor,
+                maximum: maximum * divisor,
+                divisor,
+                bitrate,
+            }
         }
     }
 
@@ -31,6 +44,8 @@ impl QualityRange {
     pub fn current(&self) -> Option<f64> {
         if self.minimum > self.maximum {
             None
+        } else if self.bitrate {
+            Some(self.midpoint() as f64 * self.divisor as f64)
         } else {
             Some(self.midpoint() as f64 / self.divisor as f64)
         }
@@ -45,22 +60,30 @@ impl QualityRange {
     }
 
     #[must_use]
-    pub const fn divisor(&self) -> i64 {
-        self.divisor
+    pub const fn integer(&self) -> bool {
+        self.bitrate || self.divisor == 1
     }
 
     #[must_use]
     #[allow(clippy::as_conversions)]
     #[allow(clippy::cast_precision_loss)]
     pub fn minimum(&self) -> f64 {
-        self.minimum as f64 / self.divisor as f64
+        if self.bitrate {
+            self.minimum as f64 * self.divisor as f64
+        } else {
+            self.minimum as f64 / self.divisor as f64
+        }
     }
 
     #[must_use]
     #[allow(clippy::as_conversions)]
     #[allow(clippy::cast_precision_loss)]
     pub fn maximum(&self) -> f64 {
-        self.maximum as f64 / self.divisor as f64
+        if self.bitrate {
+            self.maximum as f64 * self.divisor as f64
+        } else {
+            self.maximum as f64 / self.divisor as f64
+        }
     }
 }
 
@@ -85,6 +108,7 @@ impl std::fmt::Display for QualityRule {
 pub enum Mode {
     QP,
     CRF,
+    Bitrate,
 }
 
 impl std::fmt::Display for Mode {
@@ -92,6 +116,7 @@ impl std::fmt::Display for Mode {
         match self {
             Self::QP => write!(f, "qp"),
             Self::CRF => write!(f, "crf"),
+            Self::Bitrate => write!(f, "bitrate"),
         }
     }
 }
@@ -155,17 +180,32 @@ impl Encoder {
 
     #[must_use]
     pub const fn quality_range(&self, mode: &Mode) -> QualityRange {
-        match self {
-            Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1),
-            Self::Rav1e => QualityRange::new(0, 255, 1),
-            Self::SvtAv1 => QualityRange::new(1, 63, 1),
-            Self::X264 => match mode {
-                Mode::CRF => QualityRange::new(-10, 51, 4),
-                Mode::QP => QualityRange::new(1, 81, 1),
+        match mode {
+            Mode::Bitrate => QualityRange::new(100, 30000, 100, true),
+            Mode::CRF => match self {
+                Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1, false),
+                Self::Rav1e => QualityRange::new(0, 255, 1, false),
+                Self::SvtAv1 => QualityRange::new(1, 63, 1, false),
+                Self::X264 => QualityRange::new(-10, 51, 4, false),
+                Self::X265 => QualityRange::new(0, 51, 4, false),
             },
-            Self::X265 => match mode {
-                Mode::CRF => QualityRange::new(0, 51, 4),
-                Mode::QP => QualityRange::new(0, 51, 1),
+            Mode::QP => match self {
+                Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1, false),
+                Self::Rav1e => QualityRange::new(0, 255, 1, false),
+                Self::SvtAv1 => QualityRange::new(1, 63, 1, false),
+                Self::X264 => QualityRange::new(1, 81, 1, false),
+                Self::X265 => QualityRange::new(0, 51, 1, false),
+            },
+        }
+    }
+
+    #[must_use]
+    pub const fn passes(&self, config: &Config) -> usize {
+        match config.mode {
+            Mode::Bitrate => 2,
+            Mode::CRF | crate::config::Mode::QP => match self {
+                Self::Aomenc | Self::Vpxenc => 2,
+                Self::Rav1e | Self::SvtAv1 | Self::X264 | Self::X265 => 1,
             },
         }
     }
@@ -235,7 +275,7 @@ impl Encoder {
     }
 
     #[must_use]
-    pub fn tune_arguments(&self) -> Vec<String> {
+    pub fn tune_arguments(&self, config: &Config) -> Vec<String> {
         match self {
             Self::Aomenc => {
                 vec![
@@ -249,12 +289,16 @@ impl Encoder {
                 ]
             }
             Self::SvtAv1 => {
-                vec![
-                    "--tune".to_owned(),
-                    "0".to_owned(),
-                    "--enable-overlays".to_owned(),
-                    "1".to_owned(),
-                ]
+                if self.passes(config) > 1 {
+                    vec!["--tune".to_owned(), "0".to_owned()]
+                } else {
+                    vec![
+                        "--tune".to_owned(),
+                        "0".to_owned(),
+                        "--enable-overlays".to_owned(),
+                        "1".to_owned(),
+                    ]
+                }
             }
             Self::Vpxenc => {
                 vec!["--tune=ssim".to_owned()]
@@ -270,6 +314,7 @@ impl Encoder {
     #[allow(clippy::too_many_lines)]
     pub fn arguments(
         &self,
+        config: &Config,
         preset: &str,
         key_frame_interval: usize,
         pass: Option<usize>,
@@ -282,10 +327,10 @@ impl Encoder {
         let mut arguments = self.base_arguments(preset, key_frame_interval);
 
         // Tune Arguments
-        arguments.extend(self.tune_arguments());
+        arguments.extend(self.tune_arguments(config));
 
         // Quality Arguments
-        let qp_string = if self.quality_range(&mode).divisor == 1 {
+        let qp_string = if self.quality_range(&mode).integer() {
             format!("{qp:0}")
         } else {
             format!("{qp:0.2}")
@@ -293,18 +338,28 @@ impl Encoder {
 
         #[allow(clippy::unreachable)]
         match self {
-            Self::Aomenc | Self::Vpxenc => {
-                arguments.push("--end-usage=q".to_owned());
-                arguments.push(format!("--cq-level={qp_string}"));
-
-                if mode == Mode::QP {
-                    arguments.push(format!("--min-q={qp_string}"));
-                    arguments.push(format!("--max-q={qp_string}"));
+            Self::Aomenc | Self::Vpxenc => match mode {
+                Mode::Bitrate => {
+                    arguments.push("--end-usage=vbr".to_owned());
+                    arguments.push(format!("--target-bitrate={qp_string}"));
+                    arguments.push("--bias-pct=100".to_owned());
                 }
+                Mode::CRF | Mode::QP => {
+                    arguments.push("--end-usage=q".to_owned());
+                    arguments.push(format!("--cq-level={qp_string}"));
 
-                arguments.push("-y".to_owned());
-            }
+                    if mode == Mode::QP {
+                        arguments.push(format!("--min-q={qp_string}"));
+                        arguments.push(format!("--max-q={qp_string}"));
+                        arguments.push("-y".to_owned());
+                    }
+                }
+            },
             Self::Rav1e => match mode {
+                Mode::Bitrate => {
+                    arguments.push("--bitrate".to_owned());
+                    arguments.push(qp_string);
+                }
                 Mode::CRF => {
                     unreachable!();
                 }
@@ -315,6 +370,11 @@ impl Encoder {
             },
             Self::SvtAv1 => {
                 match mode {
+                    Mode::Bitrate => {
+                        arguments.push("--rc".to_owned());
+                        arguments.push("1".to_owned());
+                        arguments.push("--tbr".to_owned());
+                    }
                     Mode::CRF => {
                         arguments.push("--crf".to_owned());
                     }
@@ -331,6 +391,9 @@ impl Encoder {
             }
             Self::X264 | Self::X265 => {
                 match mode {
+                    Mode::Bitrate => {
+                        arguments.push("--bitrate".to_owned());
+                    }
                     Mode::CRF => {
                         arguments.push("--crf".to_owned());
                     }
@@ -360,15 +423,7 @@ impl Encoder {
 
                         arguments.push(stats_file.to_string_lossy().to_string());
                     }
-                    Self::SvtAv1 => {
-                        arguments.push("--passes".to_owned());
-                        arguments.push("2".to_owned());
-                        arguments.push("--pass".to_owned());
-                        arguments.push(format!("{pass}"));
-                        arguments.push("--stats".to_owned());
-                        arguments.push(stats_file.to_string_lossy().to_string());
-                    }
-                    Self::X264 | Self::X265 => {
+                    Self::SvtAv1 | Self::X264 | Self::X265 => {
                         arguments.push("--pass".to_owned());
                         arguments.push(format!("{pass}"));
                         arguments.push("--stats".to_owned());
@@ -441,13 +496,18 @@ pub struct Config {
 
 impl Config {
     fn encode_arguments_hash(&self) -> String {
-        let tune_arguments = self.encoder.tune_arguments();
+        let tune_arguments = self.encoder.tune_arguments(self);
 
         let mut hasher = Sha256::new();
         hasher.update(tune_arguments.join(" "));
         let result = hasher.finalize();
 
         base16ct::lower::encode_string(&result)
+    }
+
+    #[must_use]
+    pub const fn passes(&self) -> usize {
+        self.encoder.passes(self)
     }
 
     #[must_use]
@@ -476,6 +536,7 @@ impl Config {
     #[must_use]
     pub fn mode_description(&self) -> String {
         match self.mode {
+            Mode::Bitrate => "Bitrate".to_owned(),
             Mode::CRF => "CRF".to_owned(),
             Mode::QP => "QP".to_owned(),
         }

@@ -106,6 +106,7 @@ pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
     }
 
     let max_length = min(70, data.len());
+    let digits = max_value.log10().ceil() as usize;
 
     for (i, &count) in buckets.iter().enumerate() {
         let lower_bound = (i as f64).mul_add(bucket_size, min_value);
@@ -114,7 +115,7 @@ pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
         #[allow(clippy::integer_division)]
         let bar = "*".repeat(max_length * count / data.len());
 
-        println!("{lower_bound:3} - {upper_bound:3} {count:5} {bar}");
+        println!("{lower_bound:digits$} - {upper_bound:digits$} {count:6} {bar}");
     }
 
     Ok(())

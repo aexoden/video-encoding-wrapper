@@ -9,7 +9,7 @@ use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use statrs::statistics::{Data, OrderStatistics};
 
-use crate::config::{Config, Metric, QualityRule};
+use crate::config::{Config, Metric, Mode, QualityRule};
 use crate::ffmpeg::{create_child_read, Metadata};
 use crate::metrics::ClipMetrics;
 use crate::scenes::Scene;
@@ -95,17 +95,6 @@ impl Encoder {
             encode_directory,
             active_workers: config.workers.into(),
         })
-    }
-
-    #[must_use]
-    pub const fn passes(&self) -> usize {
-        match self.config.encoder {
-            crate::config::Encoder::Aomenc | crate::config::Encoder::Vpxenc => 2,
-            crate::config::Encoder::Rav1e
-            | crate::config::Encoder::SvtAv1
-            | crate::config::Encoder::X264
-            | crate::config::Encoder::X265 => 1,
-        }
     }
 
     #[allow(clippy::print_stdout)]
@@ -364,10 +353,21 @@ impl Encoder {
         } else {
             let mut quality_range = self.config.encoder.quality_range(&self.config.mode);
 
-            let mut best_quality = if self.config.rule == QualityRule::Maximum {
-                quality_range.maximum()
-            } else {
-                quality_range.minimum()
+            let mut best_quality = match self.config.mode {
+                Mode::Bitrate => {
+                    if self.config.rule == QualityRule::Maximum {
+                        quality_range.minimum()
+                    } else {
+                        quality_range.maximum()
+                    }
+                }
+                Mode::CRF | Mode::QP => {
+                    if self.config.rule == QualityRule::Maximum {
+                        quality_range.maximum()
+                    } else {
+                        quality_range.minimum()
+                    }
+                }
             };
 
             let mut best_score = f64::MIN;
@@ -376,13 +376,25 @@ impl Encoder {
                 let true_minimum = quality_range.minimum().min(best_quality);
                 let true_maximum = quality_range.maximum().max(best_quality);
 
-                let search_description = if quality_range.divisor() == 1 {
+                let best_score_text = if best_score < -10_000.0_f64 {
+                    "N/A".to_owned()
+                } else {
+                    format!("{best_score:0.3}")
+                };
+
+                let search_description = if quality_range.integer() {
+                    let digits = if self.config.mode == Mode::Bitrate {
+                        6
+                    } else {
+                        4
+                    };
+
                     format!(
-                        "Quality Search {true_minimum:4} - {true_maximum:4} ({current_quality:4}): ",
+                        "Quality Search :: Current Range: {true_minimum:digits$} - {true_maximum:digits$} ({current_quality:digits$}) :: Current Best: {best_quality:digits$} => {best_score_text:9} :: ",
                     )
                 } else {
                     format!(
-                        "Quality Search {true_minimum:7.2} - {true_maximum:0.2} ({current_quality:7.2}): ",
+                        "Quality Search :: Current Range: {true_minimum:7.2} - {true_maximum:0.2} ({current_quality:7.2}) :: Current Best: (Current Best: {best_quality} => {best_score_text}) :: ",
                     )
                 };
 
@@ -397,7 +409,7 @@ impl Encoder {
                         scene,
                         progress_bar,
                         &search_description,
-                        self.passes(),
+                        self.config.passes(),
                         current_quality,
                     )
                     .context("Unable to encode scene")?;
@@ -456,30 +468,58 @@ impl Encoder {
                 let metric_value = Data::new(metric_values).quantile(self.config.percentile);
 
                 match self.config.rule {
-                    QualityRule::Maximum => {
-                        if metric_value <= self.config.quality {
-                            if current_quality < best_quality {
-                                best_quality = current_quality;
-                                best_score = metric_value;
-                            }
+                    QualityRule::Maximum => match self.config.mode {
+                        Mode::Bitrate => {
+                            if metric_value <= self.config.quality {
+                                if current_quality > best_quality {
+                                    best_quality = current_quality;
+                                    best_score = metric_value;
+                                }
 
-                            quality_range.lower();
-                        } else {
-                            quality_range.higher();
-                        }
-                    }
-                    QualityRule::Minimum => {
-                        if metric_value >= self.config.quality {
-                            if current_quality > best_quality {
-                                best_quality = current_quality;
-                                best_score = metric_value;
+                                quality_range.higher();
+                            } else {
+                                quality_range.lower();
                             }
-
-                            quality_range.higher();
-                        } else {
-                            quality_range.lower();
                         }
-                    }
+                        Mode::CRF | Mode::QP => {
+                            if metric_value <= self.config.quality {
+                                if current_quality < best_quality {
+                                    best_quality = current_quality;
+                                    best_score = metric_value;
+                                }
+
+                                quality_range.lower();
+                            } else {
+                                quality_range.higher();
+                            }
+                        }
+                    },
+                    QualityRule::Minimum => match self.config.mode {
+                        Mode::Bitrate => {
+                            if metric_value >= self.config.quality {
+                                if current_quality < best_quality {
+                                    best_quality = current_quality;
+                                    best_score = metric_value;
+                                }
+
+                                quality_range.lower();
+                            } else {
+                                quality_range.higher();
+                            }
+                        }
+                        Mode::CRF | Mode::QP => {
+                            if metric_value >= self.config.quality {
+                                if current_quality > best_quality {
+                                    best_quality = current_quality;
+                                    best_score = metric_value;
+                                }
+
+                                quality_range.higher();
+                            } else {
+                                quality_range.lower();
+                            }
+                        }
+                    },
                     QualityRule::Target => {
                         let current_delta = (self.config.quality - best_score).abs();
                         let new_delta = (self.config.quality - metric_value).abs();
@@ -502,7 +542,7 @@ impl Encoder {
         };
 
         Ok((
-            self.encode_scene_single(scene, progress_bar, "", self.passes(), quality)
+            self.encode_scene_single(scene, progress_bar, "", self.config.passes(), quality)
                 .with_context(|| {
                     format!(
                         "Unable to encode scene {:05} at quality {quality}",
@@ -522,17 +562,6 @@ impl Encoder {
         passes: usize,
         qp: f64,
     ) -> anyhow::Result<PathBuf> {
-        if passes > 1 {
-            self.encode_scene_single(scene, progress_bar, progress_prefix, passes - 1, qp)
-                .with_context(|| {
-                    format!(
-                        "Unable to encode pass {} of scene {}",
-                        passes - 1,
-                        scene.index()
-                    )
-                })?;
-        }
-
         let output_path = self
             .encode_directory
             .join(format!("scene-{:05}", scene.index()));
@@ -545,10 +574,15 @@ impl Encoder {
             .config
             .encoder
             .quality_range(&self.config.mode)
-            .divisor()
-            == 1
+            .integer()
         {
-            format!("{}-{qp:03}", self.config.mode)
+            let digits = if self.config.mode == Mode::Bitrate {
+                6
+            } else {
+                3
+            };
+
+            format!("{}-{qp:0digits$}", self.config.mode)
         } else {
             format!("{}-{qp:05.2}", self.config.mode)
         };
@@ -572,6 +606,17 @@ impl Encoder {
         }
 
         if !output_filename.exists() {
+            if passes > 1 {
+                self.encode_scene_single(scene, progress_bar, progress_prefix, passes - 1, qp)
+                    .with_context(|| {
+                        format!(
+                            "Unable to encode pass {} of scene {}",
+                            passes - 1,
+                            scene.index()
+                        )
+                    })?;
+            }
+
             let input_filename = self
                 .config
                 .output_directory
@@ -606,9 +651,10 @@ impl Encoder {
 
             let mut encoder_pipe = Command::new(self.config.encoder.to_string())
                 .args(self.config.encoder.arguments(
+                    &self.config,
                     &self.config.preset,
                     key_frame_interval,
-                    (self.passes() > 1).then_some(passes),
+                    (self.config.passes() > 1).then_some(passes),
                     &temporary_output_filename,
                     Some(&stats_filename),
                     self.config.mode,
@@ -681,7 +727,7 @@ impl Encoder {
             }
         }
 
-        if stats_filename.exists() && passes == self.passes() {
+        if stats_filename.exists() && passes == self.config.passes() {
             std::fs::remove_file(stats_filename).context("Unable to remove encoding stats file")?;
         }
 

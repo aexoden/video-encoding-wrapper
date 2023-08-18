@@ -159,7 +159,7 @@ impl std::fmt::Display for Encoder {
         match self {
             Self::Aomenc => write!(f, "aomenc"),
             Self::Rav1e => write!(f, "rav1e"),
-            Self::SvtAv1 => write!(f, "SvtAv1EncApp"),
+            Self::SvtAv1 => write!(f, "svt-av1"),
             Self::Vpxenc => write!(f, "vpxenc"),
             Self::X264 => write!(f, "x264"),
             Self::X265 => write!(f, "x265"),
@@ -176,6 +176,14 @@ impl Encoder {
             Self::X265 => "hevc",
         }
         .to_owned()
+    }
+
+    #[must_use]
+    pub fn command(&self) -> String {
+        match self {
+            Self::Aomenc | Self::Rav1e | Self::Vpxenc | Self::X264 | Self::X265 => self.to_string(),
+            Self::SvtAv1 => "SvtAv1EncApp".to_owned(),
+        }
     }
 
     #[must_use]

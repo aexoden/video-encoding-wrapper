@@ -198,14 +198,14 @@ impl Encoder {
             Mode::Bitrate => QualityRange::new(100, 30000, 100, true),
             Mode::CRF => match self {
                 Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1, false),
-                Self::Rav1e => QualityRange::new(0, 255, 1, false),
+                Self::Rav1e => QualityRange::new(1, 255, 1, false),
                 Self::SvtAv1 => QualityRange::new(1, 63, 1, false),
                 Self::X264 => QualityRange::new(-10, 51, 4, false),
                 Self::X265 => QualityRange::new(0, 51, 4, false),
             },
             Mode::QP => match self {
                 Self::Aomenc | Self::Vpxenc => QualityRange::new(0, 63, 1, false),
-                Self::Rav1e => QualityRange::new(0, 255, 1, false),
+                Self::Rav1e => QualityRange::new(1, 255, 1, false),
                 Self::SvtAv1 => QualityRange::new(1, 63, 1, false),
                 Self::X264 => QualityRange::new(1, 81, 1, false),
                 Self::X265 => QualityRange::new(0, 51, 1, false),

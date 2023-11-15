@@ -1,8 +1,13 @@
+use std::cmp;
 use std::collections::VecDeque;
+use std::fs;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+use std::str;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::thread;
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use crossbeam_queue::ArrayQueue;
@@ -10,9 +15,9 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use statrs::statistics::{Data, OrderStatistics};
 
 use crate::config::{Config, Metric, Mode, QualityRule};
-use crate::ffmpeg::{create_child_read, Metadata};
+use crate::ffmpeg::{create_child_read, get_metadata, Metadata};
 use crate::metrics::ClipMetrics;
-use crate::scenes::Scene;
+use crate::scenes::{get, Scene};
 use crate::util::{
     create_progress_style, print_histogram, print_stats, verify_directory, HumanBitrate,
 };
@@ -78,8 +83,8 @@ pub struct Encoder {
 
 impl Encoder {
     pub fn new(config: &Config) -> anyhow::Result<Self> {
-        let mut scenes = crate::scenes::get(config).context("Unable to fetch scene data")?;
-        scenes.sort_by_key(|a| std::cmp::Reverse(a.length()));
+        let mut scenes = get(config).context("Unable to fetch scene data")?;
+        scenes.sort_by_key(|x| cmp::Reverse(x.length()));
 
         let encode_directory = config
             .output_directory
@@ -89,7 +94,7 @@ impl Encoder {
         Ok(Self {
             config: config.clone(),
             scenes,
-            metadata: crate::ffmpeg::get_metadata(config).with_context(|| {
+            metadata: get_metadata(config).with_context(|| {
                 format!("Unable to fetch video metadata for {:?}", &config.source)
             })?,
             encode_directory,
@@ -138,11 +143,11 @@ impl Encoder {
 
         let progress_bar = multi_progress.add(progress_bar);
         progress_bar.reset();
-        progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
+        progress_bar.enable_steady_tick(Duration::from_secs(1));
 
         let mut clips: Vec<ClipMetrics> = vec![];
 
-        std::thread::scope(|scope| -> anyhow::Result<()> {
+        thread::scope(|scope| -> anyhow::Result<()> {
             let threads = (0..self.config.workers)
                 .map(|thread_index| -> anyhow::Result<_> {
                     let worker_progress_bar = worker_progress_bars
@@ -257,7 +262,7 @@ impl Encoder {
         })
         .context("Unable to execute encoding workers")?;
 
-        clips.sort_by(|a, b| a.path().cmp(b.path()));
+        clips.sort_by(|x, y| x.path().cmp(y.path()));
 
         let output_path = self
             .merge_scenes(&clips)
@@ -279,7 +284,7 @@ impl Encoder {
         let output_path = output_path.join(format!("{}.mkv", self.config.encode_identifier(true)));
 
         let progress_bar = ProgressBar::new_spinner();
-        progress_bar.enable_steady_tick(std::time::Duration::from_millis(120));
+        progress_bar.enable_steady_tick(Duration::from_millis(120));
         progress_bar.set_style(
             create_progress_style("{spinner:.green} [{elapsed_precise}] {msg}")
                 .context("Unable to create scene merging progress bar style")?,
@@ -320,16 +325,16 @@ impl Encoder {
                 return Err(anyhow!(
                     "mkvmerge returned error code {} and the following output:\n{}\n{}",
                     result.status,
-                    std::str::from_utf8(&result.stdout)
+                    str::from_utf8(&result.stdout)
                         .context("Unable to parse mkvmerge output as UTF-8")?,
-                    std::str::from_utf8(&result.stderr)
+                    str::from_utf8(&result.stderr)
                         .context("Unable to parse mkvmerge output as UTF-8")?
                 ));
             }
         }
 
         if temporary_output_path.exists() {
-            std::fs::rename(&temporary_output_path, &output_path).with_context(|| {
+            fs::rename(&temporary_output_path, &output_path).with_context(|| {
                 format!("Unable to rename {temporary_output_path:?} to {output_path:?}")
             })?;
         }
@@ -604,7 +609,7 @@ impl Encoder {
         let stats_filename = output_path.join(format!("{base_output_filename}.stats.log"));
 
         if temporary_output_filename.exists() {
-            std::fs::remove_file(&temporary_output_filename).with_context(|| {
+            fs::remove_file(&temporary_output_filename).with_context(|| {
                 format!("Unable to remove temporary encoding file {temporary_output_filename:?}")
             })?;
         }
@@ -683,7 +688,7 @@ impl Encoder {
                     break;
                 }
 
-                if let Ok(line) = std::str::from_utf8(&buffer) {
+                if let Ok(line) = str::from_utf8(&buffer) {
                     if !line.contains('\n') {
                         update_worker_message(
                             progress_bar,
@@ -716,7 +721,7 @@ impl Encoder {
 
             if temporary_output_filename.exists() {
                 if result.success() {
-                    std::fs::rename(&temporary_output_filename, &output_filename).with_context(
+                    fs::rename(&temporary_output_filename, &output_filename).with_context(
                         || {
                             format!(
                             "Unable to rename {temporary_output_filename:?} to {output_filename:?}"
@@ -724,7 +729,7 @@ impl Encoder {
                         },
                     )?;
                 } else {
-                    std::fs::remove_file(&temporary_output_filename).with_context(|| {
+                    fs::remove_file(&temporary_output_filename).with_context(|| {
                         format!("Unable to remove temporary file {temporary_output_filename:?}")
                     })?;
                 }
@@ -732,7 +737,7 @@ impl Encoder {
         }
 
         if stats_filename.exists() && passes == self.config.passes() {
-            std::fs::remove_file(stats_filename).context("Unable to remove encoding stats file")?;
+            fs::remove_file(stats_filename).context("Unable to remove encoding stats file")?;
         }
 
         Ok(output_filename)

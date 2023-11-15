@@ -105,12 +105,13 @@ where
         let height = self.inner.get_height();
         let bytes = self.inner.get_bytes_per_sample();
         self.inner.read_frame().ok().map(|frame| {
-            let mut f: Frame<T> = Frame::new_with_padding(width, height, chroma_sampling, 0);
+            let mut new_frame: Frame<T> =
+                Frame::new_with_padding(width, height, chroma_sampling, 0);
 
             let (chroma_width, _) = chroma_sampling.get_chroma_dimensions(width, height);
-            f.planes[0].copy_from_raw_u8(frame.get_y_plane(), width * bytes, bytes);
+            new_frame.planes[0].copy_from_raw_u8(frame.get_y_plane(), width * bytes, bytes);
             convert_chroma_data(
-                &mut f.planes[1],
+                &mut new_frame.planes[1],
                 chroma_sample_pos,
                 bit_depth,
                 frame.get_u_plane(),
@@ -118,7 +119,7 @@ where
                 bytes,
             );
             convert_chroma_data(
-                &mut f.planes[2],
+                &mut new_frame.planes[2],
                 chroma_sample_pos,
                 bit_depth,
                 frame.get_v_plane(),
@@ -126,7 +127,7 @@ where
                 bytes,
             );
 
-            f
+            new_frame
         })
     }
 

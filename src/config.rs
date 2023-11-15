@@ -1,5 +1,7 @@
+use std::fmt;
 use std::path::{Path, PathBuf};
 
+use base16ct::lower::encode_string;
 use clap::{Parser, ValueEnum};
 use sha2::{Digest, Sha256};
 
@@ -94,8 +96,9 @@ pub enum QualityRule {
     Target,
 }
 
-impl std::fmt::Display for QualityRule {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+#[allow(clippy::min_ident_chars)]
+impl fmt::Display for QualityRule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Maximum => write!(f, "maximum"),
             Self::Minimum => write!(f, "minimum"),
@@ -111,8 +114,9 @@ pub enum Mode {
     Bitrate,
 }
 
-impl std::fmt::Display for Mode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+#[allow(clippy::min_ident_chars)]
+impl fmt::Display for Mode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::QP => write!(f, "qp"),
             Self::CRF => write!(f, "crf"),
@@ -131,8 +135,9 @@ pub enum Metric {
     Bitrate,
 }
 
-impl std::fmt::Display for Metric {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+#[allow(clippy::min_ident_chars)]
+impl fmt::Display for Metric {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Direct => write!(f, "direct"),
             Self::PSNR => write!(f, "psnr"),
@@ -154,8 +159,9 @@ pub enum Encoder {
     X265,
 }
 
-impl std::fmt::Display for Encoder {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+#[allow(clippy::min_ident_chars)]
+impl fmt::Display for Encoder {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Aomenc => write!(f, "aomenc"),
             Self::Rav1e => write!(f, "rav1e"),
@@ -211,7 +217,7 @@ impl Encoder {
     pub const fn passes(&self, config: &Config) -> usize {
         match config.mode {
             Mode::Bitrate => 2,
-            Mode::CRF | crate::config::Mode::QP => match self {
+            Mode::CRF | Mode::QP => match self {
                 Self::Aomenc | Self::Vpxenc => 2,
                 Self::Rav1e | Self::SvtAv1 | Self::X264 | Self::X265 => 1,
             },
@@ -510,7 +516,7 @@ impl Config {
         hasher.update(tune_arguments.join(" "));
         let result = hasher.finalize();
 
-        base16ct::lower::encode_string(&result)
+        encode_string(&result)
     }
 
     #[must_use]

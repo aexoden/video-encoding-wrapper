@@ -1,16 +1,20 @@
 use std::cmp::min;
-use std::fmt::Write;
+use std::fmt::{Display, Formatter, Result, Write};
+use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
+use ffmpeg::util::log::level::Level as FFmpegLogLevel;
+use ffmpeg::util::log::set_level as ffmpeg_set_log_level;
 use indicatif::{HumanDuration, ProgressState, ProgressStyle};
 use number_prefix::NumberPrefix;
 use plotters::prelude::*;
-use prettytable::{row, table};
+use prettytable::{format::consts, row, table};
 use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
 use tracing::{error, level_filters::LevelFilter};
 use tracing_error::ErrorLayer;
+use tracing_subscriber::fmt::layer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
@@ -25,6 +29,7 @@ pub const PLUS_THREE_SIGMA: f64 = 0.998_650_102;
 #[allow(clippy::cast_possible_truncation)]
 #[allow(clippy::cast_precision_loss)]
 #[allow(clippy::cast_sign_loss)]
+#[allow(clippy::min_ident_chars)]
 pub fn create_progress_style(template: &str) -> anyhow::Result<ProgressStyle> {
     let progress_style = ProgressStyle::with_template(template)
         .with_context(|| format!("Unable to create progress bar style with template '{template}'"))?
@@ -60,13 +65,13 @@ pub fn create_progress_style(template: &str) -> anyhow::Result<ProgressStyle> {
 }
 
 pub fn install_tracing() -> anyhow::Result<()> {
-    ffmpeg::util::log::set_level(ffmpeg::util::log::level::Level::Fatal);
+    ffmpeg_set_log_level(FFmpegLogLevel::Fatal);
 
     let env_filter = EnvFilter::builder()
         .with_default_directive(LevelFilter::WARN.into())
         .from_env_lossy();
 
-    let fmt_layer = tracing_subscriber::fmt::layer();
+    let fmt_layer = layer();
 
     tracing_subscriber::registry()
         .with(ErrorLayer::default())
@@ -320,7 +325,7 @@ pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
         "Std Dev"
     ]);
 
-    table.set_format(*prettytable::format::consts::FORMAT_BOX_CHARS);
+    table.set_format(*consts::FORMAT_BOX_CHARS);
 
     for (name, ref mut data) in stats {
         let mut data = Data::new(data);
@@ -358,8 +363,7 @@ pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
 
 pub fn verify_filename(path: &Path) -> anyhow::Result<()> {
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .with_context(|| format!("Unable to create directory {parent:?}"))?;
+        create_dir_all(parent).with_context(|| format!("Unable to create directory {parent:?}"))?;
     }
 
     Ok(())
@@ -371,8 +375,7 @@ pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
             return Err(anyhow!("{path:?} exists but is not a directory"));
         }
     } else {
-        std::fs::create_dir_all(path)
-            .with_context(|| format!("Unable to create directory {path:?}"))?;
+        create_dir_all(path).with_context(|| format!("Unable to create directory {path:?}"))?;
     }
 
     Ok(())
@@ -380,8 +383,9 @@ pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
 
 pub struct HumanBitrate(pub f64);
 
-impl std::fmt::Display for HumanBitrate {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+#[allow(clippy::min_ident_chars)]
+impl Display for HumanBitrate {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match NumberPrefix::decimal(self.0) {
             NumberPrefix::Standalone(number) => write!(f, "{number:.0} bps"),
             NumberPrefix::Prefixed(prefix, number) => write!(f, "{number:.3} {prefix}bps"),

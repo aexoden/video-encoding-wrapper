@@ -6,6 +6,8 @@ use std::process::{Child, Command, Stdio};
 
 use anyhow::{anyhow, Context};
 use cached::{proc_macro::cached, UnboundCache};
+use ffmpeg::codec::{context, decoder};
+use ffmpeg::{filter, format, frame, media, Error};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Serialize};
 
@@ -113,10 +115,10 @@ pub fn get_metadata(config: &Config) -> anyhow::Result<Metadata> {
 }
 
 fn create_cropdetect_filter_graph(
-    decoder: &ffmpeg::codec::decoder::Video,
+    decoder: &decoder::Video,
     time_base: ffmpeg::Rational,
-) -> anyhow::Result<ffmpeg::filter::Graph> {
-    let mut filter = ffmpeg::filter::Graph::new();
+) -> anyhow::Result<filter::Graph> {
+    let mut filter = filter::Graph::new();
 
     let args = format!(
         "width={}:height={}:pix_fmt={}:time_base={}:sar={}",
@@ -133,7 +135,7 @@ fn create_cropdetect_filter_graph(
 
     filter
         .add(
-            &ffmpeg::filter::find("buffer")
+            &filter::find("buffer")
                 .ok_or_else(|| anyhow!("Unable to find FFmpeg buffer filter"))?,
             "in",
             &args,
@@ -142,7 +144,7 @@ fn create_cropdetect_filter_graph(
 
     filter
         .add(
-            &ffmpeg::filter::find("buffersink")
+            &filter::find("buffersink")
                 .ok_or_else(|| anyhow!("Unable to find FFmpeg buffersink filter"))?,
             "out",
             "",
@@ -165,16 +167,16 @@ fn create_cropdetect_filter_graph(
 }
 
 fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<Metadata> {
-    let mut input_context = ffmpeg::format::input(&config.source)
+    let mut input_context = format::input(&config.source)
         .with_context(|| format!("Unable to open {:?} with FFmpeg", &config.source))?;
 
     let (stream_index, mut decoder, time_base, duration) = {
         let input = input_context
             .streams()
-            .best(ffmpeg::media::Type::Video)
-            .ok_or(ffmpeg::Error::StreamNotFound)
+            .best(media::Type::Video)
+            .ok_or(Error::StreamNotFound)
             .with_context(|| format!("Unable to find video stream in {:?}", config.source))?;
-        let decoder_context = ffmpeg::codec::context::Context::from_parameters(input.parameters())
+        let decoder_context = context::Context::from_parameters(input.parameters())
             .context("Unable to create FFmpeg decoder context")?;
         let decoder = decoder_context
             .decoder()
@@ -202,12 +204,12 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
                 .send_packet(&packet)
                 .context("Unable to decode video packet")?;
 
-            let mut frame = ffmpeg::frame::Video::empty();
+            let mut frame = frame::Video::empty();
 
             while decoder.receive_frame(&mut frame).is_ok() {
                 filter
                     .get("in")
-                    .ok_or(ffmpeg::error::Error::FilterNotFound)
+                    .ok_or(Error::FilterNotFound)
                     .context("Unable to find FFmpeg filter graph input filter")?
                     .source()
                     .add(&frame)
@@ -215,7 +217,7 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
 
                 filter
                     .get("out")
-                    .ok_or(ffmpeg::error::Error::FilterNotFound)
+                    .ok_or(Error::FilterNotFound)
                     .context("Unable to find FFmpeg filter graph output filter")?
                     .sink()
                     .frame(&mut frame)
@@ -229,15 +231,15 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
                         w,
                         metadata
                             .get("lavfi.cropdetect.h")
-                            .ok_or(ffmpeg::error::Error::Bug)
+                            .ok_or(Error::Bug)
                             .context("Unexpectedly missing lavfi.cropdetect.h metadata field")?,
                         metadata
                             .get("lavfi.cropdetect.x")
-                            .ok_or(ffmpeg::error::Error::Bug)
+                            .ok_or(Error::Bug)
                             .context("Unexpectedly missing lavfi.cropdetect.x metadata field")?,
                         metadata
                             .get("lavfi.cropdetect.y")
-                            .ok_or(ffmpeg::error::Error::Bug)
+                            .ok_or(Error::Bug)
                             .context("Unexpectedly m issing lavfi.cropdetect.y metadata field")?,
                     ));
 

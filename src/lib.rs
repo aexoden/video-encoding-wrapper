@@ -17,6 +17,7 @@
 #![allow(clippy::question_mark_used)]
 #![allow(clippy::separated_literal_suffix)]
 #![allow(clippy::shadow_reuse)]
+#![allow(clippy::single_call_fn)]
 #![allow(clippy::std_instead_of_alloc)]
 #![allow(clippy::std_instead_of_core)]
 

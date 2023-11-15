@@ -1,13 +1,19 @@
+use std::borrow::ToOwned;
+use std::fs;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::str;
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
+use ffmpeg::{ffi, format, media, Error};
 use indicatif::{HumanCount, ProgressBar};
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
+use crate::ffmpeg::get_metadata;
 use crate::ssimulacra2;
 use crate::util::{
     create_progress_style, generate_bitrate_chart, generate_stat_chart, print_stats,
@@ -77,7 +83,7 @@ impl ClipMetrics {
             metrics.path = path.to_path_buf();
             metrics.original_path = original_path.to_path_buf();
             metrics.json_path = json_path;
-            metrics.original_filter = original_filter.map(std::borrow::ToOwned::to_owned);
+            metrics.original_filter = original_filter.map(ToOwned::to_owned);
 
             Ok(metrics)
         } else {
@@ -85,7 +91,7 @@ impl ClipMetrics {
                 path: path.to_path_buf(),
                 original_path: original_path.to_path_buf(),
                 json_path,
-                original_filter: original_filter.map(std::borrow::ToOwned::to_owned),
+                original_filter: original_filter.map(ToOwned::to_owned),
                 sizes: None,
                 duration: None,
                 vmaf: None,
@@ -186,13 +192,13 @@ impl ClipMetrics {
     #[allow(clippy::cast_precision_loss)]
     fn calculate_duration_and_size(&mut self) -> anyhow::Result<()> {
         let (stream_index, duration, avg_frame_rate, mut input_context) = {
-            let input_context = ffmpeg::format::input(&self.path)
+            let input_context = format::input(&self.path)
                 .with_context(|| format!("Unable to open {:?} with FFmpeg", &self.path))?;
 
             let input = input_context
                 .streams()
-                .best(ffmpeg::media::Type::Video)
-                .ok_or(ffmpeg::Error::StreamNotFound)
+                .best(media::Type::Video)
+                .ok_or(Error::StreamNotFound)
                 .with_context(|| format!("Unable to find video stream in {:?}", self.path))?;
 
             (
@@ -217,7 +223,7 @@ impl ClipMetrics {
         }
 
         if duration >= 0 {
-            self.duration = Some(duration as f64 / f64::from(ffmpeg::ffi::AV_TIME_BASE));
+            self.duration = Some(duration as f64 / f64::from(ffi::AV_TIME_BASE));
         } else {
             self.duration = Some(packet_sizes.len() as f64 / f64::from(avg_frame_rate));
         }
@@ -281,7 +287,7 @@ impl ClipMetrics {
         if !result.status.success() || !log_path.exists() {
             return Err(anyhow!(
                 "FFmpeg metric subprocess did not complete successfully: {}",
-                std::str::from_utf8(&result.stderr)
+                str::from_utf8(&result.stderr)
                     .context("Unable to decode FFmpeg error output as UTF-8")?
             ));
         }
@@ -308,8 +314,7 @@ impl ClipMetrics {
         self.psnr = Some(psnr);
         self.ssim = Some(ssim);
 
-        std::fs::remove_file(&log_path)
-            .with_context(|| format!("Unable to remove {log_path:?}"))?;
+        fs::remove_file(&log_path).with_context(|| format!("Unable to remove {log_path:?}"))?;
 
         self.update_cache()
             .with_context(|| format!("Unable to update metrics cache for {:?}", &self.path))?;
@@ -336,7 +341,7 @@ impl ClipMetrics {
             )
         })?;
 
-        std::fs::rename(&temporary_path, &self.json_path).with_context(|| {
+        fs::rename(&temporary_path, &self.json_path).with_context(|| {
             format!(
                 "Unable to rename {temporary_path:?} to {:?}",
                 self.json_path
@@ -369,12 +374,12 @@ fn moving_sum(data: &[f64], window_size: usize) -> Vec<f64> {
 #[allow(clippy::cast_precision_loss)]
 #[allow(clippy::cast_sign_loss)]
 pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
-    let metadata = crate::ffmpeg::get_metadata(config)
+    let metadata = get_metadata(config)
         .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
 
     let mut sizes: Vec<f64> = vec![];
 
-    for clip_metrics in clips.iter_mut() {
+    for clip_metrics in &mut *clips {
         sizes.extend(
             clip_metrics
                 .sizes()
@@ -385,7 +390,7 @@ pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::R
     }
 
     let avg_frame_rate = sizes.len() as f64 / metadata.duration;
-    let window_sizes = vec![1.0_f64, 5.0_f64, 15.0_f64, 30.0_f64, 60.0_f64];
+    let window_sizes = [1.0_f64, 5.0_f64, 15.0_f64, 30.0_f64, 60.0_f64];
 
     let averages: Vec<Vec<f64>> = window_sizes
         .iter()
@@ -425,7 +430,7 @@ pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::R
 #[allow(clippy::print_stdout)]
 #[allow(clippy::too_many_lines)]
 pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
-    let metadata = crate::ffmpeg::get_metadata(config)
+    let metadata = get_metadata(config)
         .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
 
     let progress_bar = ProgressBar::new(metadata.frame_count.try_into().unwrap_or(u64::MAX));
@@ -436,7 +441,7 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
         ).context("Unable to create metrics progress bar style")?
     );
 
-    progress_bar.enable_steady_tick(std::time::Duration::from_secs(1));
+    progress_bar.enable_steady_tick(Duration::from_secs(1));
 
     let mut sizes: Vec<usize> = vec![];
     let mut duration = 0.0_f64;
@@ -446,7 +451,7 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     let mut vmaf = vec![];
     let mut ssimulacra2 = vec![];
 
-    for clip_metrics in clips.iter_mut() {
+    for clip_metrics in &mut *clips {
         duration += clip_metrics
             .duration()
             .context("Unable to access clip duration")?;

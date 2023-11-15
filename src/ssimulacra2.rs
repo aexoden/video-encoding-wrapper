@@ -30,6 +30,7 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 use std::sync::{mpsc, Arc, Mutex};
+use std::thread;
 
 use anyhow::{anyhow, Context};
 use av_metrics_decoders::Decoder;
@@ -215,7 +216,7 @@ fn compare_videos(
     let current_frame = 0_usize;
     let decoders = Arc::new(Mutex::new((current_frame, (reference, distorted))));
 
-    std::thread::scope(|scope| -> anyhow::Result<Vec<f64>> {
+    thread::scope(|scope| -> anyhow::Result<Vec<f64>> {
         for _ in 0..threads {
             let decoders = Arc::clone(&decoders);
             let result_tx = result_tx.clone();

@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::fs::{remove_file, rename, File};
 use std::io::BufReader;
 use std::process::{Command, Stdio};
 
@@ -197,7 +197,7 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
                 }
             } else {
                 if temporary_output_filename.exists() {
-                    std::fs::remove_file(&temporary_output_filename).with_context(|| {
+                    remove_file(&temporary_output_filename).with_context(|| {
                         format!(
                         "Unable to remove preexisting temporary file {temporary_output_filename:?}"
                     )
@@ -239,7 +239,7 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
             }
 
             if temporary_output_filename.exists() {
-                std::fs::rename(&temporary_output_filename, &final_output_filename).with_context(
+                rename(&temporary_output_filename, &final_output_filename).with_context(
                 || {
                     format!(
                         "Unable to rename {temporary_output_filename:?} to {final_output_filename:?}"

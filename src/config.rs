@@ -493,6 +493,10 @@ pub struct Config {
     #[arg(short, long = "quality-rule", value_enum, default_value_t = QualityRule::Minimum)]
     pub rule: QualityRule,
 
+    /// Use mean instead of a percentile
+    #[arg(short, long = "quality-mean", default_value_t = false)]
+    pub use_mean: bool,
+
     /// Percentile to measure for target quality
     #[arg(long = "quality-percentile", value_parser = clap::value_parser!(f64), default_value_t = 0.05)]
     pub percentile: f64,
@@ -531,10 +535,15 @@ impl Config {
         let mode = self.mode.to_string();
         let metric = self.metric.to_string();
         let quality = self.quality;
-        let percentile = self.percentile;
         let rule = self.rule.to_string();
         let constraint = "unconstrained";
         let hash = self.encode_arguments_hash();
+
+        let percentile = if self.use_mean {
+            "mean".to_owned()
+        } else {
+            self.percentile.to_string()
+        };
 
         if include_quality {
             if self.metric == Metric::Direct {

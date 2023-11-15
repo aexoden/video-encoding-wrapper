@@ -12,7 +12,7 @@ use std::time::Duration;
 use anyhow::{anyhow, Context};
 use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use statrs::statistics::{Data, OrderStatistics};
+use statrs::statistics::{Data, Distribution, OrderStatistics};
 
 use crate::config::{Config, Metric, Mode, QualityRule};
 use crate::ffmpeg::{create_child_read, get_metadata, Metadata};
@@ -470,7 +470,13 @@ impl Encoder {
                     }
                 };
 
-                let metric_value = Data::new(metric_values).quantile(self.config.percentile);
+                let metric_value = if self.config.use_mean {
+                    Data::new(metric_values)
+                        .mean()
+                        .ok_or_else(|| anyhow!("Unable to calculate mean value of metric data"))?
+                } else {
+                    Data::new(metric_values).quantile(self.config.percentile)
+                };
 
                 match self.config.rule {
                     QualityRule::Maximum => match self.config.mode {

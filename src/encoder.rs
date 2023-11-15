@@ -529,7 +529,11 @@ impl Encoder {
                             best_score = metric_value;
                         }
 
-                        if metric_value >= self.config.quality {
+                        if (self.config.mode == Mode::Bitrate
+                            && metric_value <= self.config.quality)
+                            || (self.config.mode != Mode::Bitrate
+                                && metric_value >= self.config.quality)
+                        {
                             quality_range.higher();
                         } else {
                             quality_range.lower();

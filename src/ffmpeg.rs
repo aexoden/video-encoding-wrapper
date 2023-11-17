@@ -7,7 +7,7 @@ use std::process::{Child, Command, Stdio};
 use anyhow::{anyhow, Context};
 use cached::{proc_macro::cached, UnboundCache};
 use ffmpeg::codec::{context, decoder};
-use ffmpeg::{filter, format, frame, media, Error};
+use ffmpeg::{ffi, filter, format, frame, media, Error};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Serialize};
 
@@ -183,7 +183,12 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
             .video()
             .context("Unable to access FFmpeg decoder video")?;
 
-        (input.index(), decoder, input.time_base(), input.duration())
+        (
+            input.index(),
+            decoder,
+            input.time_base(),
+            input_context.duration(),
+        )
     };
 
     let mut filter = create_cropdetect_filter_graph(&decoder, time_base)
@@ -257,7 +262,7 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
     #[allow(clippy::cast_precision_loss)]
     Ok(Metadata {
         frame_count,
-        duration: duration as f64 * f64::from(time_base),
+        duration: duration as f64 / f64::from(ffi::AV_TIME_BASE),
         crop_filter,
     })
 }

@@ -216,9 +216,9 @@ pub fn generate_bitrate_chart(
 pub fn generate_stat_chart(
     output_filename: &PathBuf,
     title: &str,
-    data: &Vec<f64>,
+    data: &[f64],
 ) -> anyhow::Result<()> {
-    let mut stats = Data::new(data.clone());
+    let mut stats = Data::new(data.to_owned());
 
     let y_range = stats.max() - stats.min();
     let y_min = y_range.mul_add(-0.01, stats.min());

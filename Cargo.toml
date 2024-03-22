@@ -1,6 +1,7 @@
 [package]
 name = "video-encoding-wrapper"
 version = "0.1.0"
+authors = ["Jason Lynch <jason@aexoden.com>"]
 edition = "2021"
 categories = ["command-line-utilities", "multimedia::video"]
 description = "Opinionated tool to encode videos"
@@ -9,6 +10,33 @@ license = "MIT"
 repository = "https://github.com/aexoden/video-encoding-wrapper"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lints.rust]
+future_incompatible = "warn"
+let_underscore = "warn"
+
+[lints.clippy]
+cargo = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+restriction = { level = "warn", priority = -1 }
+arithmetic_side_effects = "allow"
+blanket_clippy_restriction_lints = "allow"
+exhaustive_enums = "allow"
+exhaustive_structs = "allow"
+float_arithmetic = "allow"
+implicit_return = "allow"
+missing_docs_in_private_items = "allow"
+missing_errors_doc = "allow"
+missing_inline_in_public_items = "allow"
+multiple_crate_versions = "allow"
+pattern_type_mismatch = "allow"
+question_mark_used = "allow"
+separated_literal_suffix = "allow"
+shadow_reuse = "allow"
+single_call_fn = "allow"
+std_instead_of_alloc = "allow"
+std_instead_of_core = "allow"
 
 [dependencies]
 anyhow = { version = "1.0.81", features = ["backtrace"] }

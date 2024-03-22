@@ -251,7 +251,7 @@ impl ClipMetrics {
     fn calculate_ffmpeg_metrics(&mut self, threads: usize) -> anyhow::Result<()> {
         let log_path = self.path.with_extension("ffmpeg.metrics.json");
 
-        let filters = vec![
+        let filters = [
             self.original_filter.as_ref().map_or_else(
                 || "[0:v]setpts=PTS-STARTPTS[reference]".to_owned(),
                 |filter| format!("[0:v]{filter},setpts=PTS-STARTPTS[reference]")

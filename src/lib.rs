@@ -1,26 +1,3 @@
-#![warn(future_incompatible)]
-#![warn(let_underscore)]
-#![warn(clippy::cargo)]
-#![warn(clippy::nursery)]
-#![warn(clippy::pedantic)]
-#![warn(clippy::restriction)]
-#![allow(clippy::arithmetic_side_effects)]
-#![allow(clippy::blanket_clippy_restriction_lints)]
-#![allow(clippy::exhaustive_enums)]
-#![allow(clippy::exhaustive_structs)]
-#![allow(clippy::float_arithmetic)]
-#![allow(clippy::implicit_return)]
-#![allow(clippy::missing_docs_in_private_items)]
-#![allow(clippy::missing_errors_doc)]
-#![allow(clippy::missing_inline_in_public_items)]
-#![allow(clippy::pattern_type_mismatch)]
-#![allow(clippy::question_mark_used)]
-#![allow(clippy::separated_literal_suffix)]
-#![allow(clippy::shadow_reuse)]
-#![allow(clippy::single_call_fn)]
-#![allow(clippy::std_instead_of_alloc)]
-#![allow(clippy::std_instead_of_core)]
-
 use anyhow::Context;
 
 pub mod config;

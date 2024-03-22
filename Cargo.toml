@@ -6,7 +6,7 @@ edition = "2021"
 categories = ["command-line-utilities", "multimedia::video"]
 description = "Opinionated tool to encode videos"
 keywords = ["video"]
-license = "MIT"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/aexoden/video-encoding-wrapper"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

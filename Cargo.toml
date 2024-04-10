@@ -39,12 +39,12 @@ std_instead_of_alloc = "allow"
 std_instead_of_core = "allow"
 
 [dependencies]
-anyhow = { version = "1.0.81", features = ["backtrace"] }
+anyhow = { version = "1.0.82", features = ["backtrace"] }
 av-metrics = "0.9.1"
 av-metrics-decoders = { version = "0.3.1", features = ["y4m", "ffmpeg-the-third"] }
 av-scenechange = { version = "0.10.0", default-features = false }
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
-cached = "0.49.2"
+cached = "0.49.3"
 clap = { version = "4.5.4", features = ["derive"] }
 crossbeam-queue = "0.3.11"
 ffmpeg = { package = "ffmpeg-the-third", version = "1.2.2", features = ["serialize"] }

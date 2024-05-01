@@ -59,7 +59,7 @@ pub struct Metadata {
 
 #[cached(
     result = true,
-    type = "UnboundCache<String, Metadata>",
+    ty = "UnboundCache<String, Metadata>",
     create = "{ UnboundCache::with_capacity(1) }",
     convert = r#"{ format!("{}", config.source.to_string_lossy()) }"#
 )]

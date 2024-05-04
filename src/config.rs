@@ -298,7 +298,7 @@ impl Encoder {
                     "--lag-in-frames=48".to_owned(),
                     "--quant-b-adapt=1".to_owned(),
                     "--arnr-strength=1".to_owned(),
-                    "--enable-keyframe-filtering=2".to_owned(),
+                    "--enable-keyframe-filtering=0".to_owned(),
                     "--dist-metric=qm-psnr".to_owned(),
                 ]
             }

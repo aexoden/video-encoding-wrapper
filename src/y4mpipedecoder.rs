@@ -38,6 +38,7 @@ pub struct Y4MPipeDecoder<R: Read + Send> {
     inner: y4m::Decoder<R>,
 }
 
+#[allow(clippy::min_ident_chars)]
 #[allow(clippy::unimplemented)]
 fn map_y4m_color_space(color_space: y4m::Colorspace) -> (ChromaSampling, ChromaSamplePosition) {
     use av_metrics::video::ChromaSamplePosition as CSP;

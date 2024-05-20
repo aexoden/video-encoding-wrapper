@@ -39,7 +39,7 @@ std_instead_of_alloc = "allow"
 std_instead_of_core = "allow"
 
 [dependencies]
-anyhow = { version = "1.0.83", features = ["backtrace"] }
+anyhow = { version = "1.0.86", features = ["backtrace"] }
 av-metrics = "0.9.1"
 av-metrics-decoders = { version = "0.3.1", features = ["y4m", "ffmpeg-the-third"] }
 av-scenechange = { version = "0.10.0", default-features = false }

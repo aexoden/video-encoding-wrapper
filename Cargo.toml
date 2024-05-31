@@ -39,10 +39,10 @@ std_instead_of_alloc = "allow"
 std_instead_of_core = "allow"
 
 [dependencies]
-anyhow = { version = "1.0.83", features = ["backtrace"] }
+anyhow = { version = "1.0.86", features = ["backtrace"] }
 av-metrics = "0.9.1"
 av-metrics-decoders = { version = "0.3.1", features = ["y4m", "ffmpeg-the-third"] }
-av-scenechange = { version = "0.10.0", default-features = false }
+av-scenechange = { version = "0.12.0", default-features = false }
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
 cached = "0.51.3"
 clap = { version = "4.5.4", features = ["derive"] }
@@ -50,15 +50,15 @@ crossbeam-queue = "0.3.11"
 ffmpeg = { package = "ffmpeg-the-third", version = "1.2.2", features = ["serialize"] }
 indicatif = "0.17.8"
 number_prefix = "0.4.0"
-plotters = { version = "0.3.5", default-features = false, features = ["svg_backend", "line_series"] }
+plotters = { version = "0.3.6", default-features = false, features = ["svg_backend", "line_series"] }
 prettytable-rs = "0.10.0"
 rayon = "1.10.0"
-serde = { version = "1.0.202", features = ["derive"] }
+serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
 sha2 = "0.10.6"
 ssimulacra2 = { version = "0.5.0", default-features = false }
 statrs = "0.16.0"
-tokio = { version = "1.37.0", features = ["process"] }
+tokio = { version = "1.38.0", features = ["process"] }
 tracing = "0.1.37"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }

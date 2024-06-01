@@ -8,9 +8,8 @@ updates:
     allow:
     - dependency-type: "all"
     groups:
-      non-major-versions:
+      patch-versions:
         update-types:
-        - "minor"
         - "patch"
   - package-ecosystem: "github-actions"
     directory: "/"

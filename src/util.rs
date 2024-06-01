@@ -1,6 +1,7 @@
 use std::cmp::min;
 use std::fmt::{Display, Formatter, Result, Write};
-use std::fs::create_dir_all;
+use std::fs::{create_dir_all, File};
+use std::io::{BufWriter, Write as IoWrite};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -303,6 +304,37 @@ pub fn generate_stat_chart(
 
     root.present()
         .with_context(|| format!("Unable to finalize {title} chart"))?;
+
+    Ok(())
+}
+
+pub fn generate_stat_log(
+    output_filename: &PathBuf,
+    title: &str,
+    data: &[f64],
+) -> anyhow::Result<()> {
+    verify_filename(output_filename).with_context(|| {
+        format!("Unable to verify {title} log output filename {output_filename:?}")
+    })?;
+
+    let file = File::create(output_filename).with_context(|| {
+        format!("Unable to create {title} log output filename {output_filename:?}")
+    })?;
+
+    let mut writer = BufWriter::new(file);
+
+    writeln!(writer, "# {title}")
+        .with_context(|| format!("Unable to write title {title} to log"))?;
+
+    #[allow(clippy::as_conversions)]
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_precision_loss)]
+    #[allow(clippy::cast_sign_loss)]
+    let index_width = ((data.len() - 1) as f64).log10().floor() as usize + 1;
+
+    for (i, value) in data.iter().enumerate() {
+        writeln!(writer, "{i:0index_width$}: {value}").context("Unable to write data to log")?;
+    }
 
     Ok(())
 }

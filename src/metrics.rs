@@ -16,8 +16,8 @@ use crate::config::Config;
 use crate::ffmpeg::get_metadata;
 use crate::ssimulacra2;
 use crate::util::{
-    create_progress_style, generate_bitrate_chart, generate_stat_chart, print_stats,
-    verify_directory, verify_filename, HumanBitrate,
+    create_progress_style, generate_bitrate_chart, generate_stat_chart, generate_stat_log,
+    print_stats, verify_directory, verify_filename, HumanBitrate,
 };
 
 #[allow(clippy::module_name_repetitions)]
@@ -516,12 +516,26 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     verify_directory(&output_path)
         .with_context(|| format!("Unable to verify merging output directory {output_path:?}"))?;
 
+    generate_stat_log(
+        &output_path.join(format!("{}-psnr.txt", config.encode_identifier(true))),
+        "PSNR",
+        &psnr,
+    )
+    .context("Unable to generate PSNR log")?;
+
     generate_stat_chart(
         &output_path.join(format!("{}-psnr.svg", config.encode_identifier(true))),
         "PSNR",
         &psnr,
     )
     .context("Unable to generate PSNR chart")?;
+
+    generate_stat_log(
+        &output_path.join(format!("{}-ssim.txt", config.encode_identifier(true))),
+        "SSIM",
+        &ssim,
+    )
+    .context("Unable to generate SSIM log")?;
 
     generate_stat_chart(
         &output_path.join(format!("{}-ssim.svg", config.encode_identifier(true))),
@@ -530,12 +544,29 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     )
     .context("Unable to generate SSIM chart")?;
 
+    generate_stat_log(
+        &output_path.join(format!("{}-vmaf.txt", config.encode_identifier(true))),
+        "VMAF",
+        &vmaf,
+    )
+    .context("Unable to generate VMAF log")?;
+
     generate_stat_chart(
         &output_path.join(format!("{}-vmaf.svg", config.encode_identifier(true))),
         "VMAF",
         &vmaf,
     )
     .context("Unable to generate VMAF chart")?;
+
+    generate_stat_log(
+        &output_path.join(format!(
+            "{}-ssimulacra2.txt",
+            config.encode_identifier(true)
+        )),
+        "SSIMULACRA2",
+        &ssimulacra2,
+    )
+    .context("Unable to generate SSIMULACRA2 log")?;
 
     generate_stat_chart(
         &output_path.join(format!(

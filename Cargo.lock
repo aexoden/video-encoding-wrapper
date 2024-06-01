@@ -189,9 +189,9 @@ dependencies = [
 
 [[package]]
 name = "av-scenechange"
-version = "0.10.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "449c6f8e61df7df762ec08db17e271d8343f4d432035d7723d8475c06563d738"
+checksum = "a5fa17f98b2134d5459bbf2e69b297b1be2047a3f617af34fad7ecca362c6cb5"
 dependencies = [
  "anyhow",
  "rav1e",

@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
+use std::result::Result;
 
 use anyhow::{anyhow, Context};
 use cached::{proc_macro::cached, UnboundCache};
@@ -199,6 +200,7 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
 
     for (_stream, packet) in input_context
         .packets()
+        .filter_map(Result::ok)
         .filter(|(stream, _packet)| stream.index() == stream_index)
     {
         frame_count += 1;

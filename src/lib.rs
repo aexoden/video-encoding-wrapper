@@ -7,7 +7,6 @@ pub mod metrics;
 pub mod scenes;
 pub mod ssimulacra2;
 pub mod util;
-pub mod y4mpipedecoder;
 
 #[allow(clippy::print_stdout)]
 pub fn run(config: &config::Config) -> anyhow::Result<()> {

@@ -1,9 +1,12 @@
 use std::fs::{remove_file, rename, File};
 use std::io::BufReader;
-use std::process::{Command, Stdio};
+use std::process::{ChildStdout, Command, Stdio};
 
 use anyhow::{anyhow, Context};
-use av_scenechange::{detect_scene_changes, DetectionOptions, SceneDetectionSpeed};
+use av_scenechange::{
+    decoder::Decoder, detect_scene_changes, ffmpeg::FfmpegDecoder, DetectionOptions,
+    SceneDetectionSpeed,
+};
 use indicatif::ProgressBar;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
@@ -67,19 +70,10 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
 
         serde_json::from_reader(reader).context("Unable to deserialize scene cache")?
     } else {
-        let mut decoder = y4m::Decoder::new(
-            create_child_read(
-                &config.source,
-                metadata.crop_filter.as_deref(),
-                Stdio::null(),
-                Stdio::piped(),
-                Stdio::null(),
-            )
-            .context("Unable to spawn video decoder subprocess")?
-            .stdout
-            .ok_or_else(|| anyhow!("Unable to access stdout of video decoder subprocess"))?,
-        )
-        .context("Unable to create scene change detection YUV4MPEG decoder")?;
+        let mut decoder: Decoder<ChildStdout> =
+            Decoder::Ffmpeg(FfmpegDecoder::new(&config.source).with_context(|| {
+                format!("Unable to create FFmpeg decoder for {:?}", &config.source)
+            })?);
 
         let opts = DetectionOptions {
             analysis_speed: SceneDetectionSpeed::Standard,
@@ -94,7 +88,8 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
         };
 
         let results =
-            detect_scene_changes::<_, u16>(&mut decoder, opts, None, Some(&progress_callback));
+            detect_scene_changes::<_, u16>(&mut decoder, opts, None, Some(&progress_callback))
+                .context("Unable to detect scene changes")?;
 
         progress_bar.finish();
 

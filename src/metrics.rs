@@ -217,6 +217,7 @@ impl ClipMetrics {
 
         for (_, packet) in input_context
             .packets()
+            .filter_map(Result::ok)
             .filter(|(stream, _)| stream.index() == stream_index)
         {
             packet_sizes.push(packet.size());

@@ -28,18 +28,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::collections::BTreeMap;
+use std::io::Read;
 use std::path::Path;
+use std::process::ChildStdout;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
 use anyhow::{anyhow, Context};
-use av_metrics_decoders::Decoder;
+use av_scenechange::{decoder::Decoder, ffmpeg::FfmpegDecoder};
 use ssimulacra2::{
     compute_frame_ssimulacra2, ColorPrimaries, MatrixCoefficients, Pixel, TransferCharacteristic,
     Yuv, YuvConfig,
 };
-
-use crate::y4mpipedecoder;
 
 const fn guess_matrix_coefficients(width: usize, height: usize) -> MatrixCoefficients {
     if width >= 1280 || height > 576 {
@@ -72,8 +72,9 @@ fn guess_color_primaries(
 }
 
 #[allow(clippy::significant_drop_tightening)]
-fn calc_score<S: Pixel, D: Pixel, E: Decoder, F: Decoder>(
-    mutex: &Mutex<(usize, (E, F))>,
+#[allow(clippy::type_complexity)]
+fn calc_score<S: Pixel, D: Pixel>(
+    mutex: &Mutex<(usize, (Decoder<impl Read>, Decoder<impl Read>))>,
     reference_yuv_config: YuvConfig,
     distorted_yuv_config: YuvConfig,
 ) -> anyhow::Result<Option<(usize, f64)>> {
@@ -83,16 +84,32 @@ fn calc_score<S: Pixel, D: Pixel, E: Decoder, F: Decoder>(
             .map_err(|_err| anyhow!("Poison encountered when acquiring mutex lock"))?;
         let frame_index = guard.0;
 
-        let reference_frame = guard.1 .0.read_video_frame::<S>();
-        let distorted_frame = guard.1 .1.read_video_frame::<D>();
+        let reference_info = guard
+            .1
+             .0
+            .get_video_details()
+            .context("Unable to retreive reference video details")?;
 
-        if let (Some(reference_frame), Some(distorted_frame)) = (reference_frame, distorted_frame) {
-            guard.0 += 1;
+        let distorted_info = guard
+            .1
+             .1
+            .get_video_details()
+            .context("Unable to retrieve distorted video detials")?;
 
-            (frame_index, (reference_frame, distorted_frame))
-        } else {
-            return Ok(None);
-        }
+        let reference_frame = guard
+            .1
+             .0
+            .read_video_frame::<S>(&reference_info)
+            .context("Unable to read reference video frame")?;
+
+        let distorted_frame = guard
+            .1
+             .1
+            .read_video_frame::<D>(&distorted_info)
+            .context("Unable to read distorted video frame")?;
+
+        guard.0 += 1;
+        (frame_index, (reference_frame, distorted_frame))
     };
 
     let reference_yuv = Yuv::new(reference_frame, reference_yuv_config)
@@ -122,14 +139,23 @@ fn compare_videos(
     mut distorted_primaries: ColorPrimaries,
     distorted_full_range: bool,
 ) -> anyhow::Result<Vec<f64>> {
-    let reference = y4mpipedecoder::new(reference_path)
-        .context("Unable to create SSIMULACRA2 reference YUV4MPEG decoder")?;
+    let reference: Decoder<ChildStdout> = Decoder::Ffmpeg(
+        FfmpegDecoder::new(reference_path)
+            .context("Unable to create SSIMULACRA2 reference YUV4MPEG decoder")?,
+    );
 
-    let distorted = y4mpipedecoder::new(distorted_path)
-        .context("Unable to create SSIMULACRA2 distorted YUV4MPEG decoder")?;
+    let distorted: Decoder<ChildStdout> = Decoder::Ffmpeg(
+        FfmpegDecoder::new(distorted_path)
+            .context("Unable to create SSIMULACRA2 distorted YUV4MPEG decoder")?,
+    );
 
-    let reference_info = reference.get_video_details();
-    let distorted_info = distorted.get_video_details();
+    let reference_info = reference
+        .get_video_details()
+        .context("Unable to retrieve reference video details")?;
+
+    let distorted_info = distorted
+        .get_video_details()
+        .context("Unable to retrieve distorted video details")?;
 
     if reference_matrix == MatrixCoefficients::Unspecified {
         reference_matrix = guess_matrix_coefficients(reference_info.width, reference_info.height);
@@ -224,26 +250,18 @@ fn compare_videos(
             scope.spawn(move || -> anyhow::Result<()> {
                 loop {
                     let score = match (reference_info.bit_depth, distorted_info.bit_depth) {
-                        (8, 8) => calc_score::<u8, u8, _, _>(
-                            &decoders,
-                            reference_config,
-                            distorted_config,
-                        ),
-                        (8, _) => calc_score::<u8, u16, _, _>(
-                            &decoders,
-                            reference_config,
-                            distorted_config,
-                        ),
-                        (_, 8) => calc_score::<u16, u8, _, _>(
-                            &decoders,
-                            reference_config,
-                            distorted_config,
-                        ),
-                        (_, _) => calc_score::<u16, u16, _, _>(
-                            &decoders,
-                            reference_config,
-                            distorted_config,
-                        ),
+                        (8, 8) => {
+                            calc_score::<u8, u8>(&decoders, reference_config, distorted_config)
+                        }
+                        (8, _) => {
+                            calc_score::<u8, u16>(&decoders, reference_config, distorted_config)
+                        }
+                        (_, 8) => {
+                            calc_score::<u16, u8>(&decoders, reference_config, distorted_config)
+                        }
+                        (_, _) => {
+                            calc_score::<u16, u16>(&decoders, reference_config, distorted_config)
+                        }
                     }
                     .context("Unable to calculate SSIMULACRA2 score")?;
 

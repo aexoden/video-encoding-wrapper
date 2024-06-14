@@ -16,6 +16,7 @@ pub struct QualityRange {
 impl QualityRange {
     #[must_use]
     #[allow(clippy::integer_division)]
+    #[allow(clippy::integer_division_remainder_used)]
     pub const fn new(minimum: i64, maximum: i64, divisor: i64, bitrate: bool) -> Self {
         if bitrate {
             Self {
@@ -36,6 +37,7 @@ impl QualityRange {
 
     #[must_use]
     #[allow(clippy::integer_division)]
+    #[allow(clippy::integer_division_remainder_used)]
     const fn midpoint(&self) -> i64 {
         (self.minimum + self.maximum) / 2
     }

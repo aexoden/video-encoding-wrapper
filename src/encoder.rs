@@ -431,6 +431,7 @@ impl Encoder {
                     })?;
 
                 #[allow(clippy::integer_division)]
+                #[allow(clippy::integer_division_remainder_used)]
                 let threads = self.config.workers / self.active_workers.load(Ordering::Relaxed);
 
                 let metric_values = match self.config.metric {

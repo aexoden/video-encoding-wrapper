@@ -119,6 +119,7 @@ pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
         let upper_bound = lower_bound + bucket_size;
 
         #[allow(clippy::integer_division)]
+        #[allow(clippy::integer_division_remainder_used)]
         let bar = "*".repeat(max_length * count / data.len());
 
         println!("{lower_bound:digits$} - {upper_bound:digits$} {count:6} {bar}");

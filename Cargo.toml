@@ -43,7 +43,7 @@ anyhow = { version = "1.0.86", features = ["backtrace"] }
 av-metrics = "0.9.1"
 av-scenechange = { version = "0.12.2", default-features = false, features = ["ffmpeg"] }
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
-cached = "0.51.4"
+cached = "0.52.0"
 clap = { version = "4.5.9", features = ["derive"] }
 crossbeam-queue = "0.3.11"
 ffmpeg = { package = "ffmpeg-the-third", version = "2.0.1", features = ["serialize"] }

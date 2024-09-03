@@ -57,7 +57,7 @@ serde_json = "1.0.127"
 sha2 = "0.10.6"
 ssimulacra2 = { version = "0.5.0", default-features = false }
 statrs = "0.17.1"
-tokio = { version = "1.39.3", features = ["process"] }
+tokio = { version = "1.40.0", features = ["process"] }
 tracing = "0.1.37"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }

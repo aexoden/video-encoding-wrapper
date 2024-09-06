@@ -20,7 +20,7 @@ use crate::util::{
     print_stats, verify_directory, verify_filename, HumanBitrate,
 };
 
-#[allow(clippy::module_name_repetitions)]
+#[expect(clippy::module_name_repetitions)]
 #[derive(Serialize, Deserialize)]
 pub struct ClipMetrics {
     #[serde(skip)]
@@ -188,8 +188,8 @@ impl ClipMetrics {
             .len())
     }
 
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_precision_loss)]
+    #[expect(clippy::as_conversions)]
+    #[expect(clippy::cast_precision_loss)]
     fn calculate_duration_and_size(&mut self) -> anyhow::Result<()> {
         let (stream_index, duration, avg_frame_rate, mut input_context) = {
             let input_context = format::input(&self.path)
@@ -353,8 +353,6 @@ impl ClipMetrics {
     }
 }
 
-#[allow(clippy::as_conversions)]
-#[allow(clippy::cast_precision_loss)]
 fn moving_sum(data: &[f64], window_size: usize) -> Vec<f64> {
     let mut result = Vec::new();
 
@@ -370,10 +368,10 @@ fn moving_sum(data: &[f64], window_size: usize) -> Vec<f64> {
     result
 }
 
-#[allow(clippy::as_conversions)]
-#[allow(clippy::cast_possible_truncation)]
-#[allow(clippy::cast_precision_loss)]
-#[allow(clippy::cast_sign_loss)]
+#[expect(clippy::as_conversions)]
+#[expect(clippy::cast_possible_truncation)]
+#[expect(clippy::cast_precision_loss)]
+#[expect(clippy::cast_sign_loss)]
 pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     let metadata = get_metadata(config)
         .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
@@ -425,11 +423,10 @@ pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::R
     Ok(())
 }
 
-#[allow(clippy::as_conversions)]
-#[allow(clippy::cast_precision_loss)]
-#[allow(clippy::integer_division)]
-#[allow(clippy::print_stdout)]
-#[allow(clippy::too_many_lines)]
+#[expect(clippy::as_conversions)]
+#[expect(clippy::cast_precision_loss)]
+#[expect(clippy::print_stdout)]
+#[expect(clippy::too_many_lines)]
 pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     let metadata = get_metadata(config)
         .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;

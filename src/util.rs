@@ -26,11 +26,9 @@ pub const PLUS_ONE_SIGMA: f64 = 0.841_344_746;
 pub const PLUS_TWO_SIGMA: f64 = 0.977_249_868;
 pub const PLUS_THREE_SIGMA: f64 = 0.998_650_102;
 
-#[allow(clippy::as_conversions)]
-#[allow(clippy::cast_possible_truncation)]
-#[allow(clippy::cast_precision_loss)]
-#[allow(clippy::cast_sign_loss)]
-#[allow(clippy::min_ident_chars)]
+#[expect(clippy::cast_possible_truncation)]
+#[expect(clippy::cast_precision_loss)]
+#[expect(clippy::cast_sign_loss)]
 pub fn create_progress_style(template: &str) -> anyhow::Result<ProgressStyle> {
     let progress_style = ProgressStyle::with_template(template)
         .with_context(|| format!("Unable to create progress bar style with template '{template}'"))?
@@ -83,11 +81,9 @@ pub fn install_tracing() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[allow(clippy::as_conversions)]
-#[allow(clippy::cast_possible_truncation)]
-#[allow(clippy::cast_precision_loss)]
-#[allow(clippy::cast_sign_loss)]
-#[allow(clippy::print_stdout)]
+#[expect(clippy::cast_possible_truncation)]
+#[expect(clippy::cast_precision_loss)]
+#[expect(clippy::cast_sign_loss)]
 pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
     let min_value = data.iter().copied().fold(f64::INFINITY, f64::min);
     let max_value = data.iter().copied().fold(f64::NEG_INFINITY, f64::max);
@@ -118,8 +114,8 @@ pub fn print_histogram(data: &[f64]) -> anyhow::Result<()> {
         let lower_bound = (i as f64).mul_add(bucket_size, min_value);
         let upper_bound = lower_bound + bucket_size;
 
-        #[allow(clippy::integer_division)]
-        #[allow(clippy::integer_division_remainder_used)]
+        #[expect(clippy::integer_division)]
+        #[expect(clippy::integer_division_remainder_used)]
         let bar = "*".repeat(max_length * count / data.len());
 
         println!("{lower_bound:digits$} - {upper_bound:digits$} {count:6} {bar}");
@@ -327,10 +323,9 @@ pub fn generate_stat_log(
     writeln!(writer, "# {title}")
         .with_context(|| format!("Unable to write title {title} to log"))?;
 
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_possible_truncation)]
-    #[allow(clippy::cast_precision_loss)]
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_precision_loss)]
+    #[expect(clippy::cast_sign_loss)]
     let index_width = ((data.len() - 1) as f64).log10().floor() as usize + 1;
 
     for (i, value) in data.iter().enumerate() {
@@ -340,9 +335,7 @@ pub fn generate_stat_log(
     Ok(())
 }
 
-#[allow(clippy::print_stdout)]
 pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
-    #[allow(clippy::str_to_string)]
     let mut table = table!([
         "",
         "Minimum",
@@ -363,7 +356,6 @@ pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
     for (name, ref mut data) in stats {
         let mut data = Data::new(data);
 
-        #[allow(clippy::string_to_string)]
         table.add_row(row![
             format!("{name:12}"),
             format!("{:8.3}", data.min()),
@@ -416,7 +408,7 @@ pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
 
 pub struct HumanBitrate(pub f64);
 
-#[allow(clippy::min_ident_chars)]
+#[expect(clippy::min_ident_chars)]
 impl Display for HumanBitrate {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match NumberPrefix::decimal(self.0) {

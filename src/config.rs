@@ -15,8 +15,6 @@ pub struct QualityRange {
 
 impl QualityRange {
     #[must_use]
-    #[allow(clippy::integer_division)]
-    #[allow(clippy::integer_division_remainder_used)]
     pub const fn new(minimum: i64, maximum: i64, divisor: i64, bitrate: bool) -> Self {
         if bitrate {
             Self {
@@ -36,15 +34,12 @@ impl QualityRange {
     }
 
     #[must_use]
-    #[allow(clippy::integer_division)]
-    #[allow(clippy::integer_division_remainder_used)]
     const fn midpoint(&self) -> i64 {
         (self.minimum + self.maximum) / 2
     }
 
     #[must_use]
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_precision_loss)]
+    #[expect(clippy::cast_precision_loss)]
     pub fn current(&self) -> Option<f64> {
         if self.minimum > self.maximum {
             None
@@ -69,8 +64,7 @@ impl QualityRange {
     }
 
     #[must_use]
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_precision_loss)]
+    #[expect(clippy::cast_precision_loss)]
     pub fn minimum(&self) -> f64 {
         if self.bitrate {
             self.minimum as f64 * self.divisor as f64
@@ -80,8 +74,7 @@ impl QualityRange {
     }
 
     #[must_use]
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_precision_loss)]
+    #[expect(clippy::cast_precision_loss)]
     pub fn maximum(&self) -> f64 {
         if self.bitrate {
             self.maximum as f64 * self.divisor as f64
@@ -98,7 +91,7 @@ pub enum QualityRule {
     Target,
 }
 
-#[allow(clippy::min_ident_chars)]
+#[expect(clippy::min_ident_chars)]
 impl fmt::Display for QualityRule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -116,7 +109,7 @@ pub enum Mode {
     Bitrate,
 }
 
-#[allow(clippy::min_ident_chars)]
+#[expect(clippy::min_ident_chars)]
 impl fmt::Display for Mode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -137,7 +130,7 @@ pub enum Metric {
     Bitrate,
 }
 
-#[allow(clippy::min_ident_chars)]
+#[expect(clippy::min_ident_chars)]
 impl fmt::Display for Metric {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -161,7 +154,7 @@ pub enum Encoder {
     X265,
 }
 
-#[allow(clippy::min_ident_chars)]
+#[expect(clippy::min_ident_chars)]
 impl fmt::Display for Encoder {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -326,8 +319,8 @@ impl Encoder {
     }
 
     #[must_use]
-    #[allow(clippy::too_many_arguments)]
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_lines)]
     pub fn arguments(
         &self,
         config: &Config,
@@ -352,7 +345,7 @@ impl Encoder {
             format!("{qp:0.2}")
         };
 
-        #[allow(clippy::unreachable)]
+        #[expect(clippy::unreachable)]
         match self {
             Self::Aomenc | Self::Vpxenc => match mode {
                 Mode::Bitrate => {

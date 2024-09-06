@@ -127,8 +127,7 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
     Ok(scenes)
 }
 
-#[allow(clippy::print_stdout)]
-#[allow(clippy::too_many_lines)]
+#[expect(clippy::too_many_lines)]
 pub fn split(config: &Config) -> anyhow::Result<()> {
     let output_path = config.output_directory.join("source");
     verify_directory(&output_path).with_context(|| {

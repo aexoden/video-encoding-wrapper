@@ -46,7 +46,6 @@ impl EncodeStatistics {
         }
     }
 
-    #[allow(clippy::print_stdout)]
     pub fn print_quality_stats(&self) -> anyhow::Result<()> {
         println!("{} Statistics", self.config.mode_description());
         println!();
@@ -102,8 +101,7 @@ impl Encoder {
         })
     }
 
-    #[allow(clippy::print_stdout)]
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     pub fn encode(&self) -> anyhow::Result<(PathBuf, Vec<ClipMetrics>, EncodeStatistics)> {
         let mut statistics = EncodeStatistics::new(&self.config);
 
@@ -112,8 +110,8 @@ impl Encoder {
         let quality_queue: ArrayQueue<f64> = ArrayQueue::new(self.scenes.len());
 
         for scene in &self.scenes {
-            #[allow(clippy::as_conversions)]
-            #[allow(clippy::cast_precision_loss)]
+            #[expect(clippy::as_conversions)]
+            #[expect(clippy::cast_precision_loss)]
             statistics.scene_lengths.push(scene.length() as f64);
 
             if scene_queue.push(*scene).is_err() {
@@ -216,8 +214,8 @@ impl Encoder {
 
                     current_duration += clip.duration().context("Unable to read clip duration")?;
 
-                    #[allow(clippy::as_conversions)]
-                    #[allow(clippy::cast_precision_loss)]
+                    #[expect(clippy::as_conversions)]
+                    #[expect(clippy::cast_precision_loss)]
                     progress_bar.set_message(format!(
                         "{}",
                         HumanBitrate(current_bytes as f64 * 8.0 / current_duration)
@@ -345,9 +343,9 @@ impl Encoder {
         Ok(output_path)
     }
 
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_precision_loss)]
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::as_conversions)]
+    #[expect(clippy::cast_precision_loss)]
+    #[expect(clippy::too_many_lines)]
     fn encode_scene(
         &self,
         scene: &Scene,
@@ -430,8 +428,8 @@ impl Encoder {
                         format!("Unable to calculate metrics for scene {:05}", scene.index())
                     })?;
 
-                #[allow(clippy::integer_division)]
-                #[allow(clippy::integer_division_remainder_used)]
+                #[expect(clippy::integer_division)]
+                #[expect(clippy::integer_division_remainder_used)]
                 let threads = self.config.workers / self.active_workers.load(Ordering::Relaxed);
 
                 let metric_values = match self.config.metric {
@@ -569,7 +567,7 @@ impl Encoder {
         ))
     }
 
-    #[allow(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     fn encode_scene_single(
         &self,
         scene: &Scene,
@@ -658,10 +656,10 @@ impl Encoder {
                 &format!("{progress_prefix}Beginning encode..."),
             );
 
-            #[allow(clippy::as_conversions)]
-            #[allow(clippy::cast_possible_truncation)]
-            #[allow(clippy::cast_precision_loss)]
-            #[allow(clippy::cast_sign_loss)]
+            #[expect(clippy::as_conversions)]
+            #[expect(clippy::cast_possible_truncation)]
+            #[expect(clippy::cast_precision_loss)]
+            #[expect(clippy::cast_sign_loss)]
             let key_frame_interval =
                 (self.metadata.frame_count as f64 * 5.0 / self.metadata.duration).round() as usize;
 

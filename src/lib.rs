@@ -8,7 +8,7 @@ pub mod scenes;
 pub mod ssimulacra2;
 pub mod util;
 
-#[allow(clippy::print_stdout)]
+#[expect(clippy::print_stdout)]
 pub fn run(config: &config::Config) -> anyhow::Result<()> {
     // Prevent dependent libraries from modifying the rayon global pool with arbitrary thread counts.
     rayon::ThreadPoolBuilder::new()

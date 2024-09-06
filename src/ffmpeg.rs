@@ -260,8 +260,8 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
 
     progress_bar.finish();
 
-    #[allow(clippy::as_conversions)]
-    #[allow(clippy::cast_precision_loss)]
+    #[expect(clippy::as_conversions)]
+    #[expect(clippy::cast_precision_loss)]
     Ok(Metadata {
         frame_count,
         duration: duration as f64 / f64::from(ffi::AV_TIME_BASE),

@@ -71,8 +71,8 @@ fn guess_color_primaries(
     }
 }
 
-#[allow(clippy::significant_drop_tightening)]
-#[allow(clippy::type_complexity)]
+#[expect(clippy::significant_drop_tightening)]
+#[expect(clippy::type_complexity)]
 fn calc_score<S: Pixel, D: Pixel>(
     mutex: &Mutex<(usize, (Decoder<impl Read>, Decoder<impl Read>))>,
     reference_yuv_config: YuvConfig,
@@ -124,8 +124,8 @@ fn calc_score<S: Pixel, D: Pixel>(
     )))
 }
 
-#[allow(clippy::too_many_arguments)]
-#[allow(clippy::too_many_lines)]
+#[expect(clippy::too_many_arguments)]
+#[expect(clippy::too_many_lines)]
 fn compare_videos(
     reference_path: &Path,
     distorted_path: &Path,

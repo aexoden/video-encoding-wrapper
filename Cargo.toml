@@ -23,12 +23,12 @@ missing_errors_doc = "allow"
 multiple_crate_versions = "allow"
 
 [dependencies]
-anyhow = { version = "1.0.87", features = ["backtrace"] }
+anyhow = { version = "1.0.89", features = ["backtrace"] }
 av-metrics = "0.9.1"
 av-scenechange = { version = "0.12.2", default-features = false, features = ["ffmpeg"] }
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
 cached = "0.53.1"
-clap = { version = "4.5.17", features = ["derive"] }
+clap = { version = "4.5.18", features = ["derive"] }
 crossbeam-queue = "0.3.11"
 ffmpeg = { package = "ffmpeg-the-third", version = "2.0.1", features = ["serialize"] }
 indicatif = "0.17.8"

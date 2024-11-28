@@ -42,7 +42,7 @@ sha2 = "0.10.6"
 ssimulacra2 = { version = "0.5.0", default-features = false }
 statrs = "0.17.1"
 tokio = { version = "1.41.1", features = ["process"] }
-tracing = "0.1.37"
+tracing = "0.1.41"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 y4m = "0.8.0"

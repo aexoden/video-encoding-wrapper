@@ -28,7 +28,7 @@ av-metrics = "0.9.1"
 av-scenechange = { version = "0.12.2", default-features = false, features = ["ffmpeg"] }
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
 cached = "0.54.0"
-clap = { version = "4.5.28", features = ["derive"] }
+clap = { version = "4.5.29", features = ["derive"] }
 crossbeam-queue = "0.3.12"
 ffmpeg = { package = "ffmpeg-the-third", version = "2.0.1", features = ["serialize"] }
 indicatif = "0.17.11"

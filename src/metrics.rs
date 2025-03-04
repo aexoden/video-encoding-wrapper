@@ -7,8 +7,8 @@ use std::process::{Command, Stdio};
 use std::str;
 use std::time::Duration;
 
-use anyhow::{anyhow, Context};
-use ffmpeg::{ffi, format, media, Error};
+use anyhow::{Context, anyhow};
+use ffmpeg::{Error, ffi, format, media};
 use indicatif::{HumanCount, ProgressBar};
 use serde::{Deserialize, Serialize};
 
@@ -16,8 +16,8 @@ use crate::config::Config;
 use crate::ffmpeg::get_metadata;
 use crate::ssimulacra2;
 use crate::util::{
-    create_progress_style, generate_bitrate_chart, generate_stat_chart, generate_stat_log,
-    print_stats, verify_directory, verify_filename, HumanBitrate,
+    HumanBitrate, create_progress_style, generate_bitrate_chart, generate_stat_chart,
+    generate_stat_log, print_stats, verify_directory, verify_filename,
 };
 
 #[expect(clippy::module_name_repetitions)]
@@ -255,10 +255,13 @@ impl ClipMetrics {
         let filters = [
             self.original_filter.as_ref().map_or_else(
                 || "[0:v]setpts=PTS-STARTPTS[reference]".to_owned(),
-                |filter| format!("[0:v]{filter},setpts=PTS-STARTPTS[reference]")
+                |filter| format!("[0:v]{filter},setpts=PTS-STARTPTS[reference]"),
             ),
             "[1:v]setpts=PTS-STARTPTS[distorted]".to_owned(),
-            format!("[distorted][reference]libvmaf=log_fmt=json:log_path={}:n_threads={threads}:feature=name=psnr|name=float_ssim", log_path.to_string_lossy())
+            format!(
+                "[distorted][reference]libvmaf=log_fmt=json:log_path={}:n_threads={threads}:feature=name=psnr|name=float_ssim",
+                log_path.to_string_lossy()
+            ),
         ];
 
         let child = Command::new("ffmpeg")

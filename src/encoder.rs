@@ -9,17 +9,17 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::Duration;
 
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use crossbeam_queue::ArrayQueue;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use statrs::statistics::{Data, Distribution, OrderStatistics};
 
 use crate::config::{Config, Metric, Mode, QualityRule};
-use crate::ffmpeg::{create_child_read, get_metadata, Metadata};
+use crate::ffmpeg::{Metadata, create_child_read, get_metadata};
 use crate::metrics::ClipMetrics;
-use crate::scenes::{get, Scene};
+use crate::scenes::{Scene, get};
 use crate::util::{
-    create_progress_style, print_histogram, print_stats, verify_directory, HumanBitrate,
+    HumanBitrate, create_progress_style, print_histogram, print_stats, verify_directory,
 };
 
 fn update_worker_message(progress_bar: &ProgressBar, scene_index: usize, message: &str) {

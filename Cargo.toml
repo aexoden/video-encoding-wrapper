@@ -2,7 +2,7 @@
 name = "video-encoding-wrapper"
 version = "0.1.0"
 authors = ["Jason Lynch <jason@aexoden.com>"]
-edition = "2021"
+edition = "2024"
 categories = ["command-line-utilities", "multimedia::video"]
 description = "Opinionated tool to encode videos"
 keywords = ["video"]

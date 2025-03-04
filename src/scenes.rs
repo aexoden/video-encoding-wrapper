@@ -1,11 +1,11 @@
-use std::fs::{remove_file, rename, File};
+use std::fs::{File, remove_file, rename};
 use std::io::BufReader;
 use std::process::{ChildStdout, Command, Stdio};
 
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use av_scenechange::{
-    decoder::Decoder, detect_scene_changes, ffmpeg::FfmpegDecoder, DetectionOptions,
-    SceneDetectionSpeed,
+    DetectionOptions, SceneDetectionSpeed, decoder::Decoder, detect_scene_changes,
+    ffmpeg::FfmpegDecoder,
 };
 use indicatif::ProgressBar;
 use serde::{Deserialize, Serialize};

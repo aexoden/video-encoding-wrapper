@@ -31,14 +31,14 @@ use std::collections::BTreeMap;
 use std::io::Read;
 use std::path::Path;
 use std::process::ChildStdout;
-use std::sync::{mpsc, Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 use std::thread;
 
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use av_scenechange::{decoder::Decoder, ffmpeg::FfmpegDecoder};
 use ssimulacra2::{
-    compute_frame_ssimulacra2, ColorPrimaries, MatrixCoefficients, Pixel, TransferCharacteristic,
-    Yuv, YuvConfig,
+    ColorPrimaries, MatrixCoefficients, Pixel, TransferCharacteristic, Yuv, YuvConfig,
+    compute_frame_ssimulacra2,
 };
 
 const fn guess_matrix_coefficients(width: usize, height: usize) -> MatrixCoefficients {
@@ -86,25 +86,25 @@ fn calc_score<S: Pixel, D: Pixel>(
 
         let reference_info = guard
             .1
-             .0
+            .0
             .get_video_details()
             .context("Unable to retreive reference video details")?;
 
         let distorted_info = guard
             .1
-             .1
+            .1
             .get_video_details()
             .context("Unable to retrieve distorted video detials")?;
 
         let reference_frame = guard
             .1
-             .0
+            .0
             .read_video_frame::<S>(&reference_info)
             .context("Unable to read reference video frame")?;
 
         let distorted_frame = guard
             .1
-             .1
+            .1
             .read_video_frame::<D>(&distorted_info)
             .context("Unable to read distorted video frame")?;
 

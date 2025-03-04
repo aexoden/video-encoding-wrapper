@@ -1,11 +1,11 @@
 use std::cmp::min;
 use std::fmt::{Display, Formatter, Result, Write};
-use std::fs::{create_dir_all, File};
+use std::fs::{File, create_dir_all};
 use std::io::{BufWriter, Write as IoWrite};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use ffmpeg::util::log::level::Level as FFmpegLogLevel;
 use ffmpeg::util::log::set_level as ffmpeg_set_log_level;
 use indicatif::{HumanDuration, ProgressState, ProgressStyle};
@@ -15,9 +15,9 @@ use prettytable::{format::consts, row, table};
 use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
 use tracing::{error, level_filters::LevelFilter};
 use tracing_error::ErrorLayer;
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::prelude::*;
-use tracing_subscriber::EnvFilter;
 
 pub const MINUS_THREE_SIGMA: f64 = 0.001_349_898;
 pub const MINUS_TWO_SIGMA: f64 = 0.022_750_132;
@@ -353,7 +353,7 @@ pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
 
     table.set_format(*consts::FORMAT_BOX_CHARS);
 
-    for (name, ref mut data) in stats {
+    for (name, data) in stats {
         let mut data = Data::new(data);
 
         table.add_row(row![

@@ -544,7 +544,9 @@ impl Config {
             if self.metric == Metric::Direct {
                 format!("{encoder}-{preset}-{mode}-{quality}-{constraint}-{hash}")
             } else {
-                format!("{encoder}-{preset}-{mode}-{metric}-{rule}-{quality}-{percentile}-{constraint}-{hash}")
+                format!(
+                    "{encoder}-{preset}-{mode}-{metric}-{rule}-{quality}-{percentile}-{constraint}-{hash}"
+                )
             }
         } else {
             format!("{encoder}-{preset}-{mode}-{constraint}-{hash}")

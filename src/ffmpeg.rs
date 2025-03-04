@@ -5,10 +5,10 @@ use std::path::Path;
 use std::process::{Child, Command, Stdio};
 use std::result::Result;
 
-use anyhow::{anyhow, Context};
-use cached::{proc_macro::cached, UnboundCache};
+use anyhow::{Context, anyhow};
+use cached::{UnboundCache, proc_macro::cached};
 use ffmpeg::codec::{context, decoder};
-use ffmpeg::{ffi, filter, format, frame, media, Error};
+use ffmpeg::{Error, ffi, filter, format, frame, media};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Serialize};
 

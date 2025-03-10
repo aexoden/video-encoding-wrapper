@@ -36,12 +36,12 @@ number_prefix = "0.4.0"
 plotters = { version = "0.3.7", default-features = false, features = ["svg_backend", "line_series"] }
 prettytable-rs = "0.10.0"
 rayon = "1.10.0"
-serde = { version = "1.0.218", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 sha2 = "0.10.6"
 ssimulacra2 = { version = "0.5.1", default-features = false }
 statrs = "0.18.0"
-tokio = { version = "1.43.0", features = ["process"] }
+tokio = { version = "1.44.0", features = ["process"] }
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }

@@ -50,11 +50,11 @@ impl QualityRange {
         }
     }
 
-    pub fn lower(&mut self) {
+    pub const fn lower(&mut self) {
         self.maximum = self.midpoint() - 1;
     }
 
-    pub fn higher(&mut self) {
+    pub const fn higher(&mut self) {
         self.minimum = self.midpoint() + 1;
     }
 
@@ -413,7 +413,7 @@ impl Encoder {
 
                 arguments.push(qp_string);
             }
-        };
+        }
 
         // Pass Arguments
         if let Some(pass) = pass {

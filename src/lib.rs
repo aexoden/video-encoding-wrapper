@@ -18,15 +18,19 @@ pub fn run(config: &config::Config) -> anyhow::Result<()> {
 
     util::verify_directory(&config.output_directory).with_context(|| {
         format!(
-            "Unable to verify or create output directory {:?}",
-            &config.output_directory
+            "Unable to verify or create output directory {}",
+            &config.output_directory.display()
         )
     })?;
 
     let _metadata = ffmpeg::get_metadata(config);
 
-    scenes::split(config)
-        .with_context(|| format!("Unable to split scenes for file {:?}", &config.source))?;
+    scenes::split(config).with_context(|| {
+        format!(
+            "Unable to split scenes for file {}",
+            &config.source.display()
+        )
+    })?;
 
     let encoder = encoder::Encoder::new(config).context("Unable to create scene encoder")?;
     let (_output_path, mut clips, statistics) =

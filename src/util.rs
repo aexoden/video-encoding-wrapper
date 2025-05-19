@@ -158,7 +158,10 @@ pub fn generate_bitrate_chart(
     let y_max = y_range.mul_add(0.01, y_max);
 
     verify_filename(output_filename).with_context(|| {
-        format!("Unable to verify {title} chart output filename {output_filename:?}")
+        format!(
+            "Unable to verify {title} chart output filename {}",
+            output_filename.display()
+        )
     })?;
 
     let root = SVGBackend::new(output_filename, (1600, 800)).into_drawing_area();
@@ -223,7 +226,10 @@ pub fn generate_stat_chart(
     let y_max = y_range.mul_add(0.01, stats.max());
 
     verify_filename(output_filename).with_context(|| {
-        format!("Unable to verify {title} chart output filename {output_filename:?}")
+        format!(
+            "Unable to verify {title} chart output filename {}",
+            output_filename.display()
+        )
     })?;
 
     let root = SVGBackend::new(output_filename, (1600, 800)).into_drawing_area();
@@ -311,11 +317,17 @@ pub fn generate_stat_log(
     data: &[f64],
 ) -> anyhow::Result<()> {
     verify_filename(output_filename).with_context(|| {
-        format!("Unable to verify {title} log output filename {output_filename:?}")
+        format!(
+            "Unable to verify {title} log output filename {}",
+            output_filename.display()
+        )
     })?;
 
     let file = File::create(output_filename).with_context(|| {
-        format!("Unable to create {title} log output filename {output_filename:?}")
+        format!(
+            "Unable to create {title} log output filename {}",
+            output_filename.display()
+        )
     })?;
 
     let mut writer = BufWriter::new(file);
@@ -388,7 +400,8 @@ pub fn print_stats(stats: &mut Vec<(String, Vec<f64>)>) -> anyhow::Result<()> {
 
 pub fn verify_filename(path: &Path) -> anyhow::Result<()> {
     if let Some(parent) = path.parent() {
-        create_dir_all(parent).with_context(|| format!("Unable to create directory {parent:?}"))?;
+        create_dir_all(parent)
+            .with_context(|| format!("Unable to create directory {}", parent.display()))?;
     }
 
     Ok(())
@@ -400,7 +413,8 @@ pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
             return Err(anyhow!("{path:?} exists but is not a directory"));
         }
     } else {
-        create_dir_all(path).with_context(|| format!("Unable to create directory {path:?}"))?;
+        create_dir_all(path)
+            .with_context(|| format!("Unable to create directory {}", path.display()))?;
     }
 
     Ok(())

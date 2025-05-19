@@ -37,7 +37,7 @@ impl Scene {
 pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
     let json_path = config.output_directory.join("config").join("scenes.json");
     verify_filename(&json_path)
-        .with_context(|| format!("Unable to verify scene cache path {json_path:?}"))?;
+        .with_context(|| format!("Unable to verify scene cache path {}", json_path.display()))?;
 
     let metadata = get_metadata(config).context("Unable to fetch video metadata")?;
 
@@ -56,7 +56,7 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
 
     let scenes = if json_path.exists() {
         let file = File::open(&json_path)
-            .with_context(|| format!("Unable to open scene cache {json_path:?}"))?;
+            .with_context(|| format!("Unable to open scene cache {}", json_path.display()))?;
         let reader = BufReader::new(file);
 
         progress_bar.set_position(
@@ -72,7 +72,10 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
     } else {
         let mut decoder: Decoder<ChildStdout> =
             Decoder::Ffmpeg(FfmpegDecoder::new(&config.source).with_context(|| {
-                format!("Unable to create FFmpeg decoder for {:?}", &config.source)
+                format!(
+                    "Unable to create FFmpeg decoder for {}",
+                    &config.source.display()
+                )
             })?);
 
         let opts = DetectionOptions {
@@ -115,11 +118,12 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
             .collect();
 
         serde_json::to_writer_pretty(
-            &File::create(&json_path)
-                .with_context(|| format!("Unable to create scene cache file {json_path:?}"))?,
+            &File::create(&json_path).with_context(|| {
+                format!("Unable to create scene cache file {}", json_path.display())
+            })?,
             &scenes,
         )
-        .with_context(|| format!("Unable to serialize scene cache to {json_path:?}"))?;
+        .with_context(|| format!("Unable to serialize scene cache to {}", json_path.display()))?;
 
         scenes
     };
@@ -131,12 +135,19 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
 pub fn split(config: &Config) -> anyhow::Result<()> {
     let output_path = config.output_directory.join("source");
     verify_directory(&output_path).with_context(|| {
-        format!("Unable to verify split scene output directory {output_path:?}")
+        format!(
+            "Unable to verify split scene output directory {}",
+            output_path.display()
+        )
     })?;
 
     let scenes = get(config).context("Unable to fetch scene data")?;
-    let metadata = get_metadata(config)
-        .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
+    let metadata = get_metadata(config).with_context(|| {
+        format!(
+            "Unable to fetch video metadata for {}",
+            &config.source.display()
+        )
+    })?;
 
     let complete = scenes.iter().all(|scene| {
         let output_filename = output_path.join(format!("scene-{:05}.mkv", scene.index));
@@ -193,8 +204,9 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
                 if temporary_output_filename.exists() {
                     remove_file(&temporary_output_filename).with_context(|| {
                         format!(
-                        "Unable to remove preexisting temporary file {temporary_output_filename:?}"
-                    )
+                            "Unable to remove preexisting temporary file {}",
+                            temporary_output_filename.display()
+                        )
                     })?;
                 }
 
@@ -233,13 +245,13 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
             }
 
             if temporary_output_filename.exists() {
-                rename(&temporary_output_filename, &final_output_filename).with_context(
-                || {
+                rename(&temporary_output_filename, &final_output_filename).with_context(|| {
                     format!(
-                        "Unable to rename {temporary_output_filename:?} to {final_output_filename:?}"
+                        "Unable to rename {} to {}",
+                        temporary_output_filename.display(),
+                        final_output_filename.display()
                     )
-                },
-            )?;
+                })?;
             }
         }
     }

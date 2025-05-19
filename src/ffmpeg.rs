@@ -67,8 +67,12 @@ pub struct Metadata {
 pub fn get_metadata(config: &Config) -> anyhow::Result<Metadata> {
     let json_path = config.output_directory.join("config").join("metadata.json");
 
-    verify_filename(&json_path)
-        .with_context(|| format!("Unable to verify metadata cache file {json_path:?}"))?;
+    verify_filename(&json_path).with_context(|| {
+        format!(
+            "Unable to verify metadata cache file {}",
+            json_path.display()
+        )
+    })?;
 
     let progress_bar = ProgressBar::new_spinner();
     let progress_template = "{spinner:.green} [{elapsed_precise}] Determining frame count and crop settings... Frames: {human_pos}  Crop: {msg}";
@@ -78,12 +82,17 @@ pub fn get_metadata(config: &Config) -> anyhow::Result<Metadata> {
     );
 
     let metadata = if json_path.exists() {
-        let file = File::open(&json_path)
-            .with_context(|| format!("Unable to open metadata cache file {json_path:?}"))?;
+        let file = File::open(&json_path).with_context(|| {
+            format!("Unable to open metadata cache file {}", json_path.display())
+        })?;
         let reader = BufReader::new(file);
 
-        let metadata: Metadata = serde_json::from_reader(reader)
-            .with_context(|| format!("Unable to deserialize metadata cache from {json_path:?}"))?;
+        let metadata: Metadata = serde_json::from_reader(reader).with_context(|| {
+            format!(
+                "Unable to deserialize metadata cache from {}",
+                json_path.display()
+            )
+        })?;
 
         progress_bar.set_position(
             metadata
@@ -103,11 +112,20 @@ pub fn get_metadata(config: &Config) -> anyhow::Result<Metadata> {
             read_metadata(config, &progress_bar).context("Unable to read video metadata")?;
 
         serde_json::to_writer_pretty(
-            &File::create(&json_path)
-                .with_context(|| format!("Unable to create metadata cache file {json_path:?}"))?,
+            &File::create(&json_path).with_context(|| {
+                format!(
+                    "Unable to create metadata cache file {}",
+                    json_path.display()
+                )
+            })?,
             &metadata,
         )
-        .with_context(|| format!("Unable to serialize metadata cache to {json_path:?}"))?;
+        .with_context(|| {
+            format!(
+                "Unable to serialize metadata cache to {}",
+                json_path.display()
+            )
+        })?;
 
         metadata
     };
@@ -169,14 +187,16 @@ fn create_cropdetect_filter_graph(
 
 fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<Metadata> {
     let mut input_context = format::input(&config.source)
-        .with_context(|| format!("Unable to open {:?} with FFmpeg", &config.source))?;
+        .with_context(|| format!("Unable to open {} with FFmpeg", &config.source.display()))?;
 
     let (stream_index, mut decoder, time_base, duration) = {
         let input = input_context
             .streams()
             .best(media::Type::Video)
             .ok_or(Error::StreamNotFound)
-            .with_context(|| format!("Unable to find video stream in {:?}", config.source))?;
+            .with_context(|| {
+                format!("Unable to find video stream in {}", config.source.display())
+            })?;
         let decoder_context = context::Context::from_parameters(input.parameters())
             .context("Unable to create FFmpeg decoder context")?;
         let decoder = decoder_context

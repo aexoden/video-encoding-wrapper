@@ -35,7 +35,7 @@ impl QualityRange {
 
     #[must_use]
     const fn midpoint(&self) -> i64 {
-        (self.minimum + self.maximum) / 2
+        i64::midpoint(self.minimum, self.maximum)
     }
 
     #[must_use]

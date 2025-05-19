@@ -70,12 +70,17 @@ impl ClipMetrics {
         original_filter: Option<&str>,
     ) -> anyhow::Result<Self> {
         let json_path = path.with_extension("metrics.json");
-        verify_filename(&json_path)
-            .with_context(|| format!("Unable to verify clip metrics cache path {json_path:?}"))?;
+        verify_filename(&json_path).with_context(|| {
+            format!(
+                "Unable to verify clip metrics cache path {}",
+                json_path.display()
+            )
+        })?;
 
         if json_path.exists() {
-            let file = File::open(&json_path)
-                .with_context(|| format!("Unable to open clip metrics cache {json_path:?}"))?;
+            let file = File::open(&json_path).with_context(|| {
+                format!("Unable to open clip metrics cache {}", json_path.display())
+            })?;
             let reader = BufReader::new(file);
             let mut metrics: Self = serde_json::from_reader(reader)
                 .context("Unable to deserialize clip metrics cache")?;
@@ -110,7 +115,10 @@ impl ClipMetrics {
     pub fn sizes(&mut self) -> anyhow::Result<&Vec<usize>> {
         if self.sizes.is_none() {
             self.calculate_duration_and_size().with_context(|| {
-                format!("Unable to calculate duration or size for {:?}", &self.path)
+                format!(
+                    "Unable to calculate duration or size for {}",
+                    &self.path.display()
+                )
             })?;
         }
 
@@ -121,8 +129,9 @@ impl ClipMetrics {
 
     pub fn psnr(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.psnr.is_none() {
-            self.calculate_ffmpeg_metrics(threads)
-                .with_context(|| format!("Unable to calculate PSNR for {:?}", &self.path))?;
+            self.calculate_ffmpeg_metrics(threads).with_context(|| {
+                format!("Unable to calculate PSNR for {}", &self.path.display())
+            })?;
         }
 
         self.psnr
@@ -132,8 +141,9 @@ impl ClipMetrics {
 
     pub fn ssim(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.ssim.is_none() {
-            self.calculate_ffmpeg_metrics(threads)
-                .with_context(|| format!("Unable to calculate SSIM for {:?}", &self.path))?;
+            self.calculate_ffmpeg_metrics(threads).with_context(|| {
+                format!("Unable to calculate SSIM for {}", &self.path.display())
+            })?;
         }
 
         self.ssim
@@ -143,8 +153,9 @@ impl ClipMetrics {
 
     pub fn vmaf(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.vmaf.is_none() {
-            self.calculate_ffmpeg_metrics(threads)
-                .with_context(|| format!("Unable to calculate VMAF for {:?}", &self.path))?;
+            self.calculate_ffmpeg_metrics(threads).with_context(|| {
+                format!("Unable to calculate VMAF for {}", &self.path.display())
+            })?;
         }
 
         self.vmaf
@@ -154,8 +165,12 @@ impl ClipMetrics {
 
     pub fn ssimulacra2(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.ssimulacra2.is_none() {
-            self.calculate_ssimulacra2(threads)
-                .with_context(|| format!("Unable to calculate SSIMULACRA2 for {:?}", &self.path))?;
+            self.calculate_ssimulacra2(threads).with_context(|| {
+                format!(
+                    "Unable to calculate SSIMULACRA2 for {}",
+                    &self.path.display()
+                )
+            })?;
         }
 
         self.ssimulacra2
@@ -166,7 +181,10 @@ impl ClipMetrics {
     pub fn duration(&mut self) -> anyhow::Result<f64> {
         if self.duration.is_none() {
             self.calculate_duration_and_size().with_context(|| {
-                format!("Unable to calculate duration or size for {:?}", &self.path)
+                format!(
+                    "Unable to calculate duration or size for {}",
+                    &self.path.display()
+                )
             })?;
         }
 
@@ -177,7 +195,10 @@ impl ClipMetrics {
     pub fn frames(&mut self) -> anyhow::Result<usize> {
         if self.sizes.is_none() {
             self.calculate_duration_and_size().with_context(|| {
-                format!("Unable to calculate duration or size for {:?}", &self.path)
+                format!(
+                    "Unable to calculate duration or size for {}",
+                    &self.path.display()
+                )
             })?;
         }
 
@@ -193,13 +214,15 @@ impl ClipMetrics {
     fn calculate_duration_and_size(&mut self) -> anyhow::Result<()> {
         let (stream_index, duration, avg_frame_rate, mut input_context) = {
             let input_context = format::input(&self.path)
-                .with_context(|| format!("Unable to open {:?} with FFmpeg", &self.path))?;
+                .with_context(|| format!("Unable to open {} with FFmpeg", &self.path.display()))?;
 
             let input = input_context
                 .streams()
                 .best(media::Type::Video)
                 .ok_or(Error::StreamNotFound)
-                .with_context(|| format!("Unable to find video stream in {:?}", self.path))?;
+                .with_context(|| {
+                    format!("Unable to find video stream in {}", self.path.display())
+                })?;
 
             (
                 input.index(),
@@ -231,8 +254,12 @@ impl ClipMetrics {
 
         self.sizes = Some(packet_sizes);
 
-        self.update_cache()
-            .with_context(|| format!("Unable to update metrics cache for {:?}", &self.path))?;
+        self.update_cache().with_context(|| {
+            format!(
+                "Unable to update metrics cache for {}",
+                &self.path.display()
+            )
+        })?;
 
         Ok(())
     }
@@ -243,8 +270,12 @@ impl ClipMetrics {
                 .context("Unable to calculate SSIMULACRA2 for clip")?,
         );
 
-        self.update_cache()
-            .with_context(|| format!("Unable to update metrics cache for {:?}", &self.path))?;
+        self.update_cache().with_context(|| {
+            format!(
+                "Unable to update metrics cache for {}",
+                &self.path.display()
+            )
+        })?;
 
         Ok(())
     }
@@ -296,8 +327,9 @@ impl ClipMetrics {
             ));
         }
 
-        let log_file = File::open(&log_path)
-            .with_context(|| format!("Unable to open FFmpeg metrics file {log_path:?}"))?;
+        let log_file = File::open(&log_path).with_context(|| {
+            format!("Unable to open FFmpeg metrics file {}", log_path.display())
+        })?;
 
         let log_reader = BufReader::new(log_file);
 
@@ -318,10 +350,15 @@ impl ClipMetrics {
         self.psnr = Some(psnr);
         self.ssim = Some(ssim);
 
-        fs::remove_file(&log_path).with_context(|| format!("Unable to remove {log_path:?}"))?;
+        fs::remove_file(&log_path)
+            .with_context(|| format!("Unable to remove {}", log_path.display()))?;
 
-        self.update_cache()
-            .with_context(|| format!("Unable to update metrics cache for {:?}", &self.path))?;
+        self.update_cache().with_context(|| {
+            format!(
+                "Unable to update metrics cache for {}",
+                &self.path.display()
+            )
+        })?;
 
         Ok(())
     }
@@ -332,23 +369,24 @@ impl ClipMetrics {
         serde_json::to_writer_pretty(
             &File::create(&temporary_path).with_context(|| {
                 format!(
-                    "Unable to create clip metrics cache file {:?}",
-                    &temporary_path
+                    "Unable to create clip metrics cache file {}",
+                    &temporary_path.display()
                 )
             })?,
             &self,
         )
         .with_context(|| {
             format!(
-                "Unable to serialize clip metrics cache to {:?}",
-                &temporary_path
+                "Unable to serialize clip metrics cache to {}",
+                &temporary_path.display()
             )
         })?;
 
         fs::rename(&temporary_path, &self.json_path).with_context(|| {
             format!(
-                "Unable to rename {temporary_path:?} to {:?}",
-                self.json_path
+                "Unable to rename {} to {:?}",
+                temporary_path.display(),
+                self.json_path.display()
             )
         })?;
 
@@ -376,8 +414,12 @@ fn moving_sum(data: &[f64], window_size: usize) -> Vec<f64> {
 #[expect(clippy::cast_precision_loss)]
 #[expect(clippy::cast_sign_loss)]
 pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
-    let metadata = get_metadata(config)
-        .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
+    let metadata = get_metadata(config).with_context(|| {
+        format!(
+            "Unable to fetch video metadata for {}",
+            &config.source.display()
+        )
+    })?;
 
     let mut sizes: Vec<f64> = vec![];
 
@@ -406,8 +448,12 @@ pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::R
 
     let output_path = config.output_directory.join("output");
 
-    verify_directory(&output_path)
-        .with_context(|| format!("Unable to verify merging output directory {output_path:?}"))?;
+    verify_directory(&output_path).with_context(|| {
+        format!(
+            "Unable to verify merging output directory {}",
+            output_path.display()
+        )
+    })?;
 
     let series = window_sizes
         .iter()
@@ -431,8 +477,12 @@ pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::R
 #[expect(clippy::print_stdout)]
 #[expect(clippy::too_many_lines)]
 pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
-    let metadata = get_metadata(config)
-        .with_context(|| format!("Unable to fetch video metadata for {:?}", &config.source))?;
+    let metadata = get_metadata(config).with_context(|| {
+        format!(
+            "Unable to fetch video metadata for {}",
+            &config.source.display()
+        )
+    })?;
 
     let progress_bar = ProgressBar::new(metadata.frame_count.try_into().unwrap_or(u64::MAX));
 
@@ -514,8 +564,12 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
 
     let output_path = config.output_directory.join("output");
 
-    verify_directory(&output_path)
-        .with_context(|| format!("Unable to verify merging output directory {output_path:?}"))?;
+    verify_directory(&output_path).with_context(|| {
+        format!(
+            "Unable to verify merging output directory {}",
+            output_path.display()
+        )
+    })?;
 
     generate_stat_log(
         &output_path.join(format!("{}-psnr.txt", config.encode_identifier(true))),

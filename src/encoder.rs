@@ -94,7 +94,10 @@ impl Encoder {
             config: config.clone(),
             scenes,
             metadata: get_metadata(config).with_context(|| {
-                format!("Unable to fetch video metadata for {:?}", &config.source)
+                format!(
+                    "Unable to fetch video metadata for {}",
+                    &config.source.display()
+                )
             })?,
             encode_directory,
             active_workers: config.workers.into(),
@@ -273,7 +276,10 @@ impl Encoder {
         let output_path = self.config.output_directory.join("output");
 
         verify_directory(&output_path).with_context(|| {
-            format!("Unable to verify merging output directory {output_path:?}")
+            format!(
+                "Unable to verify merging output directory {}",
+                output_path.display()
+            )
         })?;
 
         let temporary_output_path =
@@ -333,7 +339,11 @@ impl Encoder {
 
         if temporary_output_path.exists() {
             fs::rename(&temporary_output_path, &output_path).with_context(|| {
-                format!("Unable to rename {temporary_output_path:?} to {output_path:?}")
+                format!(
+                    "Unable to rename {} to {}",
+                    temporary_output_path.display(),
+                    output_path.display()
+                )
             })?;
         }
 
@@ -581,7 +591,10 @@ impl Encoder {
             .join(format!("scene-{:05}", scene.index()));
 
         verify_directory(&output_path).with_context(|| {
-            format!("Unable to verify encoding output directory {output_path:?}")
+            format!(
+                "Unable to verify encoding output directory {}",
+                output_path.display()
+            )
         })?;
 
         let base_output_filename = if self
@@ -615,7 +628,10 @@ impl Encoder {
 
         if temporary_output_filename.exists() {
             fs::remove_file(&temporary_output_filename).with_context(|| {
-                format!("Unable to remove temporary encoding file {temporary_output_filename:?}")
+                format!(
+                    "Unable to remove temporary encoding file {}",
+                    temporary_output_filename.display()
+                )
             })?;
         }
 
@@ -729,13 +745,18 @@ impl Encoder {
                     fs::rename(&temporary_output_filename, &output_filename).with_context(
                         || {
                             format!(
-                            "Unable to rename {temporary_output_filename:?} to {output_filename:?}"
-                        )
+                                "Unable to rename {} to {}",
+                                temporary_output_filename.display(),
+                                output_filename.display()
+                            )
                         },
                     )?;
                 } else {
                     fs::remove_file(&temporary_output_filename).with_context(|| {
-                        format!("Unable to remove temporary file {temporary_output_filename:?}")
+                        format!(
+                            "Unable to remove temporary file {}",
+                            temporary_output_filename.display()
+                        )
                     })?;
                 }
             }

@@ -416,28 +416,28 @@ impl Encoder {
         }
 
         // Pass Arguments
-        if let Some(pass) = pass {
-            if let Some(stats_file) = stats_file {
-                match self {
-                    Self::Aomenc | Self::Vpxenc => {
-                        arguments.push("--passes=2".to_owned());
-                        arguments.push(format!("--pass={pass}"));
-                        arguments.push(format!("--fpf={}", stats_file.to_string_lossy()));
-                    }
-                    Self::Rav1e => {
-                        arguments.push(match pass {
-                            1 => "--first-pass".to_owned(),
-                            _ => "--second-pass".to_owned(),
-                        });
+        if let Some(pass) = pass
+            && let Some(stats_file) = stats_file
+        {
+            match self {
+                Self::Aomenc | Self::Vpxenc => {
+                    arguments.push("--passes=2".to_owned());
+                    arguments.push(format!("--pass={pass}"));
+                    arguments.push(format!("--fpf={}", stats_file.to_string_lossy()));
+                }
+                Self::Rav1e => {
+                    arguments.push(match pass {
+                        1 => "--first-pass".to_owned(),
+                        _ => "--second-pass".to_owned(),
+                    });
 
-                        arguments.push(stats_file.to_string_lossy().to_string());
-                    }
-                    Self::SvtAv1 | Self::X264 | Self::X265 => {
-                        arguments.push("--pass".to_owned());
-                        arguments.push(format!("{pass}"));
-                        arguments.push("--stats".to_owned());
-                        arguments.push(stats_file.to_string_lossy().to_string());
-                    }
+                    arguments.push(stats_file.to_string_lossy().to_string());
+                }
+                Self::SvtAv1 | Self::X264 | Self::X265 => {
+                    arguments.push("--pass".to_owned());
+                    arguments.push(format!("{pass}"));
+                    arguments.push("--stats".to_owned());
+                    arguments.push(stats_file.to_string_lossy().to_string());
                 }
             }
         }

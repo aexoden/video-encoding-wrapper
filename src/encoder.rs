@@ -246,7 +246,7 @@ impl Encoder {
                         result.context("Unable to encode scene")?;
                     }
                     Err(error) => {
-                        return Err(anyhow!("Encoding worker panicked: {:?}", error));
+                        return Err(anyhow!("Encoding worker panicked: {error:?}"));
                     }
                 }
             }

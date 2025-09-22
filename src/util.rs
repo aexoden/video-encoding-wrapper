@@ -410,7 +410,7 @@ pub fn verify_filename(path: &Path) -> anyhow::Result<()> {
 pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
     if path.exists() {
         if !path.is_dir() {
-            return Err(anyhow!("{path:?} exists but is not a directory"));
+            return Err(anyhow!("{} exists but is not a directory", path.display()));
         }
     } else {
         create_dir_all(path)

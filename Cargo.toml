@@ -28,10 +28,10 @@ av-metrics = "0.9.1"
 av-scenechange = { version = "0.12.2", default-features = false, features = ["ffmpeg"] }
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
 cached = "0.56.0"
-clap = { version = "4.5.49", features = ["derive"] }
+clap = { version = "4.5.50", features = ["derive"] }
 crossbeam-queue = "0.3.12"
 ffmpeg = { package = "ffmpeg-the-third", version = "2.0.1", features = ["serialize"] }
-indicatif = "0.18.0"
+indicatif = "0.18.1"
 number_prefix = "0.4.0"
 plotters = { version = "0.3.7", default-features = false, features = ["svg_backend", "line_series"] }
 prettytable-rs = "0.10.0"

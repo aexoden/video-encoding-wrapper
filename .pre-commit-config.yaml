@@ -1,0 +1,53 @@
+# Pre-commit configuration
+# Install: pre-commit install
+# Update: pre-commit autoupdate
+
+repos:
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  # Conventional commits
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.3.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  # Rust
+  - repo: local
+    hooks:
+      - id: rustfmt
+        name: rustfmt
+        description: Format Rust code using rustfmt
+        entry: flox activate -c "cargo fmt --all --check"
+        language: system
+        pass_filenames: false
+      - id: clippy
+        name: clippy
+        description: Lint Rust code using clippy
+        entry: flox activate -c "cargo clippy --workspace -- -D warnings"
+        language: system
+        pass_filenames: false
+      - id: test
+        name: cargo test
+        description: Run Rust tests using cargo test
+        entry: flox activate -c "cargo test --workspace --all-features"
+        language: system
+        pass_filenames: false
+      - id: cargo-deny
+        name: cargo-deny
+        description: Check Rust dependencies for security vulnerabilities using cargo-deny
+        entry: flox activate -c "cargo deny check"
+        language: system
+        pass_filenames: false

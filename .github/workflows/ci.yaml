@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install Flox
+        uses: flox/install-flox-action@v2
+
+      - name: Format Rust code
+        uses: flox/activate-action@v1
+        with:
+          command: cargo fmt --all --check
+
+      - name: Lint Rust code
+        uses: flox/activate-action@v1
+        with:
+          command: cargo clippy --workspace -- -D warnings
+
+      - name: Run Rust tests
+        uses: flox/activate-action@v1
+        with:
+          command: cargo test --workspace --all-features
+
+      - name: Check Rust dependencies for security vulnerabilities
+        uses: flox/activate-action@v1
+        with:
+          command: cargo deny check

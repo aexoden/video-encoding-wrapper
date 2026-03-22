@@ -18,24 +18,24 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Flox
-        uses: flox/install-flox-action@v2
+        uses: flox/install-flox-action@9428713e8d3883274c334b4b95b8830beebd24d2 # v2
 
       - name: Format Rust code
-        uses: flox/activate-action@v1
+        uses: flox/activate-action@410568008895a0f2e09a34bbd9523f8ef1f2d292 # v1
         with:
           command: cargo fmt --all --check
 
       - name: Lint Rust code
-        uses: flox/activate-action@v1
+        uses: flox/activate-action@410568008895a0f2e09a34bbd9523f8ef1f2d292 # v1
         with:
           command: cargo clippy --workspace -- -D warnings
 
       - name: Run Rust tests
-        uses: flox/activate-action@v1
+        uses: flox/activate-action@410568008895a0f2e09a34bbd9523f8ef1f2d292 # v1
         with:
           command: cargo test --workspace --all-features
 
       - name: Check Rust dependencies for security vulnerabilities
-        uses: flox/activate-action@v1
+        uses: flox/activate-action@410568008895a0f2e09a34bbd9523f8ef1f2d292 # v1
         with:
           command: cargo deny check

@@ -20,7 +20,7 @@
       },
       "ffmpeg": {
         "pkg-path": "ffmpeg-full",
-        "version": "7.1.1",
+        "version": "8.0.1",
         "outputs": [
           "bin",
           "dev",
@@ -343,34 +343,35 @@
     {
       "attr_path": "ffmpeg-full",
       "broken": false,
-      "derivation": "/nix/store/g6gq2z50ras8ch2b6bp8kwa6saifk5il-ffmpeg-full-7.1.1.drv",
+      "derivation": "/nix/store/j6df3gv3sxbfi28c9faz09bdakjshbpc-ffmpeg-full-8.0.1.drv",
       "description": "Complete, cross-platform solution to record, convert and stream audio and video",
       "install_id": "ffmpeg",
       "license": "[ LGPL-2.1-or-later, GPL-2.0-or-later, LGPL-3.0-or-later, GPL-3.0-or-later ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "name": "ffmpeg-full-7.1.1",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "ffmpeg-full-8.0.1",
       "pname": "ffmpeg-full",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:20:47.839340Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:25.994318Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "7.1.1",
+      "version": "8.0.1",
       "outputs_to_install": [
         "bin",
         "man"
       ],
       "outputs": {
-        "bin": "/nix/store/cphrh2mgsy9ffd506byr1gh149pqh8vh-ffmpeg-full-7.1.1-bin",
-        "data": "/nix/store/pnpswn84sydsnrrgifgpwzbw0a1jwlkz-ffmpeg-full-7.1.1-data",
-        "dev": "/nix/store/bllk83qw0i222s0cvc33wqhj5vmz8mp1-ffmpeg-full-7.1.1-dev",
-        "doc": "/nix/store/7jjqqny6gazd9hxgkmxkkp07yl8r32bs-ffmpeg-full-7.1.1-doc",
-        "lib": "/nix/store/sf3anvvnqj62qlhq4gpq59sj46vdmc50-ffmpeg-full-7.1.1-lib",
-        "man": "/nix/store/jmg1aa42favia0vlc7vxk0qy9c5k2nmr-ffmpeg-full-7.1.1-man",
-        "out": "/nix/store/r4wwc6qw460lvpzb4z8rqgm6cnbr666p-ffmpeg-full-7.1.1"
+        "bin": "/nix/store/6jq45r5cb08i7sl53cmq4k4i9v55sjgs-ffmpeg-full-8.0.1-bin",
+        "data": "/nix/store/7f54lx5914gx55mq2fshszrz9zra8nhr-ffmpeg-full-8.0.1-data",
+        "dev": "/nix/store/ml07kxrxq13iv8mzyab78h0f37msyqiq-ffmpeg-full-8.0.1-dev",
+        "doc": "/nix/store/9i791rkm3w37gh16jsl216bj02l5y0lh-ffmpeg-full-8.0.1-doc",
+        "lib": "/nix/store/9brmxfizhfz9ahsb767wiw44yb8c1hv8-ffmpeg-full-8.0.1-lib",
+        "man": "/nix/store/dfk3s2ky1gffaw4csvs8pql58k60rkpq-ffmpeg-full-8.0.1-man",
+        "out": "/nix/store/jyg57yz991rfbs5388m541sxnphmcb3i-ffmpeg-full-8.0.1"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -379,30 +380,33 @@
     {
       "attr_path": "gcc",
       "broken": false,
-      "derivation": "/nix/store/hfx466r2lhwvbbjj9my4qkx09g0z9g4h-gcc-wrapper-14.3.0.drv",
-      "description": "GNU Compiler Collection, version 14.3.0 (wrapper script)",
+      "derivation": "/nix/store/l8kjykqqnkh48cxjhz1p9wh53mb65dpf-gcc-wrapper-15.2.0.drv",
+      "description": "GNU Compiler Collection, version 15.2.0 (wrapper script)",
       "install_id": "gcc",
       "license": "GPL-3.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "name": "gcc-wrapper-14.3.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "gcc-wrapper-15.2.0",
       "pname": "gcc",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:20:48.129058Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:26.346223Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "14.3.0",
+      "version": "15.2.0",
       "outputs_to_install": [
         "man",
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
-        "info": "/nix/store/z7hszrb8jh32z19n63kz1hy27fb6nkf3-gcc-wrapper-14.3.0-info",
-        "man": "/nix/store/sqf2srspk645q502rv91nl3jyhwrd638-gcc-wrapper-14.3.0-man",
-        "out": "/nix/store/x8mydcgbry214s802nzvy7fdljx404ym-gcc-wrapper-14.3.0"
+        "info": "/nix/store/mj78x8b2vp0q9j6xf7bmvinn3m2csfhp-gcc-wrapper-15.2.0-info",
+        "man": "/nix/store/crcj0frpw4i8shmfwgyfx9fsqklf2iq5-gcc-wrapper-15.2.0-man",
+        "out": "/nix/store/kbw2j1vag664b3sj3rjwz9v53cqx87sb-gcc-wrapper-15.2.0"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -411,18 +415,19 @@
     {
       "attr_path": "libaom",
       "broken": false,
-      "derivation": "/nix/store/1md3nqlyvl0f5n8kyszi4yb58fa9zm7y-libaom-3.12.1.drv",
+      "derivation": "/nix/store/7bvczisgb42arrm3zpgh67xdrhl597ay-libaom-3.12.1.drv",
       "description": "Alliance for Open Media AV1 codec library",
       "install_id": "libaom",
       "license": "BSD-2-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
       "name": "libaom-3.12.1",
       "pname": "libaom",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:21:11.694898Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:50.760396Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -431,10 +436,10 @@
         "bin"
       ],
       "outputs": {
-        "bin": "/nix/store/snx5p2k1lhl1s79xkcw8s7jql90m522c-libaom-3.12.1-bin",
-        "dev": "/nix/store/h6fsnpxa51mzbx9yp83q449qpqq0r49c-libaom-3.12.1-dev",
-        "out": "/nix/store/9l72mv99c6gw187f6ihf0f8g31min921-libaom-3.12.1",
-        "static": "/nix/store/a44df8b8npaacn3ykm9rjjqbksq34hkl-libaom-3.12.1-static"
+        "bin": "/nix/store/8yai33gqg7d2ii7267xk0dwy5l99g4s0-libaom-3.12.1-bin",
+        "dev": "/nix/store/a516fd2g6ypiv8y8pnp8qcgjqc4k48mn-libaom-3.12.1-dev",
+        "out": "/nix/store/fahsap19aw4mgkflmv3xi6wzxx17anxp-libaom-3.12.1",
+        "static": "/nix/store/zy4w51p5f5lg195n0b8mj3p47j1c2jdx-libaom-3.12.1-static"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -443,31 +448,34 @@
     {
       "attr_path": "libclang",
       "broken": false,
-      "derivation": "/nix/store/8cay2gh92r0wpa04f5xfk0vdw6dyvg9h-clang-21.1.2.drv",
+      "derivation": "/nix/store/y83wf7499zjqyzgyr21mk4gp5cgzhcfi-clang-21.1.8.drv",
       "description": "C language family frontend for LLVM",
       "install_id": "libclang",
       "license": "[ NCSA, Apache-2.0, LLVM-exception ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "name": "clang-21.1.2",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "clang-21.1.8",
       "pname": "libclang",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:21:11.844956Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:50.906310Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "21.1.2",
+      "version": "21.1.8",
       "outputs_to_install": [
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
-        "debug": "/nix/store/v0g2y0bqhv4k0wg00z1vzyvfs4k9518p-clang-21.1.2-debug",
-        "dev": "/nix/store/4k9s468sfwh6yh2r7gx0blpn2g5ajsv1-clang-21.1.2-dev",
-        "lib": "/nix/store/v675rn0c8v3b142wchc974xs2az1mss3-clang-21.1.2-lib",
-        "out": "/nix/store/w7iw7bcj4y2xw7vfnibmygaqkv300krg-clang-21.1.2",
-        "python": "/nix/store/11r8khkbbvqhazq0as89ln75ic74hv7w-clang-21.1.2-python"
+        "debug": "/nix/store/sxrsyjy8b6m7cp9rpx449qcyqbmi1afj-clang-21.1.8-debug",
+        "dev": "/nix/store/isff6p0nv857bfx5zzypvxdkkqk27nwn-clang-21.1.8-dev",
+        "lib": "/nix/store/f160pmgwc710rrc5c2vjgach0xfxa4nm-clang-21.1.8-lib",
+        "out": "/nix/store/482i7k840pk0cmv6qhf4rf5gyah1lq8l-clang-21.1.8",
+        "python": "/nix/store/gp3v36vj8ca08ssyks1ni1fqhy0i2r7h-clang-21.1.8-python"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -476,18 +484,19 @@
     {
       "attr_path": "libvpx",
       "broken": false,
-      "derivation": "/nix/store/w3h21zlhq3w0zari4c7bh9ic4m2cmqvc-libvpx-1.15.2.drv",
+      "derivation": "/nix/store/z4yhablzpm7wapjywl360npczaal1w32-libvpx-1.15.2.drv",
       "description": "WebM VP8/VP9 codec SDK",
       "install_id": "libvpx",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
       "name": "libvpx-1.15.2",
       "pname": "libvpx",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:21:13.706427Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:52.771934Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -496,9 +505,9 @@
         "bin"
       ],
       "outputs": {
-        "bin": "/nix/store/5lrw7g85prasj7203xif1wi2al5imwww-libvpx-1.15.2-bin",
-        "dev": "/nix/store/7ssfgmd8hsm8vyd8jcdiy0mjd4mpjn5f-libvpx-1.15.2-dev",
-        "out": "/nix/store/pm72nj3aawkb053kd2fl1sdz0248l9ir-libvpx-1.15.2"
+        "bin": "/nix/store/5kx7w0xardb535ndjyin75y51y98aqms-libvpx-1.15.2-bin",
+        "dev": "/nix/store/8z5371cwrp4grbnfnr00k8fnfbzwkwfl-libvpx-1.15.2-dev",
+        "out": "/nix/store/7nvb5clr8li75nn09gjqihy5mbx3g86i-libvpx-1.15.2"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -507,27 +516,28 @@
     {
       "attr_path": "mkvtoolnix-cli",
       "broken": false,
-      "derivation": "/nix/store/q5059yh57z74qyjj0nqqys3a0cc7l152-mkvtoolnix-95.0.drv",
+      "derivation": "/nix/store/sllwwp56mixycfrhiw4767qy5bmidgix-mkvtoolnix-97.0.drv",
       "description": "Cross-platform tools for Matroska",
       "install_id": "mkvtoolnix-cli",
       "license": "GPL-2.0-only",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "name": "mkvtoolnix-95.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "mkvtoolnix-97.0",
       "pname": "mkvtoolnix-cli",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:21:24.436585Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:17:04.153966Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "95.0",
+      "version": "97.0",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/r7ynyqyfww6x03igqflnig3dibl5yb1y-mkvtoolnix-95.0"
+        "out": "/nix/store/77x94a571vryg4sp6366wccg6qvyri0z-mkvtoolnix-97.0"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -536,27 +546,28 @@
     {
       "attr_path": "nasm",
       "broken": false,
-      "derivation": "/nix/store/z2lrf1ksj3bag6bdrfw1frdi662kqcqj-nasm-2.16.03.drv",
+      "derivation": "/nix/store/gplpv19bpg86zgpazp4w5f8gr54hqjq8-nasm-3.01.drv",
       "description": "80x86 and x86-64 assembler designed for portability and modularity",
       "install_id": "nasm",
       "license": "BSD-2-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "name": "nasm-2.16.03",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "nasm-3.01",
       "pname": "nasm",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:21:25.783349Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:17:05.628510Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
-      "version": "2.16.03",
+      "version": "3.01",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/5q1xvp71wzax965l1xdwpz8ijkvhymsb-nasm-2.16.03"
+        "out": "/nix/store/ka0qxvadprgrzlw05fg0270zp8qy4j48-nasm-3.01"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -565,30 +576,33 @@
     {
       "attr_path": "pkg-config",
       "broken": false,
-      "derivation": "/nix/store/ap1rhrnldpa5xgrk6522v5kmn33h8flx-pkg-config-wrapper-0.29.2.drv",
+      "derivation": "/nix/store/4sflgpi32p1q6znl8c320hncgs1sp9d5-pkg-config-wrapper-0.29.2.drv",
       "description": "Tool that allows packages to find out information about other packages (wrapper script)",
       "install_id": "pkg-config",
       "license": "GPL-2.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
       "name": "pkg-config-wrapper-0.29.2",
       "pname": "pkg-config",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:21:50.263452Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:17:28.571118Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
       "version": "0.29.2",
       "outputs_to_install": [
         "man",
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
-        "doc": "/nix/store/nckfk6a26p0rvxrkm9ps45gam8a3nbbv-pkg-config-wrapper-0.29.2-doc",
-        "man": "/nix/store/s3gfdb3mq0p0sd859ryz1h1rh1wp33gr-pkg-config-wrapper-0.29.2-man",
-        "out": "/nix/store/0skggkamysbh0ksc3582lb69wzrpabcg-pkg-config-wrapper-0.29.2"
+        "doc": "/nix/store/zh2c9sb41q4c62xwfgkk4bspgkas2qjw-pkg-config-wrapper-0.29.2-doc",
+        "man": "/nix/store/f69zkr603mis7hkjpbladwhs1s2mz0ch-pkg-config-wrapper-0.29.2-man",
+        "out": "/nix/store/1nv3i8mpypy3d516f4pd95m0w72r73jy-pkg-config-wrapper-0.29.2"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -597,27 +611,29 @@
     {
       "attr_path": "rav1e",
       "broken": false,
-      "derivation": "/nix/store/gk0g5lwxkbqwb758hny1790asyqihm6c-rav1e-0.8.1.drv",
+      "derivation": "/nix/store/rxn97q0c7nwzwala55yba5k9mnv4974m-rav1e-0.8.1.drv",
       "description": "Fastest and safest AV1 encoder",
       "install_id": "rav1e",
       "license": "BSD-2-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
       "name": "rav1e-0.8.1",
       "pname": "rav1e",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:22:56.232362Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:18:33.334934Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
       "version": "0.8.1",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/jnim2744biiqb3kajan4h2r62g32k1d8-rav1e-0.8.1"
+        "out": "/nix/store/7vngfm47rfp6zmf6lw8f50z5n6bmissw-rav1e-0.8.1"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -626,27 +642,30 @@
     {
       "attr_path": "svt-av1",
       "broken": false,
-      "derivation": "/nix/store/6147f15wya5d2fw0c4zip1s9a35vlimv-svt-av1-3.1.2.drv",
+      "derivation": "/nix/store/mjfkvcj90ql88p03nvghfx3ahcg62xmy-svt-av1-3.1.2.drv",
       "description": "AV1-compliant encoder/decoder library core",
       "install_id": "svt-av1",
       "license": "[ Alliance for Open Media Patent License 1.0, BSD-3-Clause ]",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
       "name": "svt-av1-3.1.2",
       "pname": "svt-av1",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:23:28.212088Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:19:05.537777Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
       "version": "3.1.2",
       "outputs_to_install": [
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/96pr3zbnmpifaj01d265kzljycjhji3i-svt-av1-3.1.2"
+        "out": "/nix/store/ycv0bdf8bg06p8w6hhsk409c2q91clqb-svt-av1-3.1.2"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -655,18 +674,19 @@
     {
       "attr_path": "x264",
       "broken": false,
-      "derivation": "/nix/store/ar2z228yby5ywbmh6y9bdjgwm2m07mpr-x264-0-unstable-2025-01-03.drv",
+      "derivation": "/nix/store/hd86q3p96qkxd7nx155fvq479x6ripgx-x264-0-unstable-2025-01-03.drv",
       "description": "Library for encoding H264/AVC video streams",
       "install_id": "x264",
       "license": "GPL-2.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
       "name": "x264-0-unstable-2025-01-03",
       "pname": "x264",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:24:32.628992Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:20:18.034627Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
@@ -675,9 +695,9 @@
         "out"
       ],
       "outputs": {
-        "dev": "/nix/store/szprss4kml408q9cc30y4zi0sq4ziqcb-x264-0-unstable-2025-01-03-dev",
-        "lib": "/nix/store/i7r75vlarr6pvxqr7gxgvnhrdfl5fy05-x264-0-unstable-2025-01-03-lib",
-        "out": "/nix/store/qqdnvmzqxm4a788d5gmzv2iwx0z748gv-x264-0-unstable-2025-01-03"
+        "dev": "/nix/store/1pi8qpl8mb1s2qswrzpns0s5gx73kmxl-x264-0-unstable-2025-01-03-dev",
+        "lib": "/nix/store/qmj3xxhcbpn08lp15kabrnmw6mz1yj5h-x264-0-unstable-2025-01-03-lib",
+        "out": "/nix/store/qyw44mmblwzkfxx61djhqcxq9bx69im1-x264-0-unstable-2025-01-03"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -686,28 +706,31 @@
     {
       "attr_path": "x265",
       "broken": false,
-      "derivation": "/nix/store/ryw73219d666brgcd544czhrc526y7nl-x265-4.1.drv",
+      "derivation": "/nix/store/s6a7dszf0acqpk81kc1vgq35gd28zaks-x265-4.1.drv",
       "description": "Library for encoding H.265/HEVC video streams",
       "install_id": "x265",
       "license": "GPL-2.0-or-later",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
       "name": "x265-4.1",
       "pname": "x265",
-      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
-      "rev_count": 888552,
-      "rev_date": "2025-11-02T19:18:41Z",
-      "scrape_date": "2025-11-05T17:24:32.633434Z",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:20:18.040057Z",
       "stabilities": [
+        "staging",
         "unstable"
       ],
       "unfree": false,
       "version": "4.1",
       "outputs_to_install": [
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
-        "dev": "/nix/store/4lsl576n1bq7xi25gqhkx4bkd209gym2-x265-4.1-dev",
-        "out": "/nix/store/vfn1h7c3m7cnvwrs5wxpn4f6ccb3cswy-x265-4.1"
+        "dev": "/nix/store/c5jbdnd32pggwfacjgql5vcx4xm2qyf6-x265-4.1-dev",
+        "out": "/nix/store/drba08mg0sbqrsi8phkjbywkj3kn0fac-x265-4.1"
       },
       "system": "x86_64-linux",
       "group": "toplevel",

@@ -1,12 +1,10 @@
 use std::fs::{File, remove_file, rename};
 use std::io::BufReader;
-use std::process::{ChildStdout, Command, Stdio};
+use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow};
-use av_scenechange::{
-    DetectionOptions, SceneDetectionSpeed, decoder::Decoder, detect_scene_changes,
-    ffmpeg::FfmpegDecoder,
-};
+use av_decoders::Decoder;
+use av_scenechange::{DetectionOptions, SceneDetectionSpeed, detect_scene_changes};
 use indicatif::ProgressBar;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
@@ -70,13 +68,12 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
 
         serde_json::from_reader(reader).context("Unable to deserialize scene cache")?
     } else {
-        let mut decoder: Decoder<ChildStdout> =
-            Decoder::Ffmpeg(FfmpegDecoder::new(&config.source).with_context(|| {
-                format!(
-                    "Unable to create FFmpeg decoder for {}",
-                    &config.source.display()
-                )
-            })?);
+        let mut decoder = Decoder::from_file(&config.source).with_context(|| {
+            format!(
+                "Unable to create video decoder for {}",
+                &config.source.display()
+            )
+        })?;
 
         let opts = DetectionOptions {
             analysis_speed: SceneDetectionSpeed::Standard,
@@ -90,9 +87,15 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
             progress_bar.set_position(frames.try_into().unwrap_or(u64::MAX));
         };
 
-        let results =
-            detect_scene_changes::<_, u16>(&mut decoder, opts, None, Some(&progress_callback))
-                .context("Unable to detect scene changes")?;
+        let bit_depth = decoder.get_video_details().bit_depth;
+
+        let results = if bit_depth == 8 {
+            detect_scene_changes::<u8>(&mut decoder, opts, None, Some(&progress_callback))
+                .context("Unable to detect scene changes")?
+        } else {
+            detect_scene_changes::<u16>(&mut decoder, opts, None, Some(&progress_callback))
+                .context("Unable to detect scene changes")?
+        };
 
         progress_bar.finish();
 

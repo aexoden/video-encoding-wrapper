@@ -28,18 +28,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::collections::BTreeMap;
-use std::io::Read;
 use std::path::Path;
-use std::process::ChildStdout;
 use std::sync::{Arc, Mutex, mpsc};
 use std::thread;
 
 use anyhow::{Context, anyhow};
-use av_scenechange::{decoder::Decoder, ffmpeg::FfmpegDecoder};
+use av_decoders::{Decoder, DecoderError};
 use ssimulacra2::{
-    ColorPrimaries, MatrixCoefficients, Pixel, TransferCharacteristic, Yuv, YuvConfig,
-    compute_frame_ssimulacra2,
+    ColorPrimaries, MatrixCoefficients, TransferCharacteristic, compute_frame_ssimulacra2,
 };
+use v_frame::pixel::Pixel;
+use yuvxyb::{ChromaSubsampling, Yuv, YuvConfig};
+
+/// Converts a [`ChromaSubsampling`] to decimation shift amounts (x, y),
+/// equivalent to the old `get_decimation()` API from `v_frame` 0.3.x.
+const fn chroma_subsampling_decimation(cs: ChromaSubsampling) -> (usize, usize) {
+    match cs {
+        ChromaSubsampling::Yuv420 => (1, 1),
+        ChromaSubsampling::Yuv422 => (1, 0),
+        ChromaSubsampling::Yuv444 | ChromaSubsampling::Monochrome => (0, 0),
+    }
+}
 
 const fn guess_matrix_coefficients(width: usize, height: usize) -> MatrixCoefficients {
     if width >= 1280 || height > 576 {
@@ -71,57 +80,32 @@ fn guess_color_primaries(
     }
 }
 
-#[expect(clippy::significant_drop_tightening)]
-#[expect(clippy::type_complexity)]
-fn calc_score<S: Pixel, D: Pixel>(
-    mutex: &Mutex<(usize, (Decoder<impl Read>, Decoder<impl Read>))>,
-    reference_yuv_config: YuvConfig,
-    distorted_yuv_config: YuvConfig,
-) -> anyhow::Result<Option<(usize, f64)>> {
-    let (frame_index, (reference_frame, distorted_frame)) = {
-        let mut guard = mutex
-            .lock()
-            .map_err(|_err| anyhow!("Poison encountered when acquiring mutex lock"))?;
-        let frame_index = guard.0;
+/// Converts a decoded frame to ssimulacra2's `LinearRgb` type, bridging the
+/// version gap between yuvxyb 0.5.0 and ssimulacra2's pinned yuvxyb 0.4.2.
+fn frame_to_ssim2_linear_rgb<T: Pixel>(
+    frame: v_frame::frame::Frame<T>,
+    config: YuvConfig,
+) -> anyhow::Result<ssimulacra2::LinearRgb> {
+    let yuv = Yuv::new(frame, config).context("Unable to construct YUV from frame")?;
+    let linear: yuvxyb::LinearRgb =
+        yuvxyb::LinearRgb::try_from(yuv).context("Unable to convert YUV to linear RGB")?;
+    let w = linear.width().get();
+    let h = linear.height().get();
+    ssimulacra2::LinearRgb::new(linear.into_data(), w, h)
+        .context("Unable to construct ssimulacra2 LinearRgb")
+}
 
-        let reference_info = guard
-            .1
-            .0
-            .get_video_details()
-            .context("Unable to retreive reference video details")?;
-
-        let distorted_info = guard
-            .1
-            .1
-            .get_video_details()
-            .context("Unable to retrieve distorted video detials")?;
-
-        let reference_frame = guard
-            .1
-            .0
-            .read_video_frame::<S>(&reference_info)
-            .context("Unable to read reference video frame")?;
-
-        let distorted_frame = guard
-            .1
-            .1
-            .read_video_frame::<D>(&distorted_info)
-            .context("Unable to read distorted video frame")?;
-
-        guard.0 += 1;
-        (frame_index, (reference_frame, distorted_frame))
-    };
-
-    let reference_yuv = Yuv::new(reference_frame, reference_yuv_config)
-        .context("Unable to extract reference frame YUV")?;
-    let distorted_yuv = Yuv::new(distorted_frame, distorted_yuv_config)
-        .context("Unable to extract distorted frame YUV")?;
-
-    Ok(Some((
-        frame_index,
-        compute_frame_ssimulacra2(reference_yuv, distorted_yuv)
-            .context("Unable to compute SSIMULACRA2 score")?,
-    )))
+/// Reads the next frame from a decoder and converts it to ssimulacra2's
+/// `LinearRgb`. Returns `Ok(None)` at end-of-file.
+fn read_and_convert<T: Pixel>(
+    decoder: &mut Decoder,
+    config: YuvConfig,
+) -> anyhow::Result<Option<ssimulacra2::LinearRgb>> {
+    match decoder.read_video_frame::<T>() {
+        Ok(frame) => Ok(Some(frame_to_ssim2_linear_rgb(frame, config)?)),
+        Err(DecoderError::EndOfFile) => Ok(None),
+        Err(e) => Err(e).context("Unable to read video frame"),
+    }
 }
 
 #[expect(clippy::too_many_arguments)]
@@ -139,23 +123,17 @@ fn compare_videos(
     mut distorted_primaries: ColorPrimaries,
     distorted_full_range: bool,
 ) -> anyhow::Result<Vec<f64>> {
-    let reference: Decoder<ChildStdout> = Decoder::Ffmpeg(
-        FfmpegDecoder::new(reference_path)
-            .context("Unable to create SSIMULACRA2 reference YUV4MPEG decoder")?,
-    );
+    let reference: Decoder = Decoder::from_file(reference_path)
+        .context("Unable to create SSIMULACRA2 reference video decoder")?;
 
-    let distorted: Decoder<ChildStdout> = Decoder::Ffmpeg(
-        FfmpegDecoder::new(distorted_path)
-            .context("Unable to create SSIMULACRA2 distorted YUV4MPEG decoder")?,
-    );
+    let distorted: Decoder = Decoder::from_file(distorted_path)
+        .context("Unable to create SSIMULACRA2 distorted video decoder")?;
 
-    let reference_info = reference
-        .get_video_details()
-        .context("Unable to retrieve reference video details")?;
+    let reference_info = reference.get_video_details();
+    let distorted_info = distorted.get_video_details();
 
-    let distorted_info = distorted
-        .get_video_details()
-        .context("Unable to retrieve distorted video details")?;
+    let reference_bit_depth = reference_info.bit_depth;
+    let distorted_bit_depth = distorted_info.bit_depth;
 
     if reference_matrix == MatrixCoefficients::Unspecified {
         reference_matrix = guess_matrix_coefficients(reference_info.width, reference_info.height);
@@ -189,15 +167,8 @@ fn compare_videos(
         );
     }
 
-    let reference_subsampling = reference_info
-        .chroma_sampling
-        .get_decimation()
-        .unwrap_or((0, 0));
-
-    let distorted_subsampling = distorted_info
-        .chroma_sampling
-        .get_decimation()
-        .unwrap_or((0, 0));
+    let reference_subsampling = chroma_subsampling_decimation(reference_info.chroma_sampling);
+    let distorted_subsampling = chroma_subsampling_decimation(distorted_info.chroma_sampling);
 
     let reference_config = YuvConfig {
         bit_depth: reference_info
@@ -239,46 +210,77 @@ fn compare_videos(
 
     let (result_tx, result_rx) = mpsc::channel();
 
-    let current_frame = 0_usize;
-    let decoders = Arc::new(Mutex::new((current_frame, (reference, distorted))));
-
     thread::scope(|scope| -> anyhow::Result<Vec<f64>> {
+        // Workers receive (index, ref_rgb, dist_rgb) and compute scores.
+        // Decoder is not Send, so frame reading stays on the main thread.
+        let (frame_tx, frame_rx) =
+            mpsc::sync_channel::<(usize, ssimulacra2::LinearRgb, ssimulacra2::LinearRgb)>(threads);
+        let frame_rx = Arc::new(Mutex::new(frame_rx));
+
         for _ in 0..threads {
-            let decoders = Arc::clone(&decoders);
-            let result_tx = result_tx.clone();
+            let rx = Arc::clone(&frame_rx);
+            let tx = result_tx.clone();
 
             scope.spawn(move || -> anyhow::Result<()> {
                 loop {
-                    let score = match (reference_info.bit_depth, distorted_info.bit_depth) {
-                        (8, 8) => {
-                            calc_score::<u8, u8>(&decoders, reference_config, distorted_config)
+                    let (idx, ref_rgb, dist_rgb) = {
+                        let guard = rx.lock().map_err(|_err| {
+                            anyhow!("Poison encountered when acquiring mutex lock")
+                        })?;
+                        match guard.recv() {
+                            Ok(item) => item,
+                            Err(_) => break,
                         }
-                        (8, _) => {
-                            calc_score::<u8, u16>(&decoders, reference_config, distorted_config)
-                        }
-                        (_, 8) => {
-                            calc_score::<u16, u8>(&decoders, reference_config, distorted_config)
-                        }
-                        (_, _) => {
-                            calc_score::<u16, u16>(&decoders, reference_config, distorted_config)
-                        }
-                    }
-                    .context("Unable to calculate SSIMULACRA2 score")?;
+                    };
 
-                    if let Some(result) = score {
-                        result_tx
-                            .send(result)
-                            .context("Unable to send SSIMULACRA2 result to parent thread")?;
-                    } else {
-                        break;
-                    }
+                    let score = compute_frame_ssimulacra2(ref_rgb, dist_rgb)
+                        .context("Unable to compute SSIMULACRA2 score")?;
+                    tx.send((idx, score))
+                        .context("Unable to send SSIMULACRA2 result to parent thread")?;
                 }
-
                 Ok(())
             });
         }
-
         drop(result_tx);
+
+        // Main thread: read frames and convert to LinearRgb, then send to workers.
+        let mut reference = reference;
+        let mut distorted = distorted;
+        let mut frame_index = 0_usize;
+        loop {
+            let (ref_rgb, dist_rgb) = match (reference_bit_depth, distorted_bit_depth) {
+                (8, 8) => (
+                    read_and_convert::<u8>(&mut reference, reference_config),
+                    read_and_convert::<u8>(&mut distorted, distorted_config),
+                ),
+                (8, _) => (
+                    read_and_convert::<u8>(&mut reference, reference_config),
+                    read_and_convert::<u16>(&mut distorted, distorted_config),
+                ),
+                (_, 8) => (
+                    read_and_convert::<u16>(&mut reference, reference_config),
+                    read_and_convert::<u8>(&mut distorted, distorted_config),
+                ),
+                (_, _) => (
+                    read_and_convert::<u16>(&mut reference, reference_config),
+                    read_and_convert::<u16>(&mut distorted, distorted_config),
+                ),
+            };
+
+            let ref_rgb = ref_rgb.context("Unable to read reference frame")?;
+            let dist_rgb = dist_rgb.context("Unable to read distorted frame")?;
+
+            match (ref_rgb, dist_rgb) {
+                (Some(r), Some(d)) => {
+                    frame_tx
+                        .send((frame_index, r, d))
+                        .context("Unable to send frame pair to worker thread")?;
+                    frame_index += 1;
+                }
+                _ => break,
+            }
+        }
+        drop(frame_tx);
 
         let mut results = BTreeMap::new();
 

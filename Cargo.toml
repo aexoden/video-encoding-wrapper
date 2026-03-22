@@ -2,37 +2,33 @@
 name = "video-encoding-wrapper"
 version = "0.1.0"
 edition = "2024"
-categories = ["command-line-utilities", "multimedia::video"]
 description = "Opinionated tool to encode videos"
-keywords = ["video"]
-license = "MIT OR Apache-2.0"
 repository = "https://github.com/aexoden/video-encoding-wrapper"
+license = "MIT OR Apache-2.0"
+keywords = ["video"]
+categories = ["command-line-utilities", "multimedia::video"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[lints.rust]
-future_incompatible = "warn"
-let_underscore = "warn"
-
-[lints.clippy]
-cargo = { level = "warn", priority = -1 }
-nursery = { level = "warn", priority = -1 }
-pedantic = { level = "warn", priority = -1 }
-missing_errors_doc = "allow"
-multiple_crate_versions = "allow"
 
 [dependencies]
 anyhow = { version = "1.0.100", features = ["backtrace"] }
 av-metrics = "0.9.1"
-av-scenechange = { version = "0.12.2", default-features = false, features = ["ffmpeg"] }
+av-scenechange = { version = "0.12.2", default-features = false, features = [
+  "ffmpeg"
+] }
 base16ct = { version = "0.2.0", features = ["alloc", "std"] }
 cached = "0.56.0"
 clap = { version = "4.5.49", features = ["derive"] }
 crossbeam-queue = "0.3.12"
-ffmpeg = { package = "ffmpeg-the-third", version = "2.0.1", features = ["serialize"] }
+ffmpeg = { package = "ffmpeg-the-third", version = "2.0.1", features = [
+  "serialize"
+] }
 indicatif = "0.18.0"
 number_prefix = "0.4.0"
-plotters = { version = "0.3.7", default-features = false, features = ["svg_backend", "line_series"] }
+plotters = { version = "0.3.7", default-features = false, features = [
+  "line_series",
+  "svg_backend"
+] }
 prettytable-rs = "0.10.0"
 rayon = "1.11.0"
 serde = { version = "1.0.228", features = ["derive"] }
@@ -46,9 +42,21 @@ tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 y4m = "0.8.0"
 
-[profile.release]
-lto = "fat"
+[lints.clippy]
+cargo = { level = "warn", priority = -1 }
+expect_used = "warn"
+missing_errors_doc = "allow"
+multiple_crate_versions = "allow"
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+
+[lints.rust]
+future_incompatible = { level = "warn", priority = -1 }
+let_underscore = { level = "warn", priority = -1 }
 
 [profile.dev]
-incremental = true
 opt-level = 3
+incremental = true
+
+[profile.release]
+lto = "fat"

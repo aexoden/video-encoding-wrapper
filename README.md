@@ -1,6 +1,6 @@
 # video-encoding-wrapper
 
-![Rust](https://github.com/aexoden/video-encoding-wrapper/actions/workflows/ci.yml/badge.svg)
+![Rust](https://github.com/aexoden/video-encoding-wrapper/actions/workflows/ci.yaml/badge.svg)
 
 A highly opinionated video encoding wrapper.
 

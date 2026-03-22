@@ -460,46 +460,69 @@ impl Encoder {
 #[derive(Clone, Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Config {
-    /// Video encoder to use
+    /// Video encoder to use (aomenc, rav1e, svt-av1, vpxenc, x264, x265).
+    /// Note: rav1e does not support CRF mode
     #[arg(short, long, value_enum, default_value_t = Encoder::X264)]
     pub encoder: Encoder,
 
-    // Encoder-specific preset to use
+    /// Encoder-specific speed/quality preset, passed directly to the encoder
+    /// (e.g. "ultrafast".."veryslow" for x264/x265, 0-13 for svt-av1)
     #[arg(short, long, default_value = "ultrafast")]
     pub preset: String,
 
-    /// Number of workers
-    #[arg(short, long, value_parser = clap::value_parser!(usize), default_value_t = 0)]
+    /// Number of concurrent scene encoding workers. Must be a positive
+    /// integer; each worker encodes scenes independently in parallel
+    #[arg(short, long, value_parser = clap::value_parser!(usize), default_value_t = 1)]
     pub workers: usize,
 
-    /// Quality parameter in the encoder to adjust
+    /// Rate control mode: qp (fixed quantizer), crf (constant rate factor),
+    /// or bitrate (target bitrate in kbps). Bitrate mode always uses 2-pass
+    /// encoding
     #[arg(short, long, value_enum, default_value_t = Mode::QP)]
     pub mode: Mode,
 
-    /// Quality metric to target
+    /// Quality metric for automatic quality search. With "direct", the
+    /// quality value is passed to the encoder as-is with no search. Other
+    /// metrics (psnr, ssim, vmaf, ssimulacra2, bitrate) trigger a binary
+    /// search over the encoder's quality range to find the value that
+    /// achieves the target
     #[arg(long = "quality-metric", value_enum, default_value_t = Metric::Direct)]
     pub metric: Metric,
 
-    /// Quality targeting rule
+    /// Search direction during automatic quality search (ignored when
+    /// metric is "direct"). "minimum" means the lowest quality that meets or
+    /// exceeds the target (e.g. VMAF >= 95). "maximum" means the highest
+    /// quality that meets or is below the target (e.g. VMAF <= 95). "target"
+    /// means the quality closest to the target (e.g. VMAF closest to 95, whether
+    /// above or below)
     #[arg(short, long = "quality-rule", value_enum, default_value_t = QualityRule::Minimum)]
     pub rule: QualityRule,
 
-    /// Use mean instead of a percentile
+    /// Use arithmetic mean of per-frame metric values instead of a
+    /// percentile. When set, --quality-percentile is ignored
     #[arg(short, long = "quality-mean", default_value_t = false)]
     pub use_mean: bool,
 
-    /// Percentile to measure for target quality
+    /// Percentile (0.0-1.0) of per-frame metric values to use as the
+    /// quality measurement. 0.05 means the 5th percentile (worst 5% of
+    /// frames). Only used when --quality-mean is not set
     #[arg(long = "quality-percentile", value_parser = clap::value_parser!(f64), default_value_t = 0.05)]
     pub percentile: f64,
 
-    /// Quality (QP or CRF) value to pass to the encoder
+    /// Quality target value. In "direct" metric mode, this is passed to the
+    /// encoder as the QP, CRF, or bitrate value. In other metric modes,
+    /// this is the target metric score (e.g. VMAF 95.0) for the quality
+    /// search. Valid ranges depend on the encoder and mode
     #[arg(short, long, value_parser = clap::value_parser!(f64), default_value_t = 23.0)]
     pub quality: f64,
 
-    /// Source video file to encode
+    /// Source video file to encode. Used for metadata extraction, scene
+    /// detection, and as the reference for metric calculation
     pub source: PathBuf,
 
-    /// Output directory
+    /// Output directory for encoded files, caches, and analysis. Created if
+    /// it does not exist. Cached data is reused across runs with the same
+    /// source file
     pub output_directory: PathBuf,
 }
 

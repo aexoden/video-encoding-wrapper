@@ -9,7 +9,6 @@ use anyhow::{Context, anyhow};
 use ffmpeg::util::log::level::Level as FFmpegLogLevel;
 use ffmpeg::util::log::set_level as ffmpeg_set_log_level;
 use indicatif::{HumanDuration, ProgressState, ProgressStyle};
-use number_prefix::NumberPrefix;
 use plotters::prelude::*;
 use prettytable::{format::consts, row, table};
 use statrs::statistics::{Data, Distribution, Max, Min, OrderStatistics};
@@ -18,6 +17,7 @@ use tracing_error::ErrorLayer;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::fmt::layer;
 use tracing_subscriber::prelude::*;
+use unit_prefix::NumberPrefix;
 
 pub const MINUS_THREE_SIGMA: f64 = 0.001_349_898;
 pub const MINUS_TWO_SIGMA: f64 = 0.022_750_132;

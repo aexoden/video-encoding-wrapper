@@ -26,7 +26,6 @@ ffmpeg = { package = "ffmpeg-the-third", version = "4.1.0", features = [
   "serialize"
 ] }
 indicatif = "0.18.0"
-number_prefix = "0.4.0"
 plotters = { version = "0.3.7", default-features = false, features = [
   "line_series",
   "svg_backend"
@@ -42,6 +41,7 @@ tokio = { version = "1.48.0", features = ["process"] }
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+unit-prefix = "0.5.2"
 v_frame = "0.5.1"
 y4m = "0.8.0"
 yuvxyb = "0.5.0"

@@ -972,12 +972,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "number_prefix"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3"
-
-[[package]]
 name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1583,9 +1577,9 @@ checksum = "1fc81956842c57dac11422a97c3b8195a1ff727f06e85c84ed2e8aa277c9a0fd"
 
 [[package]]
 name = "unit-prefix"
-version = "0.5.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "323402cff2dd658f39ca17c789b502021b3f18707c91cdf22e3838e1b4023817"
+checksum = "81e544489bf3d8ef66c953931f56617f423cd4b5494be343d9b9d3dda037b9a3"
 
 [[package]]
 name = "utf8parse"
@@ -1648,7 +1642,6 @@ dependencies = [
  "crossbeam-queue",
  "ffmpeg-the-third",
  "indicatif",
- "number_prefix",
  "plotters",
  "prettytable-rs",
  "rayon",
@@ -1661,6 +1654,7 @@ dependencies = [
  "tracing",
  "tracing-error",
  "tracing-subscriber",
+ "unit-prefix",
  "v_frame 0.5.1",
  "y4m",
  "yuvxyb 0.5.0",

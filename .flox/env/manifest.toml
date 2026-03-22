@@ -1,0 +1,48 @@
+schema-version = "1.10.0"
+
+[install]
+# Rust toolchain
+cargo = { pkg-path = "cargo", version = "1.93.0", pkg-group = "rust-toolchain" }
+rustc = { pkg-path = "rustc", version = "1.93.0", pkg-group = "rust-toolchain" }
+clippy = { pkg-path = "clippy", version = "1.93.0", pkg-group = "rust-toolchain" }
+rustfmt = { pkg-path = "rustfmt", version = "1.93.0", pkg-group = "rust-toolchain" }
+rust-lib-src = { pkg-path = "rustPlatform.rustLibSrc", pkg-group = "rust-toolchain" }
+
+# Rust Analyzer
+rust-analyzer = { pkg-path = "rust-analyzer", pkg-group = "rust-analyzer" }
+
+# Build dependencies
+# ffmpeg-full is needed for VMAF support
+ffmpeg = { pkg-path = "ffmpeg-full", version = "7.1.1", outputs = [
+  "bin",
+  "dev",
+  "lib"
+] }
+gcc = { pkg-path = "gcc" }
+libclang = { pkg-path = "libclang", outputs = ["dev"] }
+nasm = { pkg-path = "nasm" }
+pkg-config = { pkg-path = "pkg-config" }
+
+# Development tools
+cargo-deny = { pkg-path = "cargo-deny", version = "0.19.0", pkg-group = "cargo-deny" }
+pre-commit = { pkg-path = "pre-commit", version = "4.5.1", pkg-group = "pre-commit" }
+
+# Runtime dependencies
+# The ffmpeg bin output is only needed at runtime
+libaom = { pkg-path = "libaom" }
+libvpx = { pkg-path = "libvpx" }
+mkvtoolnix-cli = { pkg-path = "mkvtoolnix-cli" }
+rav1e = { pkg-path = "rav1e" }
+svt-av1 = { pkg-path = "svt-av1" }
+x264 = { pkg-path = "x264" }
+x265 = { pkg-path = "x265" }
+
+[hook]
+on-activate = '''
+  export LIBCLANG_PATH="$FLOX_ENV/lib"
+  cargo fetch
+  pre-commit install
+'''
+
+[options]
+systems = ["x86_64-linux"]

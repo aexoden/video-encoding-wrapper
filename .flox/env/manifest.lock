@@ -1,0 +1,717 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "schema-version": "1.10.0",
+    "install": {
+      "cargo": {
+        "pkg-path": "cargo",
+        "pkg-group": "rust-toolchain",
+        "version": "1.93.0"
+      },
+      "cargo-deny": {
+        "pkg-path": "cargo-deny",
+        "pkg-group": "cargo-deny",
+        "version": "0.19.0"
+      },
+      "clippy": {
+        "pkg-path": "clippy",
+        "pkg-group": "rust-toolchain",
+        "version": "1.93.0"
+      },
+      "ffmpeg": {
+        "pkg-path": "ffmpeg-full",
+        "version": "7.1.1",
+        "outputs": [
+          "bin",
+          "dev",
+          "lib"
+        ]
+      },
+      "gcc": {
+        "pkg-path": "gcc"
+      },
+      "libaom": {
+        "pkg-path": "libaom"
+      },
+      "libclang": {
+        "pkg-path": "libclang",
+        "outputs": [
+          "dev"
+        ]
+      },
+      "libvpx": {
+        "pkg-path": "libvpx"
+      },
+      "mkvtoolnix-cli": {
+        "pkg-path": "mkvtoolnix-cli"
+      },
+      "nasm": {
+        "pkg-path": "nasm"
+      },
+      "pkg-config": {
+        "pkg-path": "pkg-config"
+      },
+      "pre-commit": {
+        "pkg-path": "pre-commit",
+        "pkg-group": "pre-commit",
+        "version": "4.5.1"
+      },
+      "rav1e": {
+        "pkg-path": "rav1e"
+      },
+      "rust-analyzer": {
+        "pkg-path": "rust-analyzer",
+        "pkg-group": "rust-analyzer"
+      },
+      "rust-lib-src": {
+        "pkg-path": "rustPlatform.rustLibSrc",
+        "pkg-group": "rust-toolchain"
+      },
+      "rustc": {
+        "pkg-path": "rustc",
+        "pkg-group": "rust-toolchain",
+        "version": "1.93.0"
+      },
+      "rustfmt": {
+        "pkg-path": "rustfmt",
+        "pkg-group": "rust-toolchain",
+        "version": "1.93.0"
+      },
+      "svt-av1": {
+        "pkg-path": "svt-av1"
+      },
+      "x264": {
+        "pkg-path": "x264"
+      },
+      "x265": {
+        "pkg-path": "x265"
+      }
+    },
+    "hook": {
+      "on-activate": "  export LIBCLANG_PATH=\"$FLOX_ENV/lib\"\n  cargo fetch\n  pre-commit install\n"
+    },
+    "options": {
+      "systems": [
+        "x86_64-linux"
+      ]
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "cargo-deny",
+      "broken": false,
+      "derivation": "/nix/store/30cw9gfwnnxs4d35j1k2agapgrswqzpz-cargo-deny-0.19.0.drv",
+      "description": "Cargo plugin for linting your dependencies",
+      "install_id": "cargo-deny",
+      "license": "[ Apache-2.0, MIT ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "cargo-deny-0.19.0",
+      "pname": "cargo-deny",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:24.614069Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.19.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/jld7vprd8kf2cgchdmkw2bb6d48hw30i-cargo-deny-0.19.0"
+      },
+      "system": "x86_64-linux",
+      "group": "cargo-deny",
+      "priority": 5
+    },
+    {
+      "attr_path": "pre-commit",
+      "broken": false,
+      "derivation": "/nix/store/bqfs6iph4fwq33z8jn9pmya3qx7dflq3-pre-commit-4.5.1.drv",
+      "description": "Framework for managing and maintaining multi-language pre-commit hooks",
+      "install_id": "pre-commit",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "pre-commit-4.5.1",
+      "pname": "pre-commit",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:17:30.966670Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.5.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/vrki0hn1cgian14drdx35ykprfcvb6lr-pre-commit-4.5.1-dist",
+        "out": "/nix/store/dmp9i793l0hhwzng8601p3wl8d30q2dd-pre-commit-4.5.1"
+      },
+      "system": "x86_64-linux",
+      "group": "pre-commit",
+      "priority": 5
+    },
+    {
+      "attr_path": "rust-analyzer",
+      "broken": false,
+      "derivation": "/nix/store/49fzlv714l4p2f3nabnihw2a116c1lhi-rust-analyzer-2026-03-16.drv",
+      "description": "Language server for the Rust language",
+      "install_id": "rust-analyzer",
+      "license": "[ MIT, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "rust-analyzer-2026-03-16",
+      "pname": "rust-analyzer",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:18:41.894062Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2026-03-16",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/2dccknsxza5iz7phn95j57i5vl3zqx1p-rust-analyzer-2026-03-16"
+      },
+      "system": "x86_64-linux",
+      "group": "rust-analyzer",
+      "priority": 5
+    },
+    {
+      "attr_path": "cargo",
+      "broken": false,
+      "derivation": "/nix/store/jk32mh50pjnj63zjvk00dvmyxsjc25gn-cargo-1.93.0.drv",
+      "description": "Downloads your Rust project's dependencies and builds your project",
+      "install_id": "cargo",
+      "license": "[ MIT, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "cargo-1.93.0",
+      "pname": "cargo",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:24.607477Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.93.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/p96faw8wiwi10cy94hr42gzmiapv15fm-cargo-1.93.0"
+      },
+      "system": "x86_64-linux",
+      "group": "rust-toolchain",
+      "priority": 5
+    },
+    {
+      "attr_path": "clippy",
+      "broken": false,
+      "derivation": "/nix/store/sblp67332mcy5h7rnyhl6w002wj442q0-clippy-1.93.0.drv",
+      "description": "Bunch of lints to catch common mistakes and improve your Rust code",
+      "install_id": "clippy",
+      "license": "[ MIT, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "clippy-1.93.0",
+      "pname": "clippy",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:16:24.874358Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.93.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/5v47mbiidhck8rzw141hvmwkh515pfg3-clippy-1.93.0-debug",
+        "out": "/nix/store/0yj3hz7imj1zxmppn9gfps8h2jmvdi7g-clippy-1.93.0"
+      },
+      "system": "x86_64-linux",
+      "group": "rust-toolchain",
+      "priority": 5
+    },
+    {
+      "attr_path": "rustPlatform.rustLibSrc",
+      "broken": false,
+      "derivation": "/nix/store/xz19iprk4yz00zp5x5zibwv98jafgf1b-rust-lib-src.drv",
+      "install_id": "rust-lib-src",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "rust-lib-src",
+      "pname": "rustLibSrc",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:20:23.595526Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "rust-lib-src",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/xqnf1bdi96i044mgfqvw9kll3554nbr9-rust-lib-src"
+      },
+      "system": "x86_64-linux",
+      "group": "rust-toolchain",
+      "priority": 5
+    },
+    {
+      "attr_path": "rustc",
+      "broken": false,
+      "derivation": "/nix/store/gangqlccxfql4my3i8228kr2k4pi4nn4-rustc-wrapper-1.93.0.drv",
+      "description": "Safe, concurrent, practical language (wrapper script)",
+      "install_id": "rustc",
+      "license": "[ MIT, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "rustc-wrapper-1.93.0",
+      "pname": "rustc",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:18:41.957546Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.93.0",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "doc": "/nix/store/jxsjbrzcxww6v7g4n4fqcw6sj7z7s3y9-rustc-wrapper-1.93.0-doc",
+        "man": "/nix/store/kfxswj02a5bskwnwn3jdz3micybbaw2r-rustc-wrapper-1.93.0-man",
+        "out": "/nix/store/rsy1282lj3dg4wdf5d00yvz7f6hjzxin-rustc-wrapper-1.93.0"
+      },
+      "system": "x86_64-linux",
+      "group": "rust-toolchain",
+      "priority": 5
+    },
+    {
+      "attr_path": "rustfmt",
+      "broken": false,
+      "derivation": "/nix/store/v8lzmahd00sw33cc02j819kapd6ns36k-rustfmt-1.93.0.drv",
+      "description": "Tool for formatting Rust code according to style guidelines",
+      "install_id": "rustfmt",
+      "license": "[ MIT, Apache-2.0 ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "name": "rustfmt-1.93.0",
+      "pname": "rustfmt",
+      "rev": "b40629efe5d6ec48dd1efba650c797ddbd39ace0",
+      "rev_count": 964859,
+      "rev_date": "2026-03-18T08:17:15Z",
+      "scrape_date": "2026-03-20T02:18:41.991219Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.93.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/yb62fm7wf3ysn5rnfj2r03snmk9pwwa2-rustfmt-1.93.0"
+      },
+      "system": "x86_64-linux",
+      "group": "rust-toolchain",
+      "priority": 5
+    },
+    {
+      "attr_path": "ffmpeg-full",
+      "broken": false,
+      "derivation": "/nix/store/g6gq2z50ras8ch2b6bp8kwa6saifk5il-ffmpeg-full-7.1.1.drv",
+      "description": "Complete, cross-platform solution to record, convert and stream audio and video",
+      "install_id": "ffmpeg",
+      "license": "[ LGPL-2.1-or-later, GPL-2.0-or-later, LGPL-3.0-or-later, GPL-3.0-or-later ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "ffmpeg-full-7.1.1",
+      "pname": "ffmpeg-full",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:20:47.839340Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "7.1.1",
+      "outputs_to_install": [
+        "bin",
+        "man"
+      ],
+      "outputs": {
+        "bin": "/nix/store/cphrh2mgsy9ffd506byr1gh149pqh8vh-ffmpeg-full-7.1.1-bin",
+        "data": "/nix/store/pnpswn84sydsnrrgifgpwzbw0a1jwlkz-ffmpeg-full-7.1.1-data",
+        "dev": "/nix/store/bllk83qw0i222s0cvc33wqhj5vmz8mp1-ffmpeg-full-7.1.1-dev",
+        "doc": "/nix/store/7jjqqny6gazd9hxgkmxkkp07yl8r32bs-ffmpeg-full-7.1.1-doc",
+        "lib": "/nix/store/sf3anvvnqj62qlhq4gpq59sj46vdmc50-ffmpeg-full-7.1.1-lib",
+        "man": "/nix/store/jmg1aa42favia0vlc7vxk0qy9c5k2nmr-ffmpeg-full-7.1.1-man",
+        "out": "/nix/store/r4wwc6qw460lvpzb4z8rqgm6cnbr666p-ffmpeg-full-7.1.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "gcc",
+      "broken": false,
+      "derivation": "/nix/store/hfx466r2lhwvbbjj9my4qkx09g0z9g4h-gcc-wrapper-14.3.0.drv",
+      "description": "GNU Compiler Collection, version 14.3.0 (wrapper script)",
+      "install_id": "gcc",
+      "license": "GPL-3.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "gcc-wrapper-14.3.0",
+      "pname": "gcc",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:20:48.129058Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "14.3.0",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "info": "/nix/store/z7hszrb8jh32z19n63kz1hy27fb6nkf3-gcc-wrapper-14.3.0-info",
+        "man": "/nix/store/sqf2srspk645q502rv91nl3jyhwrd638-gcc-wrapper-14.3.0-man",
+        "out": "/nix/store/x8mydcgbry214s802nzvy7fdljx404ym-gcc-wrapper-14.3.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "libaom",
+      "broken": false,
+      "derivation": "/nix/store/1md3nqlyvl0f5n8kyszi4yb58fa9zm7y-libaom-3.12.1.drv",
+      "description": "Alliance for Open Media AV1 codec library",
+      "install_id": "libaom",
+      "license": "BSD-2-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "libaom-3.12.1",
+      "pname": "libaom",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:21:11.694898Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.12.1",
+      "outputs_to_install": [
+        "bin"
+      ],
+      "outputs": {
+        "bin": "/nix/store/snx5p2k1lhl1s79xkcw8s7jql90m522c-libaom-3.12.1-bin",
+        "dev": "/nix/store/h6fsnpxa51mzbx9yp83q449qpqq0r49c-libaom-3.12.1-dev",
+        "out": "/nix/store/9l72mv99c6gw187f6ihf0f8g31min921-libaom-3.12.1",
+        "static": "/nix/store/a44df8b8npaacn3ykm9rjjqbksq34hkl-libaom-3.12.1-static"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "libclang",
+      "broken": false,
+      "derivation": "/nix/store/8cay2gh92r0wpa04f5xfk0vdw6dyvg9h-clang-21.1.2.drv",
+      "description": "C language family frontend for LLVM",
+      "install_id": "libclang",
+      "license": "[ NCSA, Apache-2.0, LLVM-exception ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "clang-21.1.2",
+      "pname": "libclang",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:21:11.844956Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "21.1.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/v0g2y0bqhv4k0wg00z1vzyvfs4k9518p-clang-21.1.2-debug",
+        "dev": "/nix/store/4k9s468sfwh6yh2r7gx0blpn2g5ajsv1-clang-21.1.2-dev",
+        "lib": "/nix/store/v675rn0c8v3b142wchc974xs2az1mss3-clang-21.1.2-lib",
+        "out": "/nix/store/w7iw7bcj4y2xw7vfnibmygaqkv300krg-clang-21.1.2",
+        "python": "/nix/store/11r8khkbbvqhazq0as89ln75ic74hv7w-clang-21.1.2-python"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "libvpx",
+      "broken": false,
+      "derivation": "/nix/store/w3h21zlhq3w0zari4c7bh9ic4m2cmqvc-libvpx-1.15.2.drv",
+      "description": "WebM VP8/VP9 codec SDK",
+      "install_id": "libvpx",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "libvpx-1.15.2",
+      "pname": "libvpx",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:21:13.706427Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "1.15.2",
+      "outputs_to_install": [
+        "bin"
+      ],
+      "outputs": {
+        "bin": "/nix/store/5lrw7g85prasj7203xif1wi2al5imwww-libvpx-1.15.2-bin",
+        "dev": "/nix/store/7ssfgmd8hsm8vyd8jcdiy0mjd4mpjn5f-libvpx-1.15.2-dev",
+        "out": "/nix/store/pm72nj3aawkb053kd2fl1sdz0248l9ir-libvpx-1.15.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "mkvtoolnix-cli",
+      "broken": false,
+      "derivation": "/nix/store/q5059yh57z74qyjj0nqqys3a0cc7l152-mkvtoolnix-95.0.drv",
+      "description": "Cross-platform tools for Matroska",
+      "install_id": "mkvtoolnix-cli",
+      "license": "GPL-2.0-only",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "mkvtoolnix-95.0",
+      "pname": "mkvtoolnix-cli",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:21:24.436585Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "95.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/r7ynyqyfww6x03igqflnig3dibl5yb1y-mkvtoolnix-95.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "nasm",
+      "broken": false,
+      "derivation": "/nix/store/z2lrf1ksj3bag6bdrfw1frdi662kqcqj-nasm-2.16.03.drv",
+      "description": "80x86 and x86-64 assembler designed for portability and modularity",
+      "install_id": "nasm",
+      "license": "BSD-2-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "nasm-2.16.03",
+      "pname": "nasm",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:21:25.783349Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2.16.03",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/5q1xvp71wzax965l1xdwpz8ijkvhymsb-nasm-2.16.03"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "pkg-config",
+      "broken": false,
+      "derivation": "/nix/store/ap1rhrnldpa5xgrk6522v5kmn33h8flx-pkg-config-wrapper-0.29.2.drv",
+      "description": "Tool that allows packages to find out information about other packages (wrapper script)",
+      "install_id": "pkg-config",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "pkg-config-wrapper-0.29.2",
+      "pname": "pkg-config",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:21:50.263452Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.29.2",
+      "outputs_to_install": [
+        "man",
+        "out"
+      ],
+      "outputs": {
+        "doc": "/nix/store/nckfk6a26p0rvxrkm9ps45gam8a3nbbv-pkg-config-wrapper-0.29.2-doc",
+        "man": "/nix/store/s3gfdb3mq0p0sd859ryz1h1rh1wp33gr-pkg-config-wrapper-0.29.2-man",
+        "out": "/nix/store/0skggkamysbh0ksc3582lb69wzrpabcg-pkg-config-wrapper-0.29.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "rav1e",
+      "broken": false,
+      "derivation": "/nix/store/gk0g5lwxkbqwb758hny1790asyqihm6c-rav1e-0.8.1.drv",
+      "description": "Fastest and safest AV1 encoder",
+      "install_id": "rav1e",
+      "license": "BSD-2-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "rav1e-0.8.1",
+      "pname": "rav1e",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:22:56.232362Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.8.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/jnim2744biiqb3kajan4h2r62g32k1d8-rav1e-0.8.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "svt-av1",
+      "broken": false,
+      "derivation": "/nix/store/6147f15wya5d2fw0c4zip1s9a35vlimv-svt-av1-3.1.2.drv",
+      "description": "AV1-compliant encoder/decoder library core",
+      "install_id": "svt-av1",
+      "license": "[ Alliance for Open Media Patent License 1.0, BSD-3-Clause ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "svt-av1-3.1.2",
+      "pname": "svt-av1",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:23:28.212088Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.1.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/96pr3zbnmpifaj01d265kzljycjhji3i-svt-av1-3.1.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "x264",
+      "broken": false,
+      "derivation": "/nix/store/ar2z228yby5ywbmh6y9bdjgwm2m07mpr-x264-0-unstable-2025-01-03.drv",
+      "description": "Library for encoding H264/AVC video streams",
+      "install_id": "x264",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "x264-0-unstable-2025-01-03",
+      "pname": "x264",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:24:32.628992Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "2025-01-03",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/szprss4kml408q9cc30y4zi0sq4ziqcb-x264-0-unstable-2025-01-03-dev",
+        "lib": "/nix/store/i7r75vlarr6pvxqr7gxgvnhrdfl5fy05-x264-0-unstable-2025-01-03-lib",
+        "out": "/nix/store/qqdnvmzqxm4a788d5gmzv2iwx0z748gv-x264-0-unstable-2025-01-03"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "x265",
+      "broken": false,
+      "derivation": "/nix/store/ryw73219d666brgcd544czhrc526y7nl-x265-4.1.drv",
+      "description": "Library for encoding H.265/HEVC video streams",
+      "install_id": "x265",
+      "license": "GPL-2.0-or-later",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "name": "x265-4.1",
+      "pname": "x265",
+      "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
+      "rev_count": 888552,
+      "rev_date": "2025-11-02T19:18:41Z",
+      "scrape_date": "2025-11-05T17:24:32.633434Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "4.1",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dev": "/nix/store/4lsl576n1bq7xi25gqhkx4bkd209gym2-x265-4.1-dev",
+        "out": "/nix/store/vfn1h7c3m7cnvwrs5wxpn4f6ccb3cswy-x265-4.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}

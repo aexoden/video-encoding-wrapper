@@ -1,7 +1,6 @@
 [advisories]
 ignore = [
-  "RUSTSEC-2024-0436",
-  "RUSTSEC-2026-0007",
+  { id = "RUSTSEC-2024-0436", reason = "Caused by an indirect dependency by simba, and will be fixed in the next release." }
 ]
 
 [bans]

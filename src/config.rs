@@ -91,7 +91,6 @@ pub enum QualityRule {
     Target,
 }
 
-#[expect(clippy::min_ident_chars)]
 impl fmt::Display for QualityRule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -109,7 +108,6 @@ pub enum Mode {
     Bitrate,
 }
 
-#[expect(clippy::min_ident_chars)]
 impl fmt::Display for Mode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -130,7 +128,6 @@ pub enum Metric {
     Bitrate,
 }
 
-#[expect(clippy::min_ident_chars)]
 impl fmt::Display for Metric {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -154,7 +151,6 @@ pub enum Encoder {
     X265,
 }
 
-#[expect(clippy::min_ident_chars)]
 impl fmt::Display for Encoder {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

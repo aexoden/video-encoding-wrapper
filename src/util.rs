@@ -422,7 +422,6 @@ pub fn verify_directory(path: &Path) -> anyhow::Result<()> {
 
 pub struct HumanBitrate(pub f64);
 
-#[expect(clippy::min_ident_chars)]
 impl Display for HumanBitrate {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match NumberPrefix::decimal(self.0) {

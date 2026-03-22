@@ -271,7 +271,7 @@ fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<
                     ));
 
                     if let Some(crop_filter) = &crop_filter {
-                        progress_bar.set_message(crop_filter.to_string());
+                        progress_bar.set_message(crop_filter.clone());
                     }
                 }
             }

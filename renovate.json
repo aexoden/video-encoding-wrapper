@@ -1,4 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices"]
+  "extends": ["config:best-practices"],
+  "packageRules": [
+    {
+      "groupName": "Rust toolchain",
+      "groupSlug": "rust-toolchain",
+      "matchPackageNames": ["cargo", "clippy", "rustc", "rustfmt"]
+    }
+  ]
 }

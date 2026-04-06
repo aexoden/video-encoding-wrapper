@@ -8,7 +8,7 @@
     },
     "libaom": "3.12.1",
     "libclang": {
-      "version": "latest",
+      "version": "21.1.8",
       "outputs": ["out", "lib", "dev"]
     },
     "libvpx": "1.16.0",

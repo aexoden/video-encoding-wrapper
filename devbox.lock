@@ -301,7 +301,7 @@
         }
       }
     },
-    "libclang@latest": {
+    "libclang@21.1.8": {
       "last_modified": "2026-03-30T07:26:21Z",
       "resolved": "github:NixOS/nixpkgs/15c6719d8c604779cf59e03c245ea61d3d7ab69b#libclang",
       "source": "devbox-search",

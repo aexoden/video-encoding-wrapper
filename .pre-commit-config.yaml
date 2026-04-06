@@ -30,24 +30,27 @@ repos:
       - id: rustfmt
         name: rustfmt
         description: Format Rust code using rustfmt
-        entry: flox activate -c "cargo fmt --all --check"
+        entry: devbox run -- cargo fmt --all --check
         language: system
         pass_filenames: false
+
       - id: clippy
         name: clippy
         description: Lint Rust code using clippy
-        entry: flox activate -c "cargo clippy --workspace -- -D warnings"
+        entry: devbox run -- cargo clippy --workspace -- -D warnings
         language: system
         pass_filenames: false
+
       - id: test
         name: cargo test
         description: Run Rust tests using cargo test
-        entry: flox activate -c "cargo test --workspace --all-features"
+        entry: devbox run -- cargo test --workspace --all-features
         language: system
         pass_filenames: false
+
       - id: cargo-deny
         name: cargo-deny
         description: Check Rust dependencies for security vulnerabilities using cargo-deny
-        entry: flox activate -c "cargo deny check"
+        entry: devbox run -- cargo deny check
         language: system
         pass_filenames: false

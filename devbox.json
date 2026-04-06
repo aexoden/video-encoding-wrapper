@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.1/.schema/devbox.schema.json",
+  "packages": {
+    "cargo-deny": "0.19.0",
+    "ffmpeg-full": {
+      "version": "8.0.1",
+      "outputs": ["bin", "dev", "lib"]
+    },
+    "libaom": "3.12.1",
+    "libclang": {
+      "version": "latest",
+      "outputs": ["out", "lib", "dev"]
+    },
+    "libvpx": "1.16.0",
+    "mkvtoolnix-cli": "97.0",
+    "nasm": "3.01",
+    "pkg-config": "0.29.2",
+    "pre-commit": "4.5.1",
+    "rav1e": "0.8.1",
+    "rustup": "1.28.2",
+    "svt-av1": "3.1.2",
+    "x264": "0-unstable-2025-01-03",
+    "x265": "4.1"
+  },
+  "shell": {
+    "init_hook": [
+      "export LIBCLANG_PATH=\"$DEVBOX_PACKAGES_DIR/lib\"",
+      "rustup toolchain install",
+      "cargo fetch",
+      "pre-commit install"
+    ],
+    "scripts": {
+      "build-docs": "cargo doc",
+      "start": "cargo run",
+      "test": "cargo test -- --show-output",
+      "format": "cargo fmt --all -- --check",
+      "lint": "cargo clippy --workspace -- -D warnings"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.1/.schema/devbox.schema.json",
   "packages": {
-    "cargo-deny": "0.19.0",
+    "cargo-deny": "0.19.1",
     "ffmpeg-full": {
       "version": "8.0.1",
       "outputs": ["bin", "dev", "lib"]

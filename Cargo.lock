@@ -155,7 +155,7 @@ dependencies = [
  "ffmpeg-the-third",
  "num-rational",
  "thiserror 2.0.18",
- "v_frame 0.5.1",
+ "v_frame 0.5.2",
  "y4m",
 ]
 
@@ -192,7 +192,7 @@ dependencies = [
  "pastey",
  "rayon",
  "thiserror 2.0.18",
- "v_frame 0.5.1",
+ "v_frame 0.5.2",
  "y4m",
 ]
 
@@ -1605,11 +1605,10 @@ dependencies = [
 
 [[package]]
 name = "v_frame"
-version = "0.5.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a50ca82950482a3877e88aac250a2aa8fbc6719a36d499e2200eb8ba11b6bc61"
+checksum = "706b485cfdd36c867e946509da6f8b9fa38f40a1aecb92d702e04d135c4335bb"
 dependencies = [
- "aligned-vec",
  "num-traits",
  "thiserror 2.0.18",
  "wasm-bindgen",
@@ -1660,7 +1659,7 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "unit-prefix",
- "v_frame 0.5.1",
+ "v_frame 0.5.2",
  "y4m",
  "yuvxyb 0.5.0",
 ]
@@ -1821,7 +1820,7 @@ dependencies = [
  "av-data",
  "log",
  "num-traits",
- "v_frame 0.5.1",
+ "v_frame 0.5.2",
  "wide 1.3.0",
  "yuvxyb-math",
 ]

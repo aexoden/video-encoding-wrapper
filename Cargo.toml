@@ -24,7 +24,7 @@ crossbeam-queue = "=0.3.12"
 ffmpeg = { package = "ffmpeg-the-third", version = "=4.1.0", features = [
   "serialize"
 ] }
-indicatif = "=0.18.0"
+indicatif = "=0.18.4"
 plotters = { version = "=0.3.7", default-features = false, features = [
   "line_series",
   "svg_backend"

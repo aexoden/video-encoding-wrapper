@@ -19,7 +19,7 @@ av-scenechange = { version = "=0.23.0", default-features = false, features = [
 ] }
 base16ct = { version = "=1.0.0", features = ["alloc"] }
 cached = "=0.59.0"
-clap = { version = "=4.5.49", features = ["derive"] }
+clap = { version = "=4.6.1", features = ["derive"] }
 crossbeam-queue = "=0.3.12"
 ffmpeg = { package = "ffmpeg-the-third", version = "=4.1.0", features = [
   "serialize"

@@ -50,8 +50,8 @@
       }
     },
     "ffmpeg-full@8.0.1": {
-      "last_modified": "2026-04-11T06:17:25Z",
-      "resolved": "github:NixOS/nixpkgs/13043924aaa7375ce482ebe2494338e058282925#ffmpeg-full",
+      "last_modified": "2026-04-16T08:46:55Z",
+      "resolved": "github:NixOS/nixpkgs/b86751bc4085f48661017fa226dee99fab6c651b#ffmpeg-full",
       "source": "devbox-search",
       "version": "8.0.1",
       "systems": {
@@ -68,6 +68,10 @@
               "default": true
             },
             {
+              "name": "lib",
+              "path": "/nix/store/m4pgxpz1szsviycariay73vzwvgn29pa-ffmpeg-full-8.0.1-lib"
+            },
+            {
               "name": "out",
               "path": "/nix/store/jzflbsfzmrqqzi1997l42ij58im33b9w-ffmpeg-full-8.0.1"
             },
@@ -82,10 +86,6 @@
             {
               "name": "doc",
               "path": "/nix/store/02wgc966ifxqs9qnyd18hma15rhiihnp-ffmpeg-full-8.0.1-doc"
-            },
-            {
-              "name": "lib",
-              "path": "/nix/store/m4pgxpz1szsviycariay73vzwvgn29pa-ffmpeg-full-8.0.1-lib"
             }
           ],
           "store_path": "/nix/store/8m176az46p08l0bghknpvg4bml8bqxzz-ffmpeg-full-8.0.1-bin"
@@ -103,6 +103,14 @@
               "default": true
             },
             {
+              "name": "lib",
+              "path": "/nix/store/y7nh5kc8x4lpr25ib7iwp5vhkqqf8ily-ffmpeg-full-8.0.1-lib"
+            },
+            {
+              "name": "out",
+              "path": "/nix/store/my69k1d0panfnypwj72ygwvml1mrly28-ffmpeg-full-8.0.1"
+            },
+            {
               "name": "data",
               "path": "/nix/store/c5qkw78ra474bxakmqyg57ca3gi6rbr2-ffmpeg-full-8.0.1-data"
             },
@@ -113,14 +121,6 @@
             {
               "name": "doc",
               "path": "/nix/store/4k376f7nabyf8vpxzf4582p6r3yfj7qy-ffmpeg-full-8.0.1-doc"
-            },
-            {
-              "name": "lib",
-              "path": "/nix/store/y7nh5kc8x4lpr25ib7iwp5vhkqqf8ily-ffmpeg-full-8.0.1-lib"
-            },
-            {
-              "name": "out",
-              "path": "/nix/store/my69k1d0panfnypwj72ygwvml1mrly28-ffmpeg-full-8.0.1"
             }
           ],
           "store_path": "/nix/store/s3qv7bdbcj4cb9l4szi65q4fhdhq85g3-ffmpeg-full-8.0.1-bin"
@@ -138,10 +138,6 @@
               "default": true
             },
             {
-              "name": "lib",
-              "path": "/nix/store/rfrbmfv2chfziy5bnfwdyibzz0kkb2br-ffmpeg-full-8.0.1-lib"
-            },
-            {
               "name": "out",
               "path": "/nix/store/59pji727avgcdys2w5xs2y3myl0nb54r-ffmpeg-full-8.0.1"
             },
@@ -156,6 +152,10 @@
             {
               "name": "doc",
               "path": "/nix/store/34d5wicg8fvmfaygjapyzyfrrj9cqs1a-ffmpeg-full-8.0.1-doc"
+            },
+            {
+              "name": "lib",
+              "path": "/nix/store/rfrbmfv2chfziy5bnfwdyibzz0kkb2br-ffmpeg-full-8.0.1-lib"
             }
           ],
           "store_path": "/nix/store/qdiib8c13vyn30fw0hpx3239sar69hys-ffmpeg-full-8.0.1-bin"
@@ -173,14 +173,6 @@
               "default": true
             },
             {
-              "name": "lib",
-              "path": "/nix/store/6d7slrfl6mackasp3jbzg7yivy4mj0bn-ffmpeg-full-8.0.1-lib"
-            },
-            {
-              "name": "out",
-              "path": "/nix/store/mdjk7dqkyjd8c947r8wxz61ryqffay52-ffmpeg-full-8.0.1"
-            },
-            {
               "name": "data",
               "path": "/nix/store/9ps8i5v7dzjwqs9xqp9qsc8zc5akcdq6-ffmpeg-full-8.0.1-data"
             },
@@ -191,6 +183,14 @@
             {
               "name": "doc",
               "path": "/nix/store/wr1i2d0bvs1cn2196n52n2bwgv59sc9a-ffmpeg-full-8.0.1-doc"
+            },
+            {
+              "name": "lib",
+              "path": "/nix/store/6d7slrfl6mackasp3jbzg7yivy4mj0bn-ffmpeg-full-8.0.1-lib"
+            },
+            {
+              "name": "out",
+              "path": "/nix/store/mdjk7dqkyjd8c947r8wxz61ryqffay52-ffmpeg-full-8.0.1"
             }
           ],
           "store_path": "/nix/store/83myq0rw7hk81iwy1h16f6ggnwvaldr2-ffmpeg-full-8.0.1-bin"
@@ -198,12 +198,12 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2026-04-16T08:46:55Z",
-      "resolved": "github:NixOS/nixpkgs/b86751bc4085f48661017fa226dee99fab6c651b?lastModified=1776329215&narHash=sha256-a8BYi3mzoJ%2FAcJP8UldOx8emoPRLeWqALZWu4ZvjPXw%3D"
+      "last_modified": "2026-04-23T13:07:47Z",
+      "resolved": "github:NixOS/nixpkgs/01fbdeef22b76df85ea168fbfe1bfd9e63681b30?lastModified=1776949667&narHash=sha256-GMSVw35Q%2B294GlrTUKlx087E31z7KurReQ1YHSKp5iw%3D"
     },
     "libaom@3.12.1": {
-      "last_modified": "2026-04-11T06:17:25Z",
-      "resolved": "github:NixOS/nixpkgs/13043924aaa7375ce482ebe2494338e058282925#libaom",
+      "last_modified": "2026-04-16T08:46:55Z",
+      "resolved": "github:NixOS/nixpkgs/b86751bc4085f48661017fa226dee99fab6c651b#libaom",
       "source": "devbox-search",
       "version": "3.12.1",
       "systems": {
@@ -220,12 +220,12 @@
               "default": true
             },
             {
-              "name": "dev",
-              "path": "/nix/store/5zd54c3nzk8xfg0cybjg19yd7zxyic60-libaom-3.12.1-dev"
-            },
-            {
               "name": "static",
               "path": "/nix/store/33yhnyhwhy4if1iwzagpy6z6dn2dd53g-libaom-3.12.1-static"
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/5zd54c3nzk8xfg0cybjg19yd7zxyic60-libaom-3.12.1-dev"
             }
           ],
           "store_path": "/nix/store/kw3kwvs2ji8nhn2nx6ggzscjiccjyflr-libaom-3.12.1"
@@ -243,12 +243,12 @@
               "default": true
             },
             {
-              "name": "dev",
-              "path": "/nix/store/47gcmjbd3dw2mxxychqwiy7sn57ns7ah-libaom-3.12.1-dev"
-            },
-            {
               "name": "static",
               "path": "/nix/store/2y4czbhg947k77dkqbbdpbwmpkpgdc7f-libaom-3.12.1-static"
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/47gcmjbd3dw2mxxychqwiy7sn57ns7ah-libaom-3.12.1-dev"
             }
           ],
           "store_path": "/nix/store/1cswa7dh00wv6z1xjxlwx70j7bzz5d0n-libaom-3.12.1"
@@ -266,12 +266,12 @@
               "default": true
             },
             {
-              "name": "dev",
-              "path": "/nix/store/w7hi2f8ypy467y2vskydfhyqy6gd751k-libaom-3.12.1-dev"
-            },
-            {
               "name": "static",
               "path": "/nix/store/vk6dzysx5smvch091j0lwgjhm9fkryq5-libaom-3.12.1-static"
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/w7hi2f8ypy467y2vskydfhyqy6gd751k-libaom-3.12.1-dev"
             }
           ],
           "store_path": "/nix/store/1fgkmaf93f3xcvv9547br1f99f7c2qiy-libaom-3.12.1"
@@ -315,16 +315,16 @@
               "default": true
             },
             {
+              "name": "python",
+              "path": "/nix/store/wpxn7l6rk8ilnwpdy6c6g4wc6ssnvmfh-clang-21.1.8-python"
+            },
+            {
               "name": "dev",
               "path": "/nix/store/hwm6awarn6lqii68qwinrhidkr185c4z-clang-21.1.8-dev"
             },
             {
               "name": "lib",
               "path": "/nix/store/57zdfv1z7r4d73aw70q5agpjg6wpkncx-clang-21.1.8-lib"
-            },
-            {
-              "name": "python",
-              "path": "/nix/store/wpxn7l6rk8ilnwpdy6c6g4wc6ssnvmfh-clang-21.1.8-python"
             }
           ],
           "store_path": "/nix/store/6adskryjj6g2p508xjxp2x4iwyy15gsr-clang-21.1.8"
@@ -337,6 +337,10 @@
               "default": true
             },
             {
+              "name": "debug",
+              "path": "/nix/store/vq3y0ixdin9456lqgbsbpala58ajyp2q-clang-21.1.8-debug"
+            },
+            {
               "name": "dev",
               "path": "/nix/store/ppg0zj0z1wivih97kpzprkz2w9yip9yr-clang-21.1.8-dev"
             },
@@ -347,10 +351,6 @@
             {
               "name": "python",
               "path": "/nix/store/m7nc9jbf94fh2x6g3dgnlngsvw5vkq3q-clang-21.1.8-python"
-            },
-            {
-              "name": "debug",
-              "path": "/nix/store/vq3y0ixdin9456lqgbsbpala58ajyp2q-clang-21.1.8-debug"
             }
           ],
           "store_path": "/nix/store/h1kmq5r9cjgn4fz8qqwad0zhspf4q58h-clang-21.1.8"
@@ -363,16 +363,16 @@
               "default": true
             },
             {
+              "name": "python",
+              "path": "/nix/store/ygj5cf3djiwp70m63g1nm2vwlsa0p3d8-clang-21.1.8-python"
+            },
+            {
               "name": "dev",
               "path": "/nix/store/jig12mkklgvm72b7dflzr27k4ry19wkp-clang-21.1.8-dev"
             },
             {
               "name": "lib",
               "path": "/nix/store/mpjgs56j2awvdzn27bmm5jbdpr4cpd2i-clang-21.1.8-lib"
-            },
-            {
-              "name": "python",
-              "path": "/nix/store/ygj5cf3djiwp70m63g1nm2vwlsa0p3d8-clang-21.1.8-python"
             }
           ],
           "store_path": "/nix/store/nz6q8lv5rfr1s20za96qgxw9b5yc6nfc-clang-21.1.8"
@@ -666,8 +666,8 @@
       }
     },
     "pre-commit@4.5.1": {
-      "last_modified": "2026-03-21T07:29:51Z",
-      "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#pre-commit",
+      "last_modified": "2026-04-16T08:46:55Z",
+      "resolved": "github:NixOS/nixpkgs/b86751bc4085f48661017fa226dee99fab6c651b#pre-commit",
       "source": "devbox-search",
       "version": "4.5.1",
       "systems": {
@@ -675,15 +675,15 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/4a9nr9sv90d2mj404fav33d55sc2pzn6-pre-commit-4.5.1",
+              "path": "/nix/store/yh35ybxhyxw222nrjhf5y2db6c7ghdcd-pre-commit-4.5.1",
               "default": true
             },
             {
               "name": "dist",
-              "path": "/nix/store/jwm57lnn7iq3wx9zhss7cvy9ilrjpb23-pre-commit-4.5.1-dist"
+              "path": "/nix/store/a3m1myxxd2rwjj7ghp89hyis3cvidnmk-pre-commit-4.5.1-dist"
             }
           ],
-          "store_path": "/nix/store/4a9nr9sv90d2mj404fav33d55sc2pzn6-pre-commit-4.5.1"
+          "store_path": "/nix/store/yh35ybxhyxw222nrjhf5y2db6c7ghdcd-pre-commit-4.5.1"
         },
         "aarch64-linux": {
           "outputs": [
@@ -875,8 +875,8 @@
       }
     },
     "x264@0-unstable-2025-01-03": {
-      "last_modified": "2026-04-10T12:25:30Z",
-      "resolved": "github:NixOS/nixpkgs/8c11f88bb9573a10a7d6bf87161ef08455ac70b9#x264",
+      "last_modified": "2026-04-16T08:46:55Z",
+      "resolved": "github:NixOS/nixpkgs/b86751bc4085f48661017fa226dee99fab6c651b#x264",
       "source": "devbox-search",
       "version": "0-unstable-2025-01-03",
       "systems": {
@@ -906,12 +906,12 @@
               "default": true
             },
             {
-              "name": "lib",
-              "path": "/nix/store/0yw4gdffx01g6wsk9s8khhnj554ya98z-x264-0-unstable-2025-01-03-lib"
-            },
-            {
               "name": "dev",
               "path": "/nix/store/sn1ms5y3bdgsr0z5rqw18sh7impn86nh-x264-0-unstable-2025-01-03-dev"
+            },
+            {
+              "name": "lib",
+              "path": "/nix/store/0yw4gdffx01g6wsk9s8khhnj554ya98z-x264-0-unstable-2025-01-03-lib"
             }
           ],
           "store_path": "/nix/store/dd7gwbfylx08ygswafyvx1ckpsm4cpgj-x264-0-unstable-2025-01-03"
@@ -942,12 +942,12 @@
               "default": true
             },
             {
-              "name": "lib",
-              "path": "/nix/store/lww3rnxx3kwl17b7siddqn834hpdhgpf-x264-0-unstable-2025-01-03-lib"
-            },
-            {
               "name": "dev",
               "path": "/nix/store/1xx211j57yynnh0jyr5757isvx96vpxi-x264-0-unstable-2025-01-03-dev"
+            },
+            {
+              "name": "lib",
+              "path": "/nix/store/lww3rnxx3kwl17b7siddqn834hpdhgpf-x264-0-unstable-2025-01-03-lib"
             }
           ],
           "store_path": "/nix/store/cpsm175ww4pxxjf2ip3bkz962hdc1mh6-x264-0-unstable-2025-01-03"

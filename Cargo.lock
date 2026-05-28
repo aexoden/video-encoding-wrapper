@@ -148,9 +148,9 @@ dependencies = [
 
 [[package]]
 name = "av-decoders"
-version = "0.9.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93ef6a87c007444f81cb3948e39dd2566e2d70d7abbbb806d4bf19e98cae3b60"
+checksum = "a31ed07c3a0db5375deded31ba4db91bdf43660781680eae78392d3dafd77d9d"
 dependencies = [
  "ffmpeg-the-third",
  "num-rational",
@@ -177,8 +177,7 @@ dependencies = [
 [[package]]
 name = "av-scenechange"
 version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a6f553be33f9c84cc95b7391e8c4a7732e9c11aca66aaeaa1102c554f756fed"
+source = "git+https://github.com/rust-av/av-scenechange?rev=95796aabfd65a464d566b4d2ed42b79a28c12aa2#95796aabfd65a464d566b4d2ed42b79a28c12aa2"
 dependencies = [
  "aligned",
  "anyhow",
@@ -187,11 +186,10 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "log",
+ "maybe-rayon",
  "num-rational",
  "num-traits",
  "pastey",
- "rayon",
- "thiserror 2.0.18",
  "v_frame 0.5.2",
  "y4m",
 ]
@@ -617,9 +615,9 @@ dependencies = [
 
 [[package]]
 name = "ffmpeg-sys-the-third"
-version = "4.1.0+ffmpeg-8.0"
+version = "5.0.0+ffmpeg-8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0c1bf5e362dfb2fbdf9b3e634f3d7f7f0f057103689f518ba4fd96813faf1ef"
+checksum = "b00c204bb97c2b6c0329104c3e8bcf58d4d13cc88a04233326570672e0c2c5c9"
 dependencies = [
  "bindgen",
  "cc",
@@ -631,9 +629,9 @@ dependencies = [
 
 [[package]]
 name = "ffmpeg-the-third"
-version = "4.1.0+ffmpeg-8.0"
+version = "5.0.0+ffmpeg-8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71a274244c87178cd01144536061d63114cecea74cb1037a3614c81cc7ca01e0"
+checksum = "791f0d9315e4f0a0861fa5c8ca8d70a1bd099cce72bff111b4f7ed8d6ebe8ba3"
 dependencies = [
  "bitflags",
  "ffmpeg-sys-the-third",
@@ -879,6 +877,15 @@ checksum = "a06de3016e9fae57a36fd14dba131fccf49f74b40b7fbdb472f96e361ec71a08"
 dependencies = [
  "autocfg",
  "rawpointer",
+]
+
+[[package]]
+name = "maybe-rayon"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ea1f30cedd69f0a2954655f7188c6a834246d2bcf1e315e2ac40c4b24dc9519"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]

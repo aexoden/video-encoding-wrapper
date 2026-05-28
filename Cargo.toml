@@ -12,7 +12,7 @@ categories = ["command-line-utilities", "multimedia::video"]
 
 [dependencies]
 anyhow = { version = "=1.0.102", features = ["backtrace"] }
-av-decoders = { version = "=0.9.1", features = ["ffmpeg"] }
+av-decoders = { version = "=0.10.0", features = ["ffmpeg"] }
 av-metrics = "=0.9.1"
 av-scenechange = { version = "=0.23.0", default-features = false, features = [
   "ffmpeg"

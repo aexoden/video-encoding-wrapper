@@ -6,7 +6,7 @@ use std::process::{Child, Command, Stdio};
 use std::result::Result;
 
 use anyhow::{Context, anyhow};
-use cached::{UnboundCache, proc_macro::cached};
+use cached::{UnboundCache, macros::cached};
 use ffmpeg::codec::{context, decoder};
 use ffmpeg::{Error, ffi, filter, format, frame, media};
 use indicatif::{ProgressBar, ProgressStyle};

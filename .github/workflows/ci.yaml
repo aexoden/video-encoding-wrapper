@@ -30,4 +30,4 @@ jobs:
         run: devbox run -- cargo test --workspace --all-features
 
       - name: Check Rust dependencies for security vulnerabilities
-        run: devbox run -- cargo deny check
+        run: devbox run -- cargo deny check bans licenses sources

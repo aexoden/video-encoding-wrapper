@@ -14,7 +14,7 @@ categories = ["command-line-utilities", "multimedia::video"]
 anyhow = { version = "=1.0.102", features = ["backtrace"] }
 av-decoders = { version = "=0.10.0", features = ["ffmpeg"] }
 av-metrics = "=0.9.1"
-av-scenechange = { version = "=0.23.0", default-features = false, features = [
+av-scenechange = { git = "https://github.com/rust-av/av-scenechange", rev = "95796aabfd65a464d566b4d2ed42b79a28c12aa2", default-features = false, features = [
   "ffmpeg"
 ] }
 base16ct = { version = "=1.0.0", features = ["alloc"] }

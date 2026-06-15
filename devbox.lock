@@ -198,12 +198,12 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2026-06-06T12:12:42Z",
-      "resolved": "github:NixOS/nixpkgs/cbb5cf358f50aa6acc9efd6113b7bcfbc352cd73?lastModified=1780747962&narHash=sha256-IX7G1dlKrOqPOImfbo7ADDfV5yU1%2Bj%2BMRChI3TL4tAA%3D"
+      "last_modified": "2026-06-13T14:05:44Z",
+      "resolved": "github:NixOS/nixpkgs/9f11f828c213641c2369a9f1fa31fe31557e3156?lastModified=1781359544&narHash=sha256-iUuzKQcyXvopYDDzFpMK5eQKP3WIJExYny2kJtbgUcE%3D"
     },
     "libaom@3.12.1": {
-      "last_modified": "2026-05-31T16:57:23Z",
-      "resolved": "github:NixOS/nixpkgs/3109eaae18e09d0b8aef23dc2579e7d94b8d4b4e#libaom",
+      "last_modified": "2026-06-06T12:12:42Z",
+      "resolved": "github:NixOS/nixpkgs/cbb5cf358f50aa6acc9efd6113b7bcfbc352cd73#libaom",
       "source": "devbox-search",
       "version": "3.12.1",
       "systems": {
@@ -243,12 +243,12 @@
               "default": true
             },
             {
-              "name": "dev",
-              "path": "/nix/store/0a28kfwkqi6rwrjj2w7c36j5x8nggmmz-libaom-3.12.1-dev"
-            },
-            {
               "name": "static",
               "path": "/nix/store/yc4sx6mk00pg2108kck1s348snza3gag-libaom-3.12.1-static"
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/0a28kfwkqi6rwrjj2w7c36j5x8nggmmz-libaom-3.12.1-dev"
             }
           ],
           "store_path": "/nix/store/9gqrivyjx6vp5wzkiv3wq16p8mb8qv6q-libaom-3.12.1"
@@ -302,8 +302,8 @@
       }
     },
     "libclang@21.1.8": {
-      "last_modified": "2026-06-01T17:55:45Z",
-      "resolved": "github:NixOS/nixpkgs/4df1b885d76a54e1aa1a318f8d16fd6005b6401f#libclang",
+      "last_modified": "2026-06-06T12:12:42Z",
+      "resolved": "github:NixOS/nixpkgs/cbb5cf358f50aa6acc9efd6113b7bcfbc352cd73#libclang",
       "source": "devbox-search",
       "version": "21.1.8",
       "systems": {
@@ -315,16 +315,16 @@
               "default": true
             },
             {
-              "name": "lib",
-              "path": "/nix/store/9gcfdl3yd942z2v6aszaqdkc5zq3fc5p-clang-21.1.8-lib"
-            },
-            {
               "name": "python",
               "path": "/nix/store/jdka0l4bb5yw17y8ya3kyra2giqxg3cc-clang-21.1.8-python"
             },
             {
               "name": "dev",
               "path": "/nix/store/hx2a9p7xkprkci3lpnjkgjlw62spj6ra-clang-21.1.8-dev"
+            },
+            {
+              "name": "lib",
+              "path": "/nix/store/9gcfdl3yd942z2v6aszaqdkc5zq3fc5p-clang-21.1.8-lib"
             }
           ],
           "store_path": "/nix/store/cbsa0j0sqa44ls1wr2bgvbcx87k50j8h-clang-21.1.8"
@@ -337,6 +337,10 @@
               "default": true
             },
             {
+              "name": "python",
+              "path": "/nix/store/rvb9kd10s29j3zijh0bki9s2ghxfifqh-clang-21.1.8-python"
+            },
+            {
               "name": "debug",
               "path": "/nix/store/21zndwl8av4vf675zg1j5kr2i2lmsi94-clang-21.1.8-debug"
             },
@@ -347,10 +351,6 @@
             {
               "name": "lib",
               "path": "/nix/store/w74ip9rm52dl4ahi3ly090cwqwjn35yg-clang-21.1.8-lib"
-            },
-            {
-              "name": "python",
-              "path": "/nix/store/rvb9kd10s29j3zijh0bki9s2ghxfifqh-clang-21.1.8-python"
             }
           ],
           "store_path": "/nix/store/zhf89z887shi5c32klz954rvlh9l25rp-clang-21.1.8"
@@ -385,6 +385,10 @@
               "default": true
             },
             {
+              "name": "python",
+              "path": "/nix/store/c72lk5p6hfy5b3skbb1dzflhnkb8vlz0-clang-21.1.8-python"
+            },
+            {
               "name": "debug",
               "path": "/nix/store/y10pmzk4gkiilrfi8w1ml1lfbs7s4pnb-clang-21.1.8-debug"
             },
@@ -395,10 +399,6 @@
             {
               "name": "lib",
               "path": "/nix/store/jdgw7h0g0l8clmcasaspxnx6v62jz1il-clang-21.1.8-lib"
-            },
-            {
-              "name": "python",
-              "path": "/nix/store/c72lk5p6hfy5b3skbb1dzflhnkb8vlz0-clang-21.1.8-python"
             }
           ],
           "store_path": "/nix/store/wcwr4iq7c8f4ygn8bd1q0k3i51lmhz35-clang-21.1.8"
@@ -888,12 +888,12 @@
               "default": true
             },
             {
-              "name": "lib",
-              "path": "/nix/store/mmjdqv1chfbbdw9g6gg3fag629lq2ffg-x264-0-unstable-2025-01-03-lib"
-            },
-            {
               "name": "dev",
               "path": "/nix/store/ii57m42wnv94wpa6nqkch3y3w05mdnni-x264-0-unstable-2025-01-03-dev"
+            },
+            {
+              "name": "lib",
+              "path": "/nix/store/mmjdqv1chfbbdw9g6gg3fag629lq2ffg-x264-0-unstable-2025-01-03-lib"
             }
           ],
           "store_path": "/nix/store/0h2j8gfjzc7v08sh949y98hbsya2bx0g-x264-0-unstable-2025-01-03"

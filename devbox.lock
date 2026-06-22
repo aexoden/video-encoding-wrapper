@@ -1,51 +1,51 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "cargo-deny@0.19.8": {
-      "last_modified": "2026-06-05T19:07:58Z",
-      "resolved": "github:NixOS/nixpkgs/891eaa77f0eed53352194677991bd30978f9b0ad#cargo-deny",
+    "cargo-deny@0.19.9": {
+      "last_modified": "2026-06-16T10:57:20Z",
+      "resolved": "github:NixOS/nixpkgs/3e41b24abd260e8f71dbe2f5737d24122f972158#cargo-deny",
       "source": "devbox-search",
-      "version": "0.19.8",
+      "version": "0.19.9",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/cd2b794nw31w8fxhidbz869inlwk08pk-cargo-deny-0.19.8",
+              "path": "/nix/store/qnbv31nz0520h2ik1wjvzgjgwzfqh5nr-cargo-deny-0.19.9",
               "default": true
             }
           ],
-          "store_path": "/nix/store/cd2b794nw31w8fxhidbz869inlwk08pk-cargo-deny-0.19.8"
+          "store_path": "/nix/store/qnbv31nz0520h2ik1wjvzgjgwzfqh5nr-cargo-deny-0.19.9"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/lslzcq9hbgq0dm47wfff8p1yq4faxwxx-cargo-deny-0.19.8",
+              "path": "/nix/store/17r19kx289wqgg010y2nj0z6v89cgi9c-cargo-deny-0.19.9",
               "default": true
             }
           ],
-          "store_path": "/nix/store/lslzcq9hbgq0dm47wfff8p1yq4faxwxx-cargo-deny-0.19.8"
+          "store_path": "/nix/store/17r19kx289wqgg010y2nj0z6v89cgi9c-cargo-deny-0.19.9"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/0i9blbqnf6h40sfs60ya508069r1nzka-cargo-deny-0.19.8",
+              "path": "/nix/store/lqbmnxy903zyjbr7pfllhsm86jzvvgav-cargo-deny-0.19.9",
               "default": true
             }
           ],
-          "store_path": "/nix/store/0i9blbqnf6h40sfs60ya508069r1nzka-cargo-deny-0.19.8"
+          "store_path": "/nix/store/lqbmnxy903zyjbr7pfllhsm86jzvvgav-cargo-deny-0.19.9"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/rzw1iawi5fgcwy334l7anvzr09jx2vpp-cargo-deny-0.19.8",
+              "path": "/nix/store/0if2gs3ckr14fj154cywb3vjs9xakfpk-cargo-deny-0.19.9",
               "default": true
             }
           ],
-          "store_path": "/nix/store/rzw1iawi5fgcwy334l7anvzr09jx2vpp-cargo-deny-0.19.8"
+          "store_path": "/nix/store/0if2gs3ckr14fj154cywb3vjs9xakfpk-cargo-deny-0.19.9"
         }
       }
     },

@@ -1658,6 +1658,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "v_frame"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06b99be99e91ea12170d453a6547324ef2df3fcd79aaf336f5b1fff88ac89d84"
+
+[[package]]
 name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1702,7 +1708,7 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "unit-prefix",
- "v_frame 0.5.2",
+ "v_frame 0.7.0",
  "y4m",
  "yuvxyb 0.5.0",
 ]

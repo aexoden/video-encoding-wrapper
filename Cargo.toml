@@ -12,7 +12,7 @@ categories = ["command-line-utilities", "multimedia::video"]
 
 [dependencies]
 anyhow = { version = "=1.0.103", features = ["backtrace"] }
-av-decoders = { version = "=0.10.0", features = ["ffmpeg"] }
+av-decoders = { version = "=0.11.1", features = ["ffmpeg"] }
 av-metrics = "=0.9.1"
 av-scenechange = { git = "https://github.com/rust-av/av-scenechange", rev = "95796aabfd65a464d566b4d2ed42b79a28c12aa2", default-features = false, features = [
   "ffmpeg"

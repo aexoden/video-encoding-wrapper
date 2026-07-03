@@ -160,6 +160,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "av-decoders"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d94db08860aa0ccd8a95d1aa50b0f3055d23be14827cb3e3fa365fc633fc99f1"
+dependencies = [
+ "ffmpeg-the-third",
+ "num-rational",
+ "thiserror 2.0.18",
+ "v_frame 0.7.0",
+ "y4m",
+]
+
+[[package]]
 name = "av-metrics"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -182,7 +195,7 @@ dependencies = [
  "aligned",
  "anyhow",
  "arrayvec",
- "av-decoders",
+ "av-decoders 0.10.0",
  "cfg-if",
  "cpufeatures",
  "log",
@@ -1658,6 +1671,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "v_frame"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06b99be99e91ea12170d453a6547324ef2df3fcd79aaf336f5b1fff88ac89d84"
+
+[[package]]
 name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1680,7 +1699,7 @@ name = "video-encoding-wrapper"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "av-decoders",
+ "av-decoders 0.11.1",
  "av-metrics",
  "av-scenechange",
  "base16ct",

@@ -198,12 +198,12 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2026-07-05T10:35:43Z",
-      "resolved": "github:NixOS/nixpkgs/c4013e501c048ae7c4a8940c92837636042bf6c3?lastModified=1783247743&narHash=sha256-9b2xGt5CAd6WriPJOZs%2FEYXq9fGVCeoisYo1P3nhL2Y%3D"
+      "last_modified": "2026-07-12T00:30:12Z",
+      "resolved": "github:NixOS/nixpkgs/3b32825de172d0bc85664f495edb096b10862524?lastModified=1783816212&narHash=sha256-2aZisVTVGSFEk3MYcOiWQp3zvwyzbqpktB69Rcfp150%3D"
     },
     "libaom@3.12.1": {
-      "last_modified": "2026-06-27T07:37:20Z",
-      "resolved": "github:NixOS/nixpkgs/3d46470bb3030020f7e1361f33514854f5bfa86d#libaom",
+      "last_modified": "2026-07-05T19:27:47Z",
+      "resolved": "github:NixOS/nixpkgs/f205b5574fd0cb7da5b702a2da51507b7f4fdd1b#libaom",
       "source": "devbox-search",
       "version": "3.12.1",
       "systems": {
@@ -289,12 +289,12 @@
               "default": true
             },
             {
-              "name": "dev",
-              "path": "/nix/store/27s6x3l4vfh58g9sk3pwgr3z9gfyw4ig-libaom-3.12.1-dev"
-            },
-            {
               "name": "static",
               "path": "/nix/store/gpjlw84yz2yp6r6ni1fqy2z2044jm3n6-libaom-3.12.1-static"
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/27s6x3l4vfh58g9sk3pwgr3z9gfyw4ig-libaom-3.12.1-dev"
             }
           ],
           "store_path": "/nix/store/0qfx3cx5hsjvmib59fnixm9a8jb7fpvk-libaom-3.12.1"
@@ -302,8 +302,8 @@
       }
     },
     "libclang@21.1.8": {
-      "last_modified": "2026-06-29T19:19:24Z",
-      "resolved": "github:NixOS/nixpkgs/7a1a64774a5fd0b0cd39ac95d0e170ace8b266a0#libclang",
+      "last_modified": "2026-07-05T10:35:43Z",
+      "resolved": "github:NixOS/nixpkgs/c4013e501c048ae7c4a8940c92837636042bf6c3#libclang",
       "source": "devbox-search",
       "version": "21.1.8",
       "systems": {
@@ -315,16 +315,16 @@
               "default": true
             },
             {
-              "name": "python",
-              "path": "/nix/store/aylgxdpa8117iplxwv5hb7acbyx05ail-clang-21.1.8-python"
-            },
-            {
               "name": "dev",
               "path": "/nix/store/f87dpxxlfdbdkaq63sdndns44wka5vgs-clang-21.1.8-dev"
             },
             {
               "name": "lib",
               "path": "/nix/store/0zjvgq3biwh4z59qjsj1fp98mkm56lxk-clang-21.1.8-lib"
+            },
+            {
+              "name": "python",
+              "path": "/nix/store/aylgxdpa8117iplxwv5hb7acbyx05ail-clang-21.1.8-python"
             }
           ],
           "store_path": "/nix/store/qsl14qgcaf1y526f6an28kp1s8pal3h1-clang-21.1.8"
@@ -363,16 +363,16 @@
               "default": true
             },
             {
-              "name": "python",
-              "path": "/nix/store/1g53yiczg5na8s30h0n4r8pz0lnlclh2-clang-21.1.8-python"
-            },
-            {
               "name": "dev",
               "path": "/nix/store/x548sh4xxcdqlmpdxl0782khqmjrkkdz-clang-21.1.8-dev"
             },
             {
               "name": "lib",
               "path": "/nix/store/agysx04idaami2sf2qdrrx988f8r31n7-clang-21.1.8-lib"
+            },
+            {
+              "name": "python",
+              "path": "/nix/store/1g53yiczg5na8s30h0n4r8pz0lnlclh2-clang-21.1.8-python"
             }
           ],
           "store_path": "/nix/store/i90sjn9ja8fd0r52dkiidvdqqbqvja4k-clang-21.1.8"
@@ -385,20 +385,20 @@
               "default": true
             },
             {
-              "name": "python",
-              "path": "/nix/store/82ik6mdizpgbz8knfbq5wi7dzxnggj52-clang-21.1.8-python"
-            },
-            {
-              "name": "debug",
-              "path": "/nix/store/fbwkhcllh6q5gcmh9n6d8516gf7x9v6c-clang-21.1.8-debug"
-            },
-            {
               "name": "dev",
               "path": "/nix/store/jprqcnaij2cj13ccgq4n0vjclv6vfvyd-clang-21.1.8-dev"
             },
             {
               "name": "lib",
               "path": "/nix/store/7306wrcri9nmdp7w4pbqc5rqdn6y048d-clang-21.1.8-lib"
+            },
+            {
+              "name": "python",
+              "path": "/nix/store/82ik6mdizpgbz8knfbq5wi7dzxnggj52-clang-21.1.8-python"
+            },
+            {
+              "name": "debug",
+              "path": "/nix/store/fbwkhcllh6q5gcmh9n6d8516gf7x9v6c-clang-21.1.8-debug"
             }
           ],
           "store_path": "/nix/store/8syk3pg072y4npf5d7ml76c4pvy6dkfw-clang-21.1.8"

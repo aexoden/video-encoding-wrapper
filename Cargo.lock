@@ -1658,6 +1658,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "v_frame"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06b99be99e91ea12170d453a6547324ef2df3fcd79aaf336f5b1fff88ac89d84"
+
+[[package]]
 name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1704,7 +1710,7 @@ dependencies = [
  "unit-prefix",
  "v_frame 0.5.2",
  "y4m",
- "yuvxyb 0.5.0",
+ "yuvxyb 0.6.0",
 ]
 
 [[package]]
@@ -1856,14 +1862,13 @@ dependencies = [
 
 [[package]]
 name = "yuvxyb"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31479712d30fd1200143579a79840ed039f0bc772017a089ea5c1bfa0bcb1c2a"
+checksum = "8e540323d597041fe2bb8610a54df24011d3ef64341ef52257dafad96d22d5ba"
 dependencies = [
  "av-data",
  "log",
- "num-traits",
- "v_frame 0.5.2",
+ "v_frame 0.7.0",
  "wide 1.5.0",
  "yuvxyb-math",
 ]

@@ -19,7 +19,7 @@ pub fn run(config: &config::Config) -> anyhow::Result<()> {
     util::verify_directory(&config.output_directory).with_context(|| {
         format!(
             "Unable to verify or create output directory {}",
-            &config.output_directory.display()
+            config.output_directory.display()
         )
     })?;
 
@@ -28,7 +28,7 @@ pub fn run(config: &config::Config) -> anyhow::Result<()> {
     scenes::split(config).with_context(|| {
         format!(
             "Unable to split scenes for file {}",
-            &config.source.display()
+            config.source.display()
         )
     })?;
 

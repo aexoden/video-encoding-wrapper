@@ -117,7 +117,7 @@ impl ClipMetrics {
             self.calculate_duration_and_size().with_context(|| {
                 format!(
                     "Unable to calculate duration or size for {}",
-                    &self.path.display()
+                    self.path.display()
                 )
             })?;
         }
@@ -129,9 +129,8 @@ impl ClipMetrics {
 
     pub fn psnr(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.psnr.is_none() {
-            self.calculate_ffmpeg_metrics(threads).with_context(|| {
-                format!("Unable to calculate PSNR for {}", &self.path.display())
-            })?;
+            self.calculate_ffmpeg_metrics(threads)
+                .with_context(|| format!("Unable to calculate PSNR for {}", self.path.display()))?;
         }
 
         self.psnr
@@ -141,9 +140,8 @@ impl ClipMetrics {
 
     pub fn ssim(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.ssim.is_none() {
-            self.calculate_ffmpeg_metrics(threads).with_context(|| {
-                format!("Unable to calculate SSIM for {}", &self.path.display())
-            })?;
+            self.calculate_ffmpeg_metrics(threads)
+                .with_context(|| format!("Unable to calculate SSIM for {}", self.path.display()))?;
         }
 
         self.ssim
@@ -153,9 +151,8 @@ impl ClipMetrics {
 
     pub fn vmaf(&mut self, threads: usize) -> anyhow::Result<&Vec<f64>> {
         if self.vmaf.is_none() {
-            self.calculate_ffmpeg_metrics(threads).with_context(|| {
-                format!("Unable to calculate VMAF for {}", &self.path.display())
-            })?;
+            self.calculate_ffmpeg_metrics(threads)
+                .with_context(|| format!("Unable to calculate VMAF for {}", self.path.display()))?;
         }
 
         self.vmaf
@@ -168,7 +165,7 @@ impl ClipMetrics {
             self.calculate_ssimulacra2(threads).with_context(|| {
                 format!(
                     "Unable to calculate SSIMULACRA2 for {}",
-                    &self.path.display()
+                    self.path.display()
                 )
             })?;
         }
@@ -183,7 +180,7 @@ impl ClipMetrics {
             self.calculate_duration_and_size().with_context(|| {
                 format!(
                     "Unable to calculate duration or size for {}",
-                    &self.path.display()
+                    self.path.display()
                 )
             })?;
         }
@@ -197,7 +194,7 @@ impl ClipMetrics {
             self.calculate_duration_and_size().with_context(|| {
                 format!(
                     "Unable to calculate duration or size for {}",
-                    &self.path.display()
+                    self.path.display()
                 )
             })?;
         }
@@ -214,7 +211,7 @@ impl ClipMetrics {
     fn calculate_duration_and_size(&mut self) -> anyhow::Result<()> {
         let (stream_index, duration, avg_frame_rate, mut input_context) = {
             let input_context = format::input(&self.path)
-                .with_context(|| format!("Unable to open {} with FFmpeg", &self.path.display()))?;
+                .with_context(|| format!("Unable to open {} with FFmpeg", self.path.display()))?;
 
             let input = input_context
                 .streams()
@@ -255,10 +252,7 @@ impl ClipMetrics {
         self.sizes = Some(packet_sizes);
 
         self.update_cache().with_context(|| {
-            format!(
-                "Unable to update metrics cache for {}",
-                &self.path.display()
-            )
+            format!("Unable to update metrics cache for {}", self.path.display())
         })?;
 
         Ok(())
@@ -271,10 +265,7 @@ impl ClipMetrics {
         );
 
         self.update_cache().with_context(|| {
-            format!(
-                "Unable to update metrics cache for {}",
-                &self.path.display()
-            )
+            format!("Unable to update metrics cache for {}", self.path.display())
         })?;
 
         Ok(())
@@ -354,10 +345,7 @@ impl ClipMetrics {
             .with_context(|| format!("Unable to remove {}", log_path.display()))?;
 
         self.update_cache().with_context(|| {
-            format!(
-                "Unable to update metrics cache for {}",
-                &self.path.display()
-            )
+            format!("Unable to update metrics cache for {}", self.path.display())
         })?;
 
         Ok(())
@@ -370,7 +358,7 @@ impl ClipMetrics {
             &File::create(&temporary_path).with_context(|| {
                 format!(
                     "Unable to create clip metrics cache file {}",
-                    &temporary_path.display()
+                    temporary_path.display()
                 )
             })?,
             &self,
@@ -378,7 +366,7 @@ impl ClipMetrics {
         .with_context(|| {
             format!(
                 "Unable to serialize clip metrics cache to {}",
-                &temporary_path.display()
+                temporary_path.display()
             )
         })?;
 
@@ -417,7 +405,7 @@ pub fn bitrate_analysis(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::R
     let metadata = get_metadata(config).with_context(|| {
         format!(
             "Unable to fetch video metadata for {}",
-            &config.source.display()
+            config.source.display()
         )
     })?;
 
@@ -480,7 +468,7 @@ pub fn print(config: &Config, clips: &mut [ClipMetrics]) -> anyhow::Result<()> {
     let metadata = get_metadata(config).with_context(|| {
         format!(
             "Unable to fetch video metadata for {}",
-            &config.source.display()
+            config.source.display()
         )
     })?;
 

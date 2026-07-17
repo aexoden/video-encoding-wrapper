@@ -187,7 +187,7 @@ fn create_cropdetect_filter_graph(
 
 fn read_metadata(config: &Config, progress_bar: &ProgressBar) -> anyhow::Result<Metadata> {
     let mut input_context = format::input(&config.source)
-        .with_context(|| format!("Unable to open {} with FFmpeg", &config.source.display()))?;
+        .with_context(|| format!("Unable to open {} with FFmpeg", config.source.display()))?;
 
     let (stream_index, mut decoder, time_base, duration) = {
         let input = input_context

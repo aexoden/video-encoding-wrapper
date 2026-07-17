@@ -71,7 +71,7 @@ pub fn get(config: &Config) -> anyhow::Result<Vec<Scene>> {
         let mut decoder = Decoder::from_file(&config.source).with_context(|| {
             format!(
                 "Unable to create video decoder for {}",
-                &config.source.display()
+                config.source.display()
             )
         })?;
 
@@ -148,7 +148,7 @@ pub fn split(config: &Config) -> anyhow::Result<()> {
     let metadata = get_metadata(config).with_context(|| {
         format!(
             "Unable to fetch video metadata for {}",
-            &config.source.display()
+            config.source.display()
         )
     })?;
 

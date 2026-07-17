@@ -14,7 +14,7 @@ categories = ["command-line-utilities", "multimedia::video"]
 anyhow = { version = "=1.0.103", features = ["backtrace"] }
 av-decoders = { version = "=0.11.1", features = ["ffmpeg"] }
 av-metrics = "=0.9.1"
-av-scenechange = { version = "0.24.1", default-features = false, features = [
+av-scenechange = { version = "=0.24.1", default-features = false, features = [
   "ffmpeg"
 ] }
 base16ct = { version = "=1.0.0", features = ["alloc"] }

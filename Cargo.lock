@@ -160,6 +160,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "av-decoders"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d94db08860aa0ccd8a95d1aa50b0f3055d23be14827cb3e3fa365fc633fc99f1"
+dependencies = [
+ "ffmpeg-the-third",
+ "num-rational",
+ "thiserror 2.0.18",
+ "v_frame 0.7.0",
+ "y4m",
+]
+
+[[package]]
 name = "av-metrics"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -176,21 +189,20 @@ dependencies = [
 
 [[package]]
 name = "av-scenechange"
-version = "0.23.0"
-source = "git+https://github.com/rust-av/av-scenechange?rev=95796aabfd65a464d566b4d2ed42b79a28c12aa2#95796aabfd65a464d566b4d2ed42b79a28c12aa2"
+version = "0.24.1"
+source = "git+https://github.com/rust-av/av-scenechange?rev=de8a73744b772515e14895ddfcb30aed20f798a0#de8a73744b772515e14895ddfcb30aed20f798a0"
 dependencies = [
  "aligned",
  "anyhow",
  "arrayvec",
- "av-decoders",
+ "av-decoders 0.11.1",
  "cfg-if",
  "cpufeatures",
  "log",
  "maybe-rayon",
  "num-rational",
  "num-traits",
- "pastey",
- "v_frame 0.5.2",
+ "v_frame 0.7.0",
  "y4m",
 ]
 
@@ -1044,12 +1056,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "pastey"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
-
-[[package]]
 name = "pin-project-lite"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1654,6 +1660,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "v_frame"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06b99be99e91ea12170d453a6547324ef2df3fcd79aaf336f5b1fff88ac89d84"
+
+[[package]]
 name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1676,7 +1688,7 @@ name = "video-encoding-wrapper"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "av-decoders",
+ "av-decoders 0.10.0",
  "av-metrics",
  "av-scenechange",
  "base16ct",

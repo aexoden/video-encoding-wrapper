@@ -59,9 +59,8 @@ pub struct Metadata {
 }
 
 #[cached(
-    result = true,
     ty = "UnboundCache<String, Metadata>",
-    create = "{ UnboundCache::with_capacity(1) }",
+    create = "{ UnboundCache::builder().capacity(1).build().unwrap() }",
     convert = r#"{ format!("{}", config.source.to_string_lossy()) }"#
 )]
 pub fn get_metadata(config: &Config) -> anyhow::Result<Metadata> {

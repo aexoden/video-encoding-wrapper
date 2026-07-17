@@ -148,14 +148,14 @@ dependencies = [
 
 [[package]]
 name = "av-decoders"
-version = "0.10.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a31ed07c3a0db5375deded31ba4db91bdf43660781680eae78392d3dafd77d9d"
+checksum = "d94db08860aa0ccd8a95d1aa50b0f3055d23be14827cb3e3fa365fc633fc99f1"
 dependencies = [
  "ffmpeg-the-third",
  "num-rational",
  "thiserror 2.0.18",
- "v_frame 0.5.2",
+ "v_frame 0.7.0",
  "y4m",
 ]
 
@@ -176,8 +176,9 @@ dependencies = [
 
 [[package]]
 name = "av-scenechange"
-version = "0.23.0"
-source = "git+https://github.com/rust-av/av-scenechange?rev=95796aabfd65a464d566b4d2ed42b79a28c12aa2#95796aabfd65a464d566b4d2ed42b79a28c12aa2"
+version = "0.24.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c150630b8bee138a9e7cf75a92b487d2bbbcd1e11cf55a7a5f86e47e3df78fc"
 dependencies = [
  "aligned",
  "anyhow",
@@ -189,8 +190,7 @@ dependencies = [
  "maybe-rayon",
  "num-rational",
  "num-traits",
- "pastey",
- "v_frame 0.5.2",
+ "v_frame 0.7.0",
  "y4m",
 ]
 
@@ -1044,12 +1044,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "pastey"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
-
-[[package]]
 name = "pin-project-lite"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1644,14 +1638,9 @@ dependencies = [
 
 [[package]]
 name = "v_frame"
-version = "0.5.2"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "706b485cfdd36c867e946509da6f8b9fa38f40a1aecb92d702e04d135c4335bb"
-dependencies = [
- "num-traits",
- "thiserror 2.0.18",
- "wasm-bindgen",
-]
+checksum = "06b99be99e91ea12170d453a6547324ef2df3fcd79aaf336f5b1fff88ac89d84"
 
 [[package]]
 name = "valuable"
@@ -1698,9 +1687,9 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "unit-prefix",
- "v_frame 0.5.2",
+ "v_frame 0.7.0",
  "y4m",
- "yuvxyb 0.5.0",
+ "yuvxyb 0.6.0",
 ]
 
 [[package]]
@@ -1852,14 +1841,13 @@ dependencies = [
 
 [[package]]
 name = "yuvxyb"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31479712d30fd1200143579a79840ed039f0bc772017a089ea5c1bfa0bcb1c2a"
+checksum = "8e540323d597041fe2bb8610a54df24011d3ef64341ef52257dafad96d22d5ba"
 dependencies = [
  "av-data",
  "log",
- "num-traits",
- "v_frame 0.5.2",
+ "v_frame 0.7.0",
  "wide 1.5.0",
  "yuvxyb-math",
 ]

@@ -12,9 +12,9 @@ categories = ["command-line-utilities", "multimedia::video"]
 
 [dependencies]
 anyhow = { version = "=1.0.103", features = ["backtrace"] }
-av-decoders = { version = "=0.10.0", features = ["ffmpeg"] }
+av-decoders = { version = "=0.11.1", features = ["ffmpeg"] }
 av-metrics = "=0.9.1"
-av-scenechange = { git = "https://github.com/rust-av/av-scenechange", rev = "95796aabfd65a464d566b4d2ed42b79a28c12aa2", default-features = false, features = [
+av-scenechange = { version = "0.24.1", default-features = false, features = [
   "ffmpeg"
 ] }
 base16ct = { version = "=1.0.0", features = ["alloc"] }
@@ -39,9 +39,9 @@ tracing = "=0.1.44"
 tracing-error = "=0.2.1"
 tracing-subscriber = { version = "=0.3.23", features = ["env-filter"] }
 unit-prefix = "=0.5.2"
-v_frame = "=0.5.2"
+v_frame = "=0.7.0"
 y4m = "=0.8.0"
-yuvxyb = "=0.5.0"
+yuvxyb = "=0.6.0"
 
 [lints.clippy]
 cargo = { level = "warn", priority = -1 }

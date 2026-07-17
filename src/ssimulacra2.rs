@@ -89,8 +89,8 @@ fn frame_to_ssim2_linear_rgb<T: Pixel>(
     let yuv = Yuv::new(frame, config).context("Unable to construct YUV from frame")?;
     let linear: yuvxyb::LinearRgb =
         yuvxyb::LinearRgb::try_from(yuv).context("Unable to convert YUV to linear RGB")?;
-    let w = linear.width().get();
-    let h = linear.height().get();
+    let w = linear.width();
+    let h = linear.height();
     ssimulacra2::LinearRgb::new(linear.into_data(), w, h)
         .context("Unable to construct ssimulacra2 LinearRgb")
 }

@@ -96,7 +96,7 @@ impl Encoder {
             metadata: get_metadata(config).with_context(|| {
                 format!(
                     "Unable to fetch video metadata for {}",
-                    &config.source.display()
+                    config.source.display()
                 )
             })?,
             encode_directory,
@@ -734,9 +734,7 @@ impl Encoder {
 
             if !result.success() {
                 return Err(anyhow!(
-                    "Encoder process exited with status {} and output {:#?}",
-                    result,
-                    &old_buffer
+                    "Encoder process exited with status {result} and output {old_buffer:#?}"
                 ));
             }
 

@@ -826,51 +826,41 @@
         }
       }
     },
-    "svt-av1@3.1.2": {
-      "last_modified": "2026-06-27T07:37:20Z",
-      "resolved": "github:NixOS/nixpkgs/3d46470bb3030020f7e1361f33514854f5bfa86d#svt-av1",
+    "svt-av1@4.1.0": {
+      "last_modified": "2026-07-08T21:13:06Z",
+      "resolved": "github:NixOS/nixpkgs/389ed85304b281ca7f306cf8a1eb4378651ca44e#svt-av1",
       "source": "devbox-search",
-      "version": "3.1.2",
+      "version": "4.1.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/7xq81m5an6j9i3bnpf3d0lwxs1ki3nj5-svt-av1-3.1.2",
+              "path": "/nix/store/zpjgqmqp4a2b98haak9fls5nbyc8y2gn-svt-av1-4.1.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/7xq81m5an6j9i3bnpf3d0lwxs1ki3nj5-svt-av1-3.1.2"
+          "store_path": "/nix/store/zpjgqmqp4a2b98haak9fls5nbyc8y2gn-svt-av1-4.1.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/253anih283qvvnyk3wpnpq0haiwc92f2-svt-av1-3.1.2",
+              "path": "/nix/store/yygs267rmxgmryb9xkwq2xw5iqlyqny1-svt-av1-4.1.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/253anih283qvvnyk3wpnpq0haiwc92f2-svt-av1-3.1.2"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/al125h416dqr74c9mf27axvs0zryb2fx-svt-av1-3.1.2",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/al125h416dqr74c9mf27axvs0zryb2fx-svt-av1-3.1.2"
+          "store_path": "/nix/store/yygs267rmxgmryb9xkwq2xw5iqlyqny1-svt-av1-4.1.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/26s7fqngj77i2p8nw8bx5cj4y8gxxxap-svt-av1-3.1.2",
+              "path": "/nix/store/2khall7z7v8304j4rjzjkdm9zy3dairq-svt-av1-4.1.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/26s7fqngj77i2p8nw8bx5cj4y8gxxxap-svt-av1-3.1.2"
+          "store_path": "/nix/store/2khall7z7v8304j4rjzjkdm9zy3dairq-svt-av1-4.1.0"
         }
       }
     },

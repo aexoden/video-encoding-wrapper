@@ -3,7 +3,7 @@
   "packages": {
     "cargo-deny": "0.19.9",
     "ffmpeg-full": {
-      "version": "8.1.1",
+      "version": "8.1.2",
       "outputs": ["bin", "dev", "lib"]
     },
     "libaom": "3.12.1",

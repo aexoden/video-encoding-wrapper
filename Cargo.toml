@@ -19,7 +19,7 @@ av-scenechange = { version = "=0.24.1", default-features = false, features = [
 ] }
 base16ct = { version = "=1.0.0", features = ["alloc"] }
 cached = "=2.0.2"
-clap = { version = "=4.6.1", features = ["derive"] }
+clap = { version = "=4.6.2", features = ["derive"] }
 crossbeam-queue = "=0.3.13"
 ffmpeg = { package = "ffmpeg-the-third", version = "=5.0.0" }
 indicatif = "=0.18.6"

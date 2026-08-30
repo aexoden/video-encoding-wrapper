@@ -39,116 +39,116 @@
         }
       }
     },
-    "ffmpeg-full@8.1.2": {
-      "last_modified": "2026-08-10T07:49:06Z",
-      "resolved": "github:NixOS/nixpkgs/d482ef84049d9b7276b83a06e4e4d76983830097#ffmpeg-full",
+    "ffmpeg-full@9.0.1": {
+      "last_modified": "2026-08-27T07:16:00Z",
+      "resolved": "github:NixOS/nixpkgs/c27cdad491a991b11ed731760aa2ef8db0cb0410#ffmpeg-full",
       "source": "devbox-search",
-      "version": "8.1.2",
+      "version": "9.0.1",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "bin",
-              "path": "/nix/store/pnzbhl6np2wagjydg7im2vf2hw3k8c31-ffmpeg-full-8.1.2-bin",
+              "path": "/nix/store/whnf1z6j0bx1a7lzc03hvmx2m8b07ylb-ffmpeg-full-9.0.1-bin",
               "default": true
             },
             {
               "name": "man",
-              "path": "/nix/store/lvfy23zc56f0cdzkgrh7zmk6vp3mhnsg-ffmpeg-full-8.1.2-man",
+              "path": "/nix/store/5h0791nvqg5k7s8h72qqgqawsnaly8r1-ffmpeg-full-9.0.1-man",
               "default": true
             },
             {
-              "name": "doc",
-              "path": "/nix/store/zlsb782vzriramcm4phgfp2p4w1ppqav-ffmpeg-full-8.1.2-doc"
-            },
-            {
               "name": "lib",
-              "path": "/nix/store/rblray1sh60lqgzpzzapmscc7zikmwl9-ffmpeg-full-8.1.2-lib"
+              "path": "/nix/store/p5790wwpgr5r9y7zkp9f64i56d2477jj-ffmpeg-full-9.0.1-lib"
             },
             {
               "name": "out",
-              "path": "/nix/store/v33xcrs79m1fv94m61rjmjhgvsznx2z9-ffmpeg-full-8.1.2"
+              "path": "/nix/store/m1q587ybnarpvyar3p0d4n2hvz8qp882-ffmpeg-full-9.0.1"
             },
             {
               "name": "data",
-              "path": "/nix/store/za5fl8b7im464v8sbdy3i3fwhqvwr71g-ffmpeg-full-8.1.2-data"
+              "path": "/nix/store/rbhkzayy08njmccs7h009s5rzb1zspfq-ffmpeg-full-9.0.1-data"
             },
             {
               "name": "dev",
-              "path": "/nix/store/6nipp99r8l6aqk7504sdrmfzb5s9fdh3-ffmpeg-full-8.1.2-dev"
+              "path": "/nix/store/9lhki73m4k0dz44cds9ww7qlrshrx7zp-ffmpeg-full-9.0.1-dev"
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/jwj4zb27vr0g2x7qn1xff3rvy6cfmc51-ffmpeg-full-9.0.1-doc"
             }
           ],
-          "store_path": "/nix/store/pnzbhl6np2wagjydg7im2vf2hw3k8c31-ffmpeg-full-8.1.2-bin"
+          "store_path": "/nix/store/whnf1z6j0bx1a7lzc03hvmx2m8b07ylb-ffmpeg-full-9.0.1-bin"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "bin",
-              "path": "/nix/store/fj0zgvi987gyvh5vnqfnvpb50mfd7qc9-ffmpeg-full-8.1.2-bin",
+              "path": "/nix/store/6lm6j5ksjnjz2yr8wkyycpf5hgpxffc6-ffmpeg-full-9.0.1-bin",
               "default": true
             },
             {
               "name": "man",
-              "path": "/nix/store/c6ss7r3y04iysaivssfdniia873az97w-ffmpeg-full-8.1.2-man",
+              "path": "/nix/store/z7fw4scsvjxc5bknfnkqnp44vcmq2b76-ffmpeg-full-9.0.1-man",
               "default": true
             },
             {
               "name": "data",
-              "path": "/nix/store/n80cxhrlkmb00c8dwyx6hpr8zz65k9d2-ffmpeg-full-8.1.2-data"
+              "path": "/nix/store/56yqqjlqbh0m4ln4pbfbphkmsi7rk71y-ffmpeg-full-9.0.1-data"
             },
             {
               "name": "dev",
-              "path": "/nix/store/qhqxk9ij9ig04lca48aljihxyvmsjcy1-ffmpeg-full-8.1.2-dev"
+              "path": "/nix/store/jhb3ra4z78a94k8y5gw1zxqmk05i8waj-ffmpeg-full-9.0.1-dev"
             },
             {
               "name": "doc",
-              "path": "/nix/store/r426bgm7hss9j90a1f5nnnxl8lkbnjgg-ffmpeg-full-8.1.2-doc"
+              "path": "/nix/store/c27c2winhz38yg7xvk66dw5plfhaihrd-ffmpeg-full-9.0.1-doc"
             },
             {
               "name": "lib",
-              "path": "/nix/store/413q6krh1zdr7j6i9jdlp1v8cym7djak-ffmpeg-full-8.1.2-lib"
+              "path": "/nix/store/fx011s5hqzy47qcs3spd5fr3lfk7xcd6-ffmpeg-full-9.0.1-lib"
             },
             {
               "name": "out",
-              "path": "/nix/store/m0ixxb5hrhzhpah2lcpiy7hp7c76l4gz-ffmpeg-full-8.1.2"
+              "path": "/nix/store/gk72yp4axjydq52vfb278wh57h261bxq-ffmpeg-full-9.0.1"
             }
           ],
-          "store_path": "/nix/store/fj0zgvi987gyvh5vnqfnvpb50mfd7qc9-ffmpeg-full-8.1.2-bin"
+          "store_path": "/nix/store/6lm6j5ksjnjz2yr8wkyycpf5hgpxffc6-ffmpeg-full-9.0.1-bin"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "bin",
-              "path": "/nix/store/00b8h544v86q9gljsdaca3dwqa01imlv-ffmpeg-full-8.1.2-bin",
+              "path": "/nix/store/j5xn6ib6mfy7l7h2fxfa16agli24f0h7-ffmpeg-full-9.0.1-bin",
               "default": true
             },
             {
               "name": "man",
-              "path": "/nix/store/4l2qqx782ggc2bg56wn58rhy99k4wpap-ffmpeg-full-8.1.2-man",
+              "path": "/nix/store/lf2k9561s0c9cgc8ancp5fh06ivpwi7g-ffmpeg-full-9.0.1-man",
               "default": true
             },
             {
-              "name": "out",
-              "path": "/nix/store/3dfi7k0crvrgydf6pf5sfmwpnzakmj77-ffmpeg-full-8.1.2"
-            },
-            {
-              "name": "data",
-              "path": "/nix/store/hij7n47jm4xjaxqycln7pjmi338zgpgj-ffmpeg-full-8.1.2-data"
-            },
-            {
-              "name": "dev",
-              "path": "/nix/store/gn89gkvpnlqijnfbz88549cr3r93psjh-ffmpeg-full-8.1.2-dev"
-            },
-            {
               "name": "doc",
-              "path": "/nix/store/y0a4z56af0jq1dyqqklqikfnk92ln7b3-ffmpeg-full-8.1.2-doc"
+              "path": "/nix/store/q7xqyw3f2xb655b9y92dbgcrvrzjnmv9-ffmpeg-full-9.0.1-doc"
             },
             {
               "name": "lib",
-              "path": "/nix/store/xwmwp94ih4g398adszag8sarxfq66i61-ffmpeg-full-8.1.2-lib"
+              "path": "/nix/store/9m8475a85bk4bppm9r28jkndqfdk8diq-ffmpeg-full-9.0.1-lib"
+            },
+            {
+              "name": "out",
+              "path": "/nix/store/2mrd91hvv96rbf6b8pnpib6dlsqxnw2y-ffmpeg-full-9.0.1"
+            },
+            {
+              "name": "data",
+              "path": "/nix/store/5qx5w4jn0p7477wjrzmps17g4w2q90r1-ffmpeg-full-9.0.1-data"
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/jzhfy9zcahs2xa9h2f969j4lxdgz4k5g-ffmpeg-full-9.0.1-dev"
             }
           ],
-          "store_path": "/nix/store/00b8h544v86q9gljsdaca3dwqa01imlv-ffmpeg-full-8.1.2-bin"
+          "store_path": "/nix/store/j5xn6ib6mfy7l7h2fxfa16agli24f0h7-ffmpeg-full-9.0.1-bin"
         }
       }
     },

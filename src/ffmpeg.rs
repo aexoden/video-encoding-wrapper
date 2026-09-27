@@ -60,8 +60,8 @@ pub struct Metadata {
 
 #[cached(
     ty = "UnboundCache<String, Metadata>",
-    create = "{ UnboundCache::builder().capacity(1).build().unwrap() }",
-    convert = r#"{ format!("{}", config.source.to_string_lossy()) }"#
+    create = { UnboundCache::builder().initial_capacity(1).build().unwrap_or_default() },
+    convert = { format!("{}", config.source.to_string_lossy()) }
 )]
 pub fn get_metadata(config: &Config) -> anyhow::Result<Metadata> {
     let json_path = config.output_directory.join("config").join("metadata.json");

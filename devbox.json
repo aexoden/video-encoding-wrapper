@@ -11,7 +11,7 @@
       "version": "21.1.8",
       "outputs": ["out", "lib", "dev"]
     },
-    "libvpx": "1.16.0",
+    "libvpx": "1.17.0",
     "mkvtoolnix-cli": "97.0",
     "nasm": "3.01",
     "pkg-config": "0.29.2",

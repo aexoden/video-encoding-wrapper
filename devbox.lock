@@ -337,83 +337,65 @@
         }
       }
     },
-    "libvpx@1.16.0": {
-      "last_modified": "2026-09-27T03:42:02Z",
-      "resolved": "github:NixOS/nixpkgs/8d5d270900d3fc75655ea2d9d248b234f6631439#libvpx",
+    "libvpx@1.17.0": {
+      "last_modified": "2026-10-08T19:21:32Z",
+      "resolved": "github:NixOS/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30#libvpx",
       "source": "devbox-search",
-      "version": "1.16.0",
+      "version": "1.17.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "bin",
-              "path": "/nix/store/jwnhixswxl04yc3nw2s757iybmzyj3bh-libvpx-1.16.0-bin",
+              "path": "/nix/store/fgsphkxfs6jph014bpbndiw7vkkvghk8-libvpx-1.17.0-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/ivay6svmx4ygxqzkj1ndcm7bzx9rsafg-libvpx-1.16.0-dev"
+              "path": "/nix/store/sdwdi3x4wml2g4n2gnqx5r1xw8bn6ycl-libvpx-1.17.0-dev"
             },
             {
               "name": "out",
-              "path": "/nix/store/l1x4l6yqvx6yw1lipj5vbvx843vc4542-libvpx-1.16.0"
+              "path": "/nix/store/y0anpihf4n0yhz1393xnx3xkcygs7y5z-libvpx-1.17.0"
             }
           ],
-          "store_path": "/nix/store/jwnhixswxl04yc3nw2s757iybmzyj3bh-libvpx-1.16.0-bin"
+          "store_path": "/nix/store/fgsphkxfs6jph014bpbndiw7vkkvghk8-libvpx-1.17.0-bin"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "bin",
-              "path": "/nix/store/9v0nklqjf1qcxvr4gwlzfswwkf4x7gc2-libvpx-1.16.0-bin",
+              "path": "/nix/store/832yinibm62q9y54i5h4ln39xbjw0n4g-libvpx-1.17.0-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/56lj72im5n68r7ggg5qni73m8djsdjii-libvpx-1.16.0-dev"
+              "path": "/nix/store/qy68a0ql66qj25dcfnr206p0wrz9zmqa-libvpx-1.17.0-dev"
             },
             {
               "name": "out",
-              "path": "/nix/store/ngv9iih82x84qqpnn9kppi17wixpyvyl-libvpx-1.16.0"
+              "path": "/nix/store/n8y9f4bc1sn03l6wsxd6ypnwrjzasng7-libvpx-1.17.0"
             }
           ],
-          "store_path": "/nix/store/9v0nklqjf1qcxvr4gwlzfswwkf4x7gc2-libvpx-1.16.0-bin"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "bin",
-              "path": "/nix/store/6mka8b5rib1g4jvggjl4xbkbnrmk4njb-libvpx-1.16.0-bin",
-              "default": true
-            },
-            {
-              "name": "dev",
-              "path": "/nix/store/gav6qlzi1z6l10hdn5vnagw2r5gi3xyh-libvpx-1.16.0-dev"
-            },
-            {
-              "name": "out",
-              "path": "/nix/store/01w180y2vsia4my0l3xjm1mcr898c87l-libvpx-1.16.0"
-            }
-          ],
-          "store_path": "/nix/store/6mka8b5rib1g4jvggjl4xbkbnrmk4njb-libvpx-1.16.0-bin"
+          "store_path": "/nix/store/832yinibm62q9y54i5h4ln39xbjw0n4g-libvpx-1.17.0-bin"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "bin",
-              "path": "/nix/store/s5zvlmnlk3d1b898yr1m611pyfjpcnm8-libvpx-1.16.0-bin",
+              "path": "/nix/store/0kq89qfljviwqjyrqaq8s4afgxsj7mxi-libvpx-1.17.0-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/9mpwxyyn347a32mc595cars1ynri53ks-libvpx-1.16.0-dev"
+              "path": "/nix/store/3pszgk37dbki7aagyy41gmrgffpc7y12-libvpx-1.17.0-dev"
             },
             {
               "name": "out",
-              "path": "/nix/store/0w1q1hb2540gada9mrkdwmq61zxrqk47-libvpx-1.16.0"
+              "path": "/nix/store/x93id6d40sfd5xvdmfsg8xgw067vi3bf-libvpx-1.17.0"
             }
           ],
-          "store_path": "/nix/store/s5zvlmnlk3d1b898yr1m611pyfjpcnm8-libvpx-1.16.0-bin"
+          "store_path": "/nix/store/0kq89qfljviwqjyrqaq8s4afgxsj7mxi-libvpx-1.17.0-bin"
         }
       }
     },

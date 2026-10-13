@@ -156,103 +156,80 @@
       "last_modified": "2026-10-08T19:21:32Z",
       "resolved": "github:NixOS/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30?lastModified=1791487292&narHash=sha256-tqM7xDEsaeK1p6VvRygeZ9LkQRpUUkbRT02BHv6hnTM%3D"
     },
-    "libaom@3.12.1": {
-      "last_modified": "2026-09-27T03:42:02Z",
-      "resolved": "github:NixOS/nixpkgs/8d5d270900d3fc75655ea2d9d248b234f6631439#libaom",
+    "libaom@3.15.0": {
+      "last_modified": "2026-10-08T19:21:32Z",
+      "resolved": "github:NixOS/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30#libaom",
       "source": "devbox-search",
-      "version": "3.12.1",
+      "version": "3.15.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/02yxgd6cvx1sj6vqh8qiv823sab6bkga-libaom-3.12.1",
+              "path": "/nix/store/bnh7g2cddwzs6sj9wwwh2mnigq4lah6f-libaom-3.15.0",
               "default": true
             },
             {
               "name": "bin",
-              "path": "/nix/store/iq3pkqf1194dk0qskiiyc85r1kvynlrm-libaom-3.12.1-bin",
+              "path": "/nix/store/9ny2ksywbp8gflf7ry32b8f5ydgjw10d-libaom-3.15.0-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/6n0am683qzjigkwdv8gskdvkdmpyzj4l-libaom-3.12.1-dev"
+              "path": "/nix/store/06j86rjcv543apw3fvwhk7qp1zk12aj5-libaom-3.15.0-dev"
             },
             {
               "name": "static",
-              "path": "/nix/store/kc00wm2qy0l2l7zmgnxfrqcs5lbih7yb-libaom-3.12.1-static"
+              "path": "/nix/store/i95k5zx4yl3pxpy34mg9a42wi73jmzsa-libaom-3.15.0-static"
             }
           ],
-          "store_path": "/nix/store/02yxgd6cvx1sj6vqh8qiv823sab6bkga-libaom-3.12.1"
+          "store_path": "/nix/store/bnh7g2cddwzs6sj9wwwh2mnigq4lah6f-libaom-3.15.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/pxvsqv8jvk7ln037fmvcq1g3j2xz712h-libaom-3.12.1",
+              "path": "/nix/store/l8sx4nvjsff08qmh63y43s7x645f46lx-libaom-3.15.0",
               "default": true
             },
             {
               "name": "bin",
-              "path": "/nix/store/kdrrba5znay1014qy5y9h3z2laf6yk20-libaom-3.12.1-bin",
+              "path": "/nix/store/x92ag4zcqhsglajcxjmlv5iamb37454p-libaom-3.15.0-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/blzdgbn4y8bfq7lkc5i0f8i0ai14gpl8-libaom-3.12.1-dev"
+              "path": "/nix/store/3zgkz54s2nrf5f5779q77j0cxmx6s5jr-libaom-3.15.0-dev"
             },
             {
               "name": "static",
-              "path": "/nix/store/gv8qxwa698qv9lx6wjsnw1df4rnq3c9j-libaom-3.12.1-static"
+              "path": "/nix/store/ycfyf6637r317zhry2xgsya8523bw8py-libaom-3.15.0-static"
             }
           ],
-          "store_path": "/nix/store/pxvsqv8jvk7ln037fmvcq1g3j2xz712h-libaom-3.12.1"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/y56vyahmlivfir66r2fnjiaw8zqjbcww-libaom-3.12.1",
-              "default": true
-            },
-            {
-              "name": "bin",
-              "path": "/nix/store/dha4pvy6xxw8z1qgxj33ph2h13qfvgz8-libaom-3.12.1-bin",
-              "default": true
-            },
-            {
-              "name": "static",
-              "path": "/nix/store/8vznw3ybw0nnhvx9mhg3zvwhd1rcw2h7-libaom-3.12.1-static"
-            },
-            {
-              "name": "dev",
-              "path": "/nix/store/2vs1q9kp3wf53kkf0540i78z8hgk849j-libaom-3.12.1-dev"
-            }
-          ],
-          "store_path": "/nix/store/y56vyahmlivfir66r2fnjiaw8zqjbcww-libaom-3.12.1"
+          "store_path": "/nix/store/l8sx4nvjsff08qmh63y43s7x645f46lx-libaom-3.15.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/l4f10yjgzj7n4s9933mg7p0mwz26bg3p-libaom-3.12.1",
+              "path": "/nix/store/16m4lpqhcpgdl7gdaq1ss24sly6r0j7p-libaom-3.15.0",
               "default": true
             },
             {
               "name": "bin",
-              "path": "/nix/store/h34ng0swazqfx92602pjksvishww6nb4-libaom-3.12.1-bin",
+              "path": "/nix/store/gi370grwrh2n5792r2wyla4961vcqfpc-libaom-3.15.0-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/2qdpmlq11c65z7y2hn63hcbky381rlpj-libaom-3.12.1-dev"
+              "path": "/nix/store/d5dggx6mzwq1nbvjapzkay2ym288xykm-libaom-3.15.0-dev"
             },
             {
               "name": "static",
-              "path": "/nix/store/6ddyfnpkkkqxvyzcmz6jq06x1495l1as-libaom-3.12.1-static"
+              "path": "/nix/store/rnjiw8hb1vfgf6pwx5zk8nsbbk52ijvf-libaom-3.15.0-static"
             }
           ],
-          "store_path": "/nix/store/l4f10yjgzj7n4s9933mg7p0mwz26bg3p-libaom-3.12.1"
+          "store_path": "/nix/store/16m4lpqhcpgdl7gdaq1ss24sly6r0j7p-libaom-3.15.0"
         }
       }
     },

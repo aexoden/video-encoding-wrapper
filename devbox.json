@@ -15,7 +15,7 @@
     "mkvtoolnix-cli": "97.0",
     "nasm": "3.01",
     "pkg-config": "0.29.2",
-    "pre-commit": "4.5.1",
+    "pre-commit": "4.6.2",
     "rav1e": "0.8.1",
     "rustup": "1.29.1",
     "svt-av1": "4.1.0",

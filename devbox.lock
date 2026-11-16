@@ -156,80 +156,80 @@
       "last_modified": "2026-10-24T03:22:33Z",
       "resolved": "github:NixOS/nixpkgs/674a2028661e550a97400c1cc992b9cca9a668a1?lastModified=1792812153&narHash=sha256-T2%2BXBfNbf9pecLUWS4%2BRtuVNZ3W8K5taG5QdV71mWlk%3D"
     },
-    "libaom@3.15.1": {
-      "last_modified": "2026-10-19T15:20:57Z",
-      "resolved": "github:NixOS/nixpkgs/682ba80136e2c8dacd6b8900f578a72329458901#libaom",
+    "libaom@3.15.2": {
+      "last_modified": "2026-11-13T07:26:56Z",
+      "resolved": "github:NixOS/nixpkgs/e126e9e73c335158ff8279ac14d5f4afec153716#libaom",
       "source": "devbox-search",
-      "version": "3.15.1",
+      "version": "3.15.2",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/z0w3p87vcap1vr7fdp0mcf9g01hpvdlw-libaom-3.15.1",
+              "path": "/nix/store/bfvih2cxzf0apc0rli65iigwn04bb75g-libaom-3.15.2",
               "default": true
             },
             {
               "name": "bin",
-              "path": "/nix/store/sq4l6ixycbrbr30bnb7j2kp72h8irw14-libaom-3.15.1-bin",
+              "path": "/nix/store/qxdyzipqrppjszxwhwqrzmikxias0slm-libaom-3.15.2-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/yyyqhzva4bqls7fjycfx1i5zq4g6brzs-libaom-3.15.1-dev"
+              "path": "/nix/store/zy58qx6b1zy7v6jfy07nsfxd1h7ikblc-libaom-3.15.2-dev"
             },
             {
               "name": "static",
-              "path": "/nix/store/wm6lyzvfxxsk63x5a9rryrx25wfxcmy1-libaom-3.15.1-static"
+              "path": "/nix/store/59l2k707hydhzpf7z3yidb19mv2326mq-libaom-3.15.2-static"
             }
           ],
-          "store_path": "/nix/store/z0w3p87vcap1vr7fdp0mcf9g01hpvdlw-libaom-3.15.1"
+          "store_path": "/nix/store/bfvih2cxzf0apc0rli65iigwn04bb75g-libaom-3.15.2"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/9xzrk79yvw2lkbx8w4pswyzvn79kaplc-libaom-3.15.1",
+              "path": "/nix/store/2brmv4x15zc4vpkvlry4awkv24z730jn-libaom-3.15.2",
               "default": true
             },
             {
               "name": "bin",
-              "path": "/nix/store/4fkpjrlrgi9j122irjlbxx1xad3013fy-libaom-3.15.1-bin",
+              "path": "/nix/store/dwbmg1z6gg7kr3hx6cjb0cjp01qs5s9y-libaom-3.15.2-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/qwbilpb3gm9r481yb80iqpm867jkqds4-libaom-3.15.1-dev"
+              "path": "/nix/store/j2ra70msgjvdxiw98i49c33zh72qgkgy-libaom-3.15.2-dev"
             },
             {
               "name": "static",
-              "path": "/nix/store/bjxb7vna0rp7hwspkycc9m55wnsafdsf-libaom-3.15.1-static"
+              "path": "/nix/store/wrxp5xqil8rcy8w10w7bvsh4qxf2glv9-libaom-3.15.2-static"
             }
           ],
-          "store_path": "/nix/store/9xzrk79yvw2lkbx8w4pswyzvn79kaplc-libaom-3.15.1"
+          "store_path": "/nix/store/2brmv4x15zc4vpkvlry4awkv24z730jn-libaom-3.15.2"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/ajzrc8n8fksmaclsa0cggfv3804dk269-libaom-3.15.1",
+              "path": "/nix/store/vcnh80mmsp10ybh4azw4vrxlczb0jyds-libaom-3.15.2",
               "default": true
             },
             {
               "name": "bin",
-              "path": "/nix/store/8skvyg3c2z4623061lsamx6h6qdgaqdd-libaom-3.15.1-bin",
+              "path": "/nix/store/3ia0wfg7l0jfpdgqi483ckx4186i3qaz-libaom-3.15.2-bin",
               "default": true
             },
             {
               "name": "dev",
-              "path": "/nix/store/qfa0051gsfpwlyvdp4nvba4l0fn5klcj-libaom-3.15.1-dev"
+              "path": "/nix/store/4yw73wyxpxfs7aca4ym9rxpr8q47nhwr-libaom-3.15.2-dev"
             },
             {
               "name": "static",
-              "path": "/nix/store/i843ajzga7drynn9wzk3gcl4jypskn2z-libaom-3.15.1-static"
+              "path": "/nix/store/hn54jdbkz3pwi144ybqa1agnjvazyx6q-libaom-3.15.2-static"
             }
           ],
-          "store_path": "/nix/store/ajzrc8n8fksmaclsa0cggfv3804dk269-libaom-3.15.1"
+          "store_path": "/nix/store/vcnh80mmsp10ybh4azw4vrxlczb0jyds-libaom-3.15.2"
         }
       }
     },

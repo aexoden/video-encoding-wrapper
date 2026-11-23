@@ -1,7 +1,5 @@
 [advisories]
-ignore = [
-  { id = "RUSTSEC-2024-0436", reason = "Caused by an indirect dependency by simba, and will be fixed in the next release." }
-]
+ignore = []
 
 [bans]
 multiple-versions = "allow"

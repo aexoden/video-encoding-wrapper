@@ -1,41 +1,41 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "cargo-deny@0.20.2": {
-      "last_modified": "2026-11-15T01:20:14Z",
-      "resolved": "github:NixOS/nixpkgs/1c872b8c508bbbfebc1b0b74777ff391ce0a574c#cargo-deny",
+    "cargo-deny@0.21.0": {
+      "last_modified": "2026-11-21T08:18:15Z",
+      "resolved": "github:NixOS/nixpkgs/93a9ed0a866099a230ed5146a5bb7d16fd5c9b14#cargo-deny",
       "source": "devbox-search",
-      "version": "0.20.2",
+      "version": "0.21.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/05hq97jkgy1i0hwa5kam6bflc375qpbv-cargo-deny-0.20.2",
+              "path": "/nix/store/x059dz1vap0mcy4r6v9ljkg71cycndmz-cargo-deny-0.21.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/05hq97jkgy1i0hwa5kam6bflc375qpbv-cargo-deny-0.20.2"
+          "store_path": "/nix/store/x059dz1vap0mcy4r6v9ljkg71cycndmz-cargo-deny-0.21.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/lrswk4hzrh3wlr89b2xyb0ir8nm2sb5z-cargo-deny-0.20.2",
+              "path": "/nix/store/k6nfyrhs5abwmvywssgfcxx2mmj44b4z-cargo-deny-0.21.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/lrswk4hzrh3wlr89b2xyb0ir8nm2sb5z-cargo-deny-0.20.2"
+          "store_path": "/nix/store/k6nfyrhs5abwmvywssgfcxx2mmj44b4z-cargo-deny-0.21.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/3fhzm7vql85hcsah60p6adm5lb2xnysj-cargo-deny-0.20.2",
+              "path": "/nix/store/mi736pldiv2jm1xskl041dz0fs1cgwjz-cargo-deny-0.21.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/3fhzm7vql85hcsah60p6adm5lb2xnysj-cargo-deny-0.20.2"
+          "store_path": "/nix/store/mi736pldiv2jm1xskl041dz0fs1cgwjz-cargo-deny-0.21.0"
         }
       }
     },
